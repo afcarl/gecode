@@ -24,6 +24,13 @@ macro(add_gecode_library name)
   add_library(gecode${name} ${sources})
 endmacro()
 
+macro(add_prefix var prefix)
+  set(${var} )
+  foreach (arg ${ARGN})
+    set(${var} ${${var}} ${prefix}/${arg})
+  endforeach ()
+endmacro()
+
 add_extension(sources cpp
   exception heap thread/thread thread/windows thread/pthreads)
 add_extension(headers hpp
@@ -34,6 +41,9 @@ add_extension(headers hpp
   thread thread/thread thread/windows thread/pthreads thread/none timer
   dynamic-queue bitset-base bitset)
 add_gecode_library(support gecode/support.hh PREFIX ${sources} ${headers})
+
+find_package(Threads)
+target_link_libraries(gecodesupport ${CMAKE_THREAD_LIBS_INIT})
 
 add_extension(sources cpp archive core memory-manager branch region)
 add_extension(headers hpp
@@ -211,4 +221,42 @@ add_gecode_library(minimodel gecode/minimodel.hh PREFIX
   lin-expr.hpp lin-rel.hpp exception.hpp matrix.hpp
   bool-expr.hpp set-expr.hpp set-rel.hpp
   optimize.hpp reg.hpp)
-target_link_libraries(gecodeminimodel gecodeset gecodekernel)
+target_link_libraries(gecodeminimodel gecodeint gecodeset gecodesearch)
+
+add_extension(int_test_sources cpp
+  channel arithmetic basic bool count dom distinct element extensional
+  rel linear gcc sorted unshare exec sequence
+  mm-arithmetic mm-bool mm-lin mm-count mm-rel
+  bin-packing unary cumulative cumulatives circuit
+  no-overlap precede nvalues member)
+add_prefix(int_test_sources test/int ${int_test_sources})
+
+add_extension(set_test_sources cpp
+  construct dom rel rel-op rel-op-const convex sequence int element
+  precede distinct exec mm-set)
+add_prefix(set_test_sources test/set ${set_test_sources})
+
+add_prefix(headers test
+  test.hh test.hpp int.hh int.hpp set.hh set.hpp
+  branch.hh assign.hh)
+
+include_directories(.)
+add_executable(gecode-test test/int.cpp ${int_test_sources}
+  test/set.cpp ${set_test_sources}
+  test/branch.cpp test/branch/int.cpp test/branch/bool.cpp
+  test/branch/set.cpp
+  test/assign.cpp test/assign/int.cpp test/assign/bool.cpp
+  test/assign/set.cpp
+  test/search.cpp
+  test/array.cpp
+  test/test.cpp test/afc.cpp
+  ${headers})
+target_link_libraries(gecode-test gecodeminimodel)
+
+enable_testing()
+add_test(test gecode-test -iter 2 -test Branch::Int::Dense::3
+			  -test Int::Linear::Int::Int::Eq::Bnd::12::4
+			  -test Int::Distinct::Random
+			  -test Int::Arithmetic::Mult::XYZ::Bnd::C
+			  -test Int::Arithmetic::Mult::XYZ::Dom::A
+			  -test Search::BAB::Sol::BalGr::Binary::Binary::Binary::1::1)
