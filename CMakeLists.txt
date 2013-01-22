@@ -24,6 +24,17 @@ macro(add_gecode_library name)
   add_library(gecode${name} ${sources})
 endmacro()
 
+add_extension(sources cpp
+  exception heap thread/thread thread/windows thread/pthreads)
+add_extension(headers hpp
+  block-allocator cast dynamic-array
+  dynamic-stack exception heap
+  macros random sort static-stack
+  marked-pointer int-type auto-link
+  thread thread/thread thread/windows thread/pthreads thread/none timer
+  dynamic-queue bitset-base bitset)
+add_gecode_library(support gecode/support.hh PREFIX ${sources} ${headers})
+
 add_extension(sources cpp archive core memory-manager branch region)
 add_extension(headers hpp
   archive array shared-array core exception
@@ -33,11 +44,11 @@ add_extension(headers hpp
   brancher-val allocators global-prop-info)
 add_gecode_library(kernel gecode/kernel.hh gecode/kernel/wait.hh
   PREFIX ${sources} ${headers})
+target_link_libraries(gecodekernel gecodesupport)
 
 add_extension(sources cpp
   stop options parallel/engine dfs parallel/dfs
   bab parallel/bab restart parallel/restart)
-
 add_gecode_library(search PREFIX ${sources}
   statistics.hpp stop.hpp options.hpp
   support.hh worker.hh
@@ -47,6 +58,7 @@ add_gecode_library(search PREFIX ${sources}
   parallel/dfs.hh parallel/bab.hh
   parallel/restart.hh
   dfs.hpp bab.hpp restart.hpp)
+target_link_libraries(gecodesearch gecodekernel)
 
 add_gecode_library(int
   gecode/int/branch/post-view-int.cpp
@@ -143,4 +155,60 @@ add_gecode_library(int
   nvalues/int-lq.hpp nvalues/int-gq.hpp
   val-set.hh val-set.hpp
   member.hh member/prop.hpp member/re-prop.hpp)
+target_link_libraries(gecodeint gecodekernel)
 
+add_gecode_library(set
+  gecode/set/branch/post-view.cpp gecode/set.hh
+  PREFIX
+  branch.cpp cardinality.cpp convex.cpp convex/conv.cpp convex/hull.cpp
+  dom.cpp rel.cpp
+  rel-op.cpp rel-op-ternary.cpp rel-op-singleton.cpp
+  rel-op/post-compl.cpp rel-op/post-nocompl.cpp
+  rel-op/post-compl-cvv.cpp rel-op/post-nocompl-cvv.cpp
+  rel-op/post-compl-vvc.cpp rel-op/post-nocompl-vvc.cpp
+  rel-op/post-compl-cvc.cpp rel-op/post-nocompl-cvc.cpp
+  rel-op-const-vvc.cpp rel-op-const-vcv.cpp rel-op-const-vcc.cpp
+  rel-op-const-cvc.cpp rel-op-const-cvv.cpp
+  int.cpp
+  element.cpp sequence.cpp
+  distinct.cpp distinct/atmostOne.cpp
+  precede.cpp
+  sequence/seq.cpp sequence/seq-u.cpp array.cpp var-imp/set.cpp
+  var-imp/integerset.cpp var/set.cpp
+  exec.cpp
+  limits.hpp
+  view.hpp exception.hpp int.hh element.hh var-imp.hpp
+  int/card.hpp
+  int/match.hpp int/channel-int.hpp int/minmax.hpp int/weights.hpp
+  int/channel-bool.hpp
+  element/inter.hpp element/union.hpp
+  element/unionConst.hpp
+  element/disjoint.hpp array.hpp array-traits.hpp
+  var-imp/set.hpp var-imp/integerset.hpp
+  var-imp/delta.hpp var-imp/iter.hpp
+  var/set.hpp var/print.hpp
+  view/complement.hpp view/const.hpp view/set.hpp view/singleton.hpp
+  view/cached.hpp view/print.hpp
+  rel/subset.hpp rel/re-subset.hpp rel/eq.hpp rel/nq.hpp rel/re-eq.hpp
+  rel/lq.hpp rel/re-lq.hpp
+  rel/common.hpp rel/nosubset.hpp sequence.hh
+  rel-op/union.hpp rel-op/partition.hpp rel-op/subofunion.hpp
+  rel-op/inter.hpp rel-op/superofinter.hpp
+  rel-op/post.hpp rel-op/common.hpp rel.hh
+  distinct.hh distinct/atmostOne.hpp
+  sequence/seq.hpp sequence/seq-u.hpp
+  sequence/common.hpp convex/conv.hpp convex/hull.hpp convex.hh
+  precede.hh precede/single.hpp
+  rel-op.hh
+  branch.hh branch/select-val.hpp branch/select-view.hpp
+  branch/post-val.hpp)
+target_link_libraries(gecodeset gecodekernel)
+
+add_gecode_library(minimodel gecode/minimodel.hh PREFIX
+  lin-expr.cpp lin-rel.cpp bool-expr.cpp
+  set-expr.cpp set-rel.cpp
+  reg.cpp arithmetic.cpp
+  lin-expr.hpp lin-rel.hpp exception.hpp matrix.hpp
+  bool-expr.hpp set-expr.hpp set-rel.hpp
+  optimize.hpp reg.hpp)
+target_link_libraries(gecodeminimodel gecodeset gecodekernel)
