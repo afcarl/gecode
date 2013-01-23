@@ -329,12 +329,15 @@ file(WRITE ${GECODE_BINARY_DIR}/gecode/support/config.hpp
 "/* gecode/support/config.hpp.  Generated from config.hpp.in by configure.  */
 /* gecode/support/config.hpp.in.  Generated from configure.ac by autoheader.  */
 
-${CONFIG_OUT}")
+/* Disable autolink because all the dependencies are handled by CMake. */
+#define GECODE_BUILD_SUPPORT
+#define GECODE_BUILD_KERNEL
+#define GECODE_BUILD_SEARCH
+#define GECODE_BUILD_INT
+#define GECODE_BUILD_SET
+#define GECODE_BUILD_MINIMODEL
 
-# Disable autolink because all the dependencies are handled by CMake.
-add_definitions(
-  -DGECODE_BUILD_SUPPORT -DGECODE_BUILD_KERNEL -DGECODE_BUILD_SEARCH
-  -DGECODE_BUILD_INT -DGECODE_BUILD_SET  -DGECODE_BUILD_MINIMODEL)
+${CONFIG_OUT}")
 
 add_extension(sources cpp
   exception heap thread/thread thread/windows thread/pthreads)
