@@ -333,8 +333,8 @@ ${CONFIG_OUT}")
 
 # Disable autolink because all the dependencies are handled by CMake.
 add_definitions(
-  -DGECODE_BUILD_KERNEL -DGECODE_BUILD_INT -DGECODE_BUILD_SET
-  -DGECODE_BUILD_SEARCH -DGECODE_BUILD_MINIMODEL)
+  -DGECODE_BUILD_SUPPORT -DGECODE_BUILD_KERNEL -DGECODE_BUILD_SEARCH
+  -DGECODE_BUILD_INT -DGECODE_BUILD_SET  -DGECODE_BUILD_MINIMODEL)
 
 add_extension(sources cpp
   exception heap thread/thread thread/windows thread/pthreads)
