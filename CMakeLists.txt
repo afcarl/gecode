@@ -229,7 +229,12 @@ set(GECODE_DLL_USERPREFIX "")
 set(GECODE_DLL_USERSUFFIX "")
 set(GECODE_HAS_INT_VARS "/**/")
 set(GECODE_HAS_SET_VARS "/**/")
-set(GECODE_GCC_HAS_CLASS_VISIBILITY "/**/")
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-fvisibility=hidden HAVE_VISIBILITY_HIDDEN_FLAG)
+if (HAVE_VISIBILITY_HIDDEN_FLAG)
+  set(GECODE_GCC_HAS_CLASS_VISIBILITY "/**/")
+endif ()
 
 if (WIN32)
   set(GECODE_THREADS_WINDOWS 1)
