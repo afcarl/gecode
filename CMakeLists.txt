@@ -229,6 +229,7 @@ set(GECODE_DLL_USERPREFIX "")
 set(GECODE_DLL_USERSUFFIX "")
 set(GECODE_HAS_INT_VARS "/**/")
 set(GECODE_HAS_SET_VARS "/**/")
+set(GECODE_STATIC_LIBS 1)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-fvisibility=hidden HAVE_VISIBILITY_HIDDEN_FLAG)
