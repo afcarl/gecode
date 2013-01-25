@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 2.6)
 
 project(GECODE)
 
+if (GECODE_DISABLE_WARNINGS)
+  if (CMAKE_COMPILER_IS_GNUCXX)
+    add_definitions(-Wno-overloaded-virtual)
+    add_definitions(-Wno-switch)
+  endif ()
+endif ()
+
 macro(add_extension var ext)
   set(${var} )
   foreach (arg ${ARGN})
