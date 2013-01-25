@@ -6,6 +6,13 @@ if (GECODE_DISABLE_WARNINGS)
   if (CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-Wno-overloaded-virtual)
     add_definitions(-Wno-switch)
+    add_definitions(-Wno-unused-but-set-variable)
+  elseif (MSVC)
+    foreach (flag_var
+             CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+             CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REPLACE "/W3" "/w" ${flag_var} "${${flag_var}}")
+    endforeach()
   endif ()
 endif ()
 
