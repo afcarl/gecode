@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(GECODE)
 
-include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 if (GECODE_DISABLE_WARNINGS)
   if (CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-Wno-overloaded-virtual)
@@ -250,7 +250,6 @@ set(GECODE_HAS_INT_VARS "/**/")
 set(GECODE_HAS_SET_VARS "/**/")
 set(GECODE_STATIC_LIBS 1)
 
-include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-fvisibility=hidden HAVE_VISIBILITY_HIDDEN_FLAG)
 if (HAVE_VISIBILITY_HIDDEN_FLAG)
   set(GECODE_GCC_HAS_CLASS_VISIBILITY "/**/")
