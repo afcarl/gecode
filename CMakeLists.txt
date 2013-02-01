@@ -1,3 +1,6 @@
+# CMake build script for Gecode.
+# Author: Victor Zverovich
+
 cmake_minimum_required(VERSION 2.6)
 
 project(GECODE)
