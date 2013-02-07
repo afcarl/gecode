@@ -25,76 +25,10 @@ if (GECODE_DISABLE_WARNINGS)
 endif ()
 
 # The following part of config.h is hard to derive from configure.ac.
+file(READ gecode/support/config.hpp.in CONFIG)
+string(REGEX REPLACE "^/\\*([^*]|\\*[^/])*\\*/" "" CONFIG ${CONFIG})
 string(REGEX MATCHALL "[^\n]*\n" CONFIG
-"/* Whether to include audit code */
-#undef GECODE_AUDIT
-
-/* User-defined prefix of dll names */
-#undef GECODE_DLL_USERPREFIX
-
-/* User-defined suffix of dll names */
-#undef GECODE_DLL_USERSUFFIX
-
-/* Supported version of FlatZinc */
-#undef GECODE_FLATZINC_VERSION
-
-/* Whether gcc understands visibility attributes */
-#undef GECODE_GCC_HAS_CLASS_VISIBILITY
-
-/* Whether to compile boost dependent parts */
-#undef GECODE_HAS_BOOST
-
-/* whether __builtin_ffsl is available */
-#undef GECODE_HAS_BUILTIN_FFSL
-
-/* Whether Gist is available */
-#undef GECODE_HAS_GIST
-
-/* Whether GNU hash_map is available */
-#undef GECODE_HAS_GNU_HASH_MAP
-
-/* Whether to build INT variables */
-#undef GECODE_HAS_INT_VARS
-
-/* Whether we have mtrace for memory leak debugging */
-#undef GECODE_HAS_MTRACE
-
-/* Whether Qt is available */
-#undef GECODE_HAS_QT
-
-/* Whether to build SET variables */
-#undef GECODE_HAS_SET_VARS
-
-/* Whether unistd.h is available */
-#undef GECODE_HAS_UNISTD_H
-
-/* Gecode version */
-#undef GECODE_LIBRARY_VERSION
-
-/* Heap memory alignment */
-#undef GECODE_MEMORY_ALIGNMENT
-
-/* Whether we are compiling static libraries */
-#undef GECODE_STATIC_LIBS
-
-/* Whether we have posix threads */
-#undef GECODE_THREADS_PTHREADS
-
-/* Whether we have windows threads */
-#undef GECODE_THREADS_WINDOWS
-
-/* Use clock() for time-measurement */
-#undef GECODE_USE_CLOCK
-
-/* Use gettimeofday for time-measurement */
-#undef GECODE_USE_GETTIMEOFDAY
-
-/* Gecode version */
-#undef GECODE_VERSION
-
-/* Gecode version */
-#undef GECODE_VERSION_NUMBER
-
+"${CONFIG}
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
 
@@ -154,9 +88,6 @@ string(REGEX MATCHALL "[^\n]*\n" CONFIG
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
-
-/* How to tell the compiler to really, really inline */
-#undef forceinline
 ")
 
 # Get version numbers and parts of config.h from configure.ac.
