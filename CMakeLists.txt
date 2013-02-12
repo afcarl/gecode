@@ -10,6 +10,7 @@ if (GECODE_DISABLE_WARNINGS)
   if (CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-Wno-overloaded-virtual)
     add_definitions(-Wno-switch)
+    add_definitions(-Wno-unused-parameter)
     check_cxx_compiler_flag(
       -Wno-unused-but-set-variable HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
     if (HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
