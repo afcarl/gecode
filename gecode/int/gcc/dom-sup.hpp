@@ -13,8 +13,8 @@
  *     Guido Tack, 2009
  *
  *  Last modified:
- *     $Date: 2011-09-01 23:04:29 +1000 (Thu, 01 Sep 2011) $ by $Author: schulte $
- *     $Revision: 12384 $
+ *     $Date: 2013-03-12 20:10:44 +0100 (Tue, 12 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13511 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1217,7 +1217,6 @@ namespace Gecode { namespace Int { namespace GCC {
         // if the variable is already assigned
         if (x[i].assigned()) {
           int  v = x[i].val();
-          ValNode* rv = NULL;
           Edge* mub = vrn->get_match(UBC);
           if ((mub != NULL) && (v != mub->getVal()->val)) {
             mub->unmatch(UBC);
@@ -1241,8 +1240,6 @@ namespace Gecode { namespace Int { namespace GCC {
               e->getVal()->noe--;
               e->del_edge();
               e->unlink();
-            } else {
-              rv = e->getVal();
             }
           }
         } else {
@@ -1406,15 +1403,17 @@ namespace Gecode { namespace Int { namespace GCC {
       vals[i]->index(n_var + i);
     }
 
-    for (int i = n_var; i--; )
-      if (vars[i]->noe > 1)
-        for (Edge* e = vars[i]->first(); e != NULL; e = e->next())
+    for (int i = n_var; i--; ) {
+      if (vars[i]->noe > 1) {
+        for (Edge* e = vars[i]->first(); e != NULL; e = e->next()) {
           if (!e->matched(bc) && !e->used(bc)) {
             GECODE_ME_CHECK(x[i].nq(home, e->getVal()->val));
           } else {
             e->free(bc);
           }
-
+        }
+      }
+    }
     return ES_OK;
   }
 

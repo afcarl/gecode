@@ -7,8 +7,8 @@
  *     Guido Tack, 2011
  *
  *  Last modified:
- *     $Date: 2011-05-02 08:24:42 +1000 (Mon, 02 May 2011) $ by $Author: tack $
- *     $Revision: 11973 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -113,7 +113,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline bool
-  CachedView<View>::in(double n) const {
+  CachedView<View>::in(long long int n) const {
     return x.in(n);
   }
 
@@ -129,7 +129,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline ModEvent
-  CachedView<View>::lq(Space& home, double n) {
+  CachedView<View>::lq(Space& home, long long int n) {
     return x.lq(home,n);
   }
   template<class View>
@@ -139,7 +139,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline ModEvent
-  CachedView<View>::le(Space& home, double n) {
+  CachedView<View>::le(Space& home, long long int n) {
     return x.le(home,n);
   }
   template<class View>
@@ -149,7 +149,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline ModEvent
-  CachedView<View>::gq(Space& home, double n) {
+  CachedView<View>::gq(Space& home, long long int n) {
     return x.gq(home,n);
   }
   template<class View>
@@ -159,7 +159,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline ModEvent
-  CachedView<View>::gr(Space& home, double n) {
+  CachedView<View>::gr(Space& home, long long int n) {
     return x.gr(home,n);
   }
   template<class View>
@@ -169,7 +169,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline ModEvent
-  CachedView<View>::nq(Space& home, double n) {
+  CachedView<View>::nq(Space& home, long long int n) {
     return x.nq(home,n);
   }
   template<class View>
@@ -179,7 +179,7 @@ namespace Gecode { namespace Int {
   }
   template<class View>
   forceinline ModEvent
-  CachedView<View>::eq(Space& home, double n) {
+  CachedView<View>::eq(Space& home, long long int n) {
     return x.eq(home,n);
   }
 

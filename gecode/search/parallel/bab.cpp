@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2009-08-27 05:10:00 +1000 (Thu, 27 Aug 2009) $ by $Author: schulte $
- *     $Revision: 9632 $
+ *     $Date: 2013-03-07 20:56:21 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13463 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -77,6 +77,14 @@ namespace Gecode { namespace Search { namespace Parallel {
         // Terminate thread
         engine().terminated();
         return;
+      case C_RESET:
+        // Acknowledge reset request
+        engine().ack_reset_start();
+        // Wait until reset has been performed
+        engine().wait_reset();
+        // Acknowledge that reset cycle is over
+        engine().ack_reset_stop();
+        break;
       case C_WORK:
         // Perform exploration work
         {
@@ -155,6 +163,34 @@ namespace Gecode { namespace Search { namespace Parallel {
         GECODE_NEVER;
       }
     }
+  }
+
+
+  /*
+   * Perform reset
+   *
+   */
+  void
+  BAB::reset(Space* s) {
+    // Grab wait lock for reset
+    m_wait_reset.acquire();
+    // Release workers for reset
+    release(C_RESET);
+    // Wait for reset cycle started
+    e_reset_ack_start.wait();
+    // All workers are marked as busy again
+    delete best;
+    best = NULL;
+    n_busy = workers();
+    for (unsigned int i=1; i<workers(); i++)
+      worker(i)->reset(NULL);
+    worker(0)->reset(s);
+    // Block workers again to ensure invariant
+    block();
+    // Release reset lock
+    m_wait_reset.release();
+    // Wait for reset cycle stopped
+    e_reset_ack_stop.wait();
   }
 
 

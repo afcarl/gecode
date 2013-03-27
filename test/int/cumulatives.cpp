@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2005
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -77,7 +77,7 @@ namespace Test { namespace Int {
            rel(*this, x[i+1] >= 0);
            rel(*this, x[i+2] >= 0);
            rel(*this, x[i] + x[i+1] == x[i+2]);
-           branch(*this, x, INT_VAR_NONE, INT_VAL_MIN);
+           branch(*this, x, INT_VAR_NONE(), INT_VAL_MIN());
          }
        }
        /// Constructor for cloning \a s

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2011-10-06 23:38:44 +1100 (Thu, 06 Oct 2011) $ by $Author: schulte $
- *     $Revision: 12421 $
+ *     $Date: 2012-10-18 16:02:42 +0200 (Thu, 18 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13154 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,10 +41,10 @@
 namespace Gecode {
 
   void
-  rel(Home home, BoolVar x0, IntRelType r, BoolVar x1, IntConLevel) {
+  rel(Home home, BoolVar x0, IntRelType irt, BoolVar x1, IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       GECODE_ES_FAIL((Bool::Eq<BoolView,BoolView>
                            ::post(home,x0,x1)));
@@ -74,12 +74,12 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, BoolVar x0, IntRelType r, int n, IntConLevel) {
+  rel(Home home, BoolVar x0, IntRelType irt, int n, IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
     BoolView x(x0);
     if (n == 0) {
-      switch (r) {
+      switch (irt) {
       case IRT_LQ:
       case IRT_EQ:
         GECODE_ME_FAIL(x.zero(home)); break;
@@ -94,7 +94,7 @@ namespace Gecode {
         throw UnknownRelation("Int::rel");
       }
     } else if (n == 1) {
-      switch (r) {
+      switch (irt) {
       case IRT_GQ:
       case IRT_EQ:
         GECODE_ME_FAIL(x.one(home)); break;
@@ -114,38 +114,93 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, BoolVar x0, IntRelType r, BoolVar x1, BoolVar b,
+  rel(Home home, BoolVar x0, IntRelType irt, BoolVar x1, Reify r,
       IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
-      GECODE_ES_FAIL((Bool::Eqv<BoolView,BoolView,BoolView>
-                           ::post(home,x0,x1,b)));
+      switch (r.mode()) {
+      case RM_EQV:
+        GECODE_ES_FAIL((Bool::Eqv<BoolView,BoolView,BoolView>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      case RM_IMP:
+        GECODE_ES_FAIL((Rel::ReEqBnd<BoolView,BoolView,RM_IMP>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      case RM_PMI:
+        GECODE_ES_FAIL((Rel::ReEqBnd<BoolView,BoolView,RM_PMI>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      default: throw UnknownReifyMode("Int::rel");
+      }
       break;
     case IRT_NQ:
       {
-        NegBoolView n(b);
-        GECODE_ES_FAIL((Bool::Eqv<BoolView,BoolView,NegBoolView>
-                             ::post(home,x0,x1,n)));
+        NegBoolView nr(r.var());
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Bool::Eqv<BoolView,BoolView,NegBoolView>
+                          ::post(home,x0,x1,nr)));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReEqBnd<BoolView,NegBoolView,RM_PMI>
+                          ::post(home,x0,x1,nr)));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReEqBnd<BoolView,NegBoolView,RM_IMP>
+                          ::post(home,x0,x1,nr)));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       }
       break;
     case IRT_GQ:
-      std::swap(x0,x1);
+      std::swap(x0,x1); // Fall through
     case IRT_LQ:
-      {
-        NegBoolView n0(x0);
-        GECODE_ES_FAIL((Bool::Or<NegBoolView,BoolView,BoolView>
-                             ::post(home,n0,x1,b)));
+      switch (r.mode()) {
+      case RM_EQV:
+        {
+          NegBoolView n0(x0);
+          GECODE_ES_FAIL((Bool::Or<NegBoolView,BoolView,BoolView>
+                          ::post(home,n0,x1,r.var())));
+        }
+        break;
+      case RM_IMP:
+        GECODE_ES_FAIL((Rel::ReLq<BoolView,BoolView,RM_IMP>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      case RM_PMI:
+        GECODE_ES_FAIL((Rel::ReLq<BoolView,BoolView,RM_PMI>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      default: throw UnknownReifyMode("Int::rel");
       }
       break;
-    case IRT_GR:
-      std::swap(x0,x1);
     case IRT_LE:
+      std::swap(x0,x1); // Fall through
+    case IRT_GR:
       {
-        NegBoolView n1(x1), n(b);
-        GECODE_ES_FAIL((Bool::Or<BoolView,NegBoolView,NegBoolView>
-                             ::post(home,x0,n1,n)));
+        NegBoolView nr(r.var());
+        switch (r.mode()) {
+        case RM_EQV:
+          {
+            NegBoolView n0(x0);
+            GECODE_ES_FAIL((Bool::Or<NegBoolView,BoolView,NegBoolView>
+                            ::post(home,n0,x1,nr)));
+          }
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReLq<BoolView,NegBoolView,RM_PMI>
+                          ::post(home,x0,x1,nr)));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReLq<BoolView,NegBoolView,RM_IMP>
+                          ::post(home,x0,x1,nr)));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       }
       break;
     default:
@@ -154,56 +209,158 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, BoolVar x0, IntRelType r, int n, BoolVar b,
+  rel(Home home, BoolVar x0, IntRelType irt, int n, Reify r,
       IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
     BoolView x(x0);
-    BoolView y(b);
+    BoolView y(r.var());
     if (n == 0) {
-      switch (r) {
+      switch (irt) {
       case IRT_LQ:
       case IRT_EQ:
-        {
-          NegBoolView z(y);
-          GECODE_ES_FAIL((Bool::Eq<BoolView,NegBoolView>
-                               ::post(home,x,z)));
+        switch (r.mode()) {
+        case RM_EQV:
+          {
+            NegBoolView ny(y);
+            GECODE_ES_FAIL((Bool::Eq<BoolView,NegBoolView>
+                            ::post(home,x,ny)));
+          }
+          break;
+        case RM_IMP:
+          {
+            NegBoolView nx(x); NegBoolView ny(y);
+            GECODE_ES_FAIL((Bool::BinOrTrue<NegBoolView,NegBoolView>
+                            ::post(home,nx,ny)));
+          }
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Bool::BinOrTrue<BoolView,BoolView>
+                          ::post(home,x,y)));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
         }
         break;
       case IRT_NQ:
       case IRT_GR:
-        GECODE_ES_FAIL((Bool::Eq<BoolView,BoolView>
-                             ::post(home,x,y)));
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Bool::Eq<BoolView,BoolView>
+                          ::post(home,x,y)));
+          break;
+        case RM_IMP:
+          {
+            NegBoolView ny(y);
+            GECODE_ES_FAIL((Bool::BinOrTrue<BoolView,NegBoolView>
+                            ::post(home,x,ny)));
+          }
+          break;
+        case RM_PMI:
+          {
+            NegBoolView nx(x);
+            GECODE_ES_FAIL((Bool::BinOrTrue<NegBoolView,BoolView>
+                            ::post(home,nx,y)));
+          }
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
         break;
       case IRT_LE:
-        GECODE_ME_FAIL(y.zero(home));
+        switch (r.mode()) {
+        case RM_EQV:
+        case RM_IMP:
+          GECODE_ME_FAIL(y.zero(home));
+          break;
+        case RM_PMI:
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
         break;
       case IRT_GQ:
-        GECODE_ME_FAIL(y.one(home));
+        switch (r.mode()) {
+        case RM_EQV:
+        case RM_PMI:
+          GECODE_ME_FAIL(y.one(home));
+          break;
+        case RM_IMP:
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
         break;
       default:
         throw UnknownRelation("Int::rel");
       }
     } else if (n == 1) {
-      switch (r) {
-      case IRT_GQ:
-      case IRT_EQ:
-        GECODE_ES_FAIL((Bool::Eq<BoolView,BoolView>
-                             ::post(home,x,y)));
-        break;
+      switch (irt) {
       case IRT_NQ:
       case IRT_LE:
-        {
-          NegBoolView z(y);
-          GECODE_ES_FAIL((Bool::Eq<BoolView,NegBoolView>
-                               ::post(home,x,z)));
+        switch (r.mode()) {
+        case RM_EQV:
+          {
+            NegBoolView ny(y);
+            GECODE_ES_FAIL((Bool::Eq<BoolView,NegBoolView>
+                            ::post(home,x,ny)));
+          }
+          break;
+        case RM_IMP:
+          {
+            NegBoolView nx(x); NegBoolView ny(y);
+            GECODE_ES_FAIL((Bool::BinOrTrue<NegBoolView,NegBoolView>
+                            ::post(home,nx,ny)));
+          }
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Bool::BinOrTrue<BoolView,BoolView>
+                          ::post(home,x,y)));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
+        break;
+      case IRT_EQ:
+      case IRT_GQ:
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Bool::Eq<BoolView,BoolView>
+                          ::post(home,x,y)));
+          break;
+        case RM_IMP:
+          {
+            NegBoolView ny(y);
+            GECODE_ES_FAIL((Bool::BinOrTrue<BoolView,NegBoolView>
+                            ::post(home,x,ny)));
+          }
+          break;
+        case RM_PMI:
+          {
+            NegBoolView nx(x);
+            GECODE_ES_FAIL((Bool::BinOrTrue<NegBoolView,BoolView>
+                            ::post(home,nx,y)));
+          }
+          break;
+        default: throw UnknownReifyMode("Int::rel");
         }
         break;
       case IRT_GR:
-        GECODE_ME_FAIL(y.zero(home));
+        switch (r.mode()) {
+        case RM_EQV:
+        case RM_IMP:
+          GECODE_ME_FAIL(y.zero(home));
+          break;
+        case RM_PMI:
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
         break;
       case IRT_LQ:
-        GECODE_ME_FAIL(y.one(home));
+        switch (r.mode()) {
+        case RM_EQV:
+        case RM_PMI:
+          GECODE_ME_FAIL(y.one(home));
+          break;
+        case RM_IMP:
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
         break;
       default:
         throw UnknownRelation("Int::rel");
@@ -214,11 +371,11 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, BoolVar y,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, BoolVar y,
       IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       for (int i=x.size(); i--; ) {
         GECODE_ES_FAIL((Bool::Eq<BoolView,BoolView>
@@ -260,12 +417,12 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, int n,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, int n,
       IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
     if (n == 0) {
-      switch (r) {
+      switch (irt) {
       case IRT_LQ:
       case IRT_EQ:
         for (int i=x.size(); i--; ) {
@@ -286,7 +443,7 @@ namespace Gecode {
         throw UnknownRelation("Int::rel");
       }
     } else if (n == 1) {
-      switch (r) {
+      switch (irt) {
       case IRT_GQ:
       case IRT_EQ:
         for (int i=x.size(); i--; ) {
@@ -312,12 +469,12 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, IntConLevel) {
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, IntConLevel) {
     using namespace Int;
-    if (home.failed() || ((r != IRT_NQ) && (x.size() < 2))) 
+    if (home.failed() || ((irt != IRT_NQ) && (x.size() < 2))) 
       return;
 
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       {
         ViewArray<BoolView> y(home,x);
@@ -366,14 +523,14 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, const BoolVarArgs& y,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, const BoolVarArgs& y,
       IntConLevel) {
     using namespace Int;
     if (x.size() != y.size())
       throw ArgumentSizeMismatch("Int::rel");
     if (home.failed()) return;
 
-    switch (r) {
+    switch (irt) {
     case IRT_GR:
       {
         ViewArray<BoolView> xv(home,x), yv(home,y);

@@ -7,8 +7,8 @@
  *     Guido Tack, 2009
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2013-03-07 20:40:42 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13462 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -192,11 +192,6 @@ protected:
     }
   }
 public:
-  /// Search variants
-  enum {
-    SEARCH_BAB,    ///< Use branch and bound to optimize
-    SEARCH_RESTART ///< Use restart to optimize
-  };
   /// The actual problem
   OpenShop(const SizeOptions& opt)
     : spec(examples[opt.size()]),
@@ -243,11 +238,11 @@ public:
     }
 
     // First branch over the precedences
-    branch(*this, b, INT_VAR_AFC_MAX, INT_VAL_MAX);
+    branch(*this, b, INT_VAR_AFC_MAX(opt.decay()), INT_VAL_MAX());
     // When the precedences are fixed, simply assign the start times
-    assign(*this, _start, INT_ASSIGN_MIN);
+    assign(*this, _start, INT_ASSIGN_MIN());
     // When the start times are fixed, use the tightest makespan
-    assign(*this, makespan, INT_ASSIGN_MIN);
+    assign(*this, makespan, INT_ASSIGN_MIN());
   }
 
   /// Constructor for cloning \a s
@@ -314,21 +309,13 @@ main(int argc, char* argv[]) {
   opt.iterations(500);
   opt.size(0);
   opt.solutions(0);
-  opt.search(OpenShop::SEARCH_BAB);
-  opt.search(OpenShop::SEARCH_BAB, "bab");
-  opt.search(OpenShop::SEARCH_RESTART, "restart");
   opt.parse(argc,argv);
   if (opt.size() >= n_examples) {
     std::cerr << "Error: size must be between 0 and "
               << n_examples-1 << std::endl;
     return 1;
   }
-  switch (opt.search()) {
-  case OpenShop::SEARCH_BAB:
-    MinimizeScript::run<OpenShop,BAB,SizeOptions>(opt); break;
-  case OpenShop::SEARCH_RESTART:
-    MinimizeScript::run<OpenShop,Restart,SizeOptions>(opt); break;
-  }
+  MinimizeScript::run<OpenShop,BAB,SizeOptions>(opt);
   return 0;
 }
 

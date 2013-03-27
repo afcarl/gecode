@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2006
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-03-07 20:40:42 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13462 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -83,12 +83,6 @@ public:
     BRANCH_SPECIFIC ///< Choose variable with problem specific strategy
   };
 
-  /// Search variants
-  enum {
-    SEARCH_BAB,    ///< Use branch and bound to optimize
-    SEARCH_RESTART ///< Use restart to optimize
-  };
-
   /// Constructor
   QueenArmies(const SizeOptions& opt) :
     n(opt.size()),
@@ -118,11 +112,11 @@ public:
     linear(*this, b, IRT_EQ, unknowns);
 
     if (opt.branching() == BRANCH_NAIVE) {
-      branch(*this, w, INT_VAR_NONE, INT_VAL_MAX);
-      branch(*this, b, INT_VAR_NONE, INT_VAL_MAX);
+      branch(*this, w, INT_VAR_NONE(), INT_VAL_MAX());
+      branch(*this, b, INT_VAR_NONE(), INT_VAL_MAX());
     } else {
       QueenBranch::post(*this);
-      assign(*this, b, INT_ASSIGN_MAX);
+      assign(*this, b, INT_ASSIGN_MAX());
     }
   }
   /// Constructor for cloning
@@ -254,8 +248,8 @@ public:
       return new (home) QueenBranch(home, share, *this);
     }
     /// Post brancher
-    static void post(QueenArmies& home) {
-      (void) new (home) QueenBranch(home);
+    static BrancherHandle post(QueenArmies& home) {
+      return *new (home) QueenBranch(home);
     }
     /// Delete brancher and return its size
     virtual size_t dispose(Space&) {
@@ -282,9 +276,6 @@ main(int argc, char* argv[]) {
   opt.branching(QueenArmies::BRANCH_SPECIFIC);
   opt.branching(QueenArmies::BRANCH_NAIVE, "naive");
   opt.branching(QueenArmies::BRANCH_SPECIFIC, "specific");
-  opt.search(QueenArmies::SEARCH_BAB);
-  opt.search(QueenArmies::SEARCH_BAB, "bab");
-  opt.search(QueenArmies::SEARCH_RESTART, "restart");
   opt.solutions(0);
   opt.parse(argc,argv);
 
@@ -322,13 +313,7 @@ main(int argc, char* argv[]) {
   }
   delete [] p;
 
-
-  switch (opt.search()) {
-  case QueenArmies::SEARCH_BAB:
-    MaximizeScript::run<QueenArmies,BAB,SizeOptions>(opt); break;
-  case QueenArmies::SEARCH_RESTART:
-    MaximizeScript::run<QueenArmies,Restart,SizeOptions>(opt); break;
-  }
+  MaximizeScript::run<QueenArmies,BAB,SizeOptions>(opt);
   return 0;
 }
 

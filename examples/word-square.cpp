@@ -11,8 +11,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13313 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -107,11 +107,11 @@ public:
     switch (opt.branching()) {
     case BRANCH_WORDS:
       // Branch by assigning words
-      branch(*this, words, INT_VAR_SIZE_MIN, INT_VAL_SPLIT_MIN);
+      branch(*this, words, INT_VAR_SIZE_MIN(), INT_VAL_SPLIT_MIN());
       break;
     case BRANCH_LETTERS:
       // Branch by assigning letters
-      branch(*this, letters, INT_VAR_SIZE_AFC_MIN, INT_VAL_MIN);
+      branch(*this, letters, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
       break;
     }
   }

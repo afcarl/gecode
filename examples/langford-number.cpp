@@ -11,8 +11,8 @@
  *     Christian Schulte, 2007
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -165,7 +165,7 @@ public:
     rel(*this, y[0], IRT_LE, y[n*k-1]);
 
     // Branching
-    branch(*this, y, INT_VAR_SIZE_MIN, INT_VAL_MAX);
+    branch(*this, y, INT_VAR_SIZE_MIN(), INT_VAL_MAX());
   }
 
   /// Print solution

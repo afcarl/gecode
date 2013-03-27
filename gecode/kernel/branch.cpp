@@ -9,8 +9,8 @@
  *     Mikael Lagerkvist, 2008
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -40,17 +40,6 @@
 #include <gecode/kernel.hh>
 
 namespace Gecode {
-
-  const VarBranchOptions VarBranchOptions::def;
-
-  const ValBranchOptions ValBranchOptions::def;
-
-  const TieBreakVarBranchOptions TieBreakVarBranchOptions::def;
-
-
-  /*
-   * Function brancher
-   */
 
   /// %Brancher for calling a function
   class GECODE_KERNEL_EXPORT FunctionBranch : public Brancher {

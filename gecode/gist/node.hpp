@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-05-02 23:44:28 +1000 (Mon, 02 May 2011) $ by $Author: tack $
- *     $Revision: 11981 $
+ *     $Date: 2013-02-08 16:47:00 +0100 (Fri, 08 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13278 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -44,7 +44,7 @@ namespace Gecode { namespace Gist {
     cur_t = 0;
     if (cur_b==n) {
       int oldn = n;
-      n *= 1.5;
+      n = static_cast<int>(n*1.5+1.0);
       b = heap.realloc<Block*>(b,oldn,n);
     }
     b[cur_b] = static_cast<Block*>(heap.ralloc(sizeof(Block)));

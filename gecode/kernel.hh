@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-02-25 17:13:22 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13397 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -123,7 +123,7 @@
  */
 
 #include <gecode/kernel/archive.hpp>
-#include <gecode/kernel/global-prop-info.hpp>
+#include <gecode/kernel/global-afc.hpp>
 #include <gecode/kernel/core.hpp>
 #include <gecode/kernel/modevent.hpp>
 #include <gecode/kernel/range-list.hpp>
@@ -162,17 +162,62 @@
 
 
 /*
+ * Random number generator (for branching)
+ *
+ */
+
+#include <gecode/kernel/rnd.hpp>
+
+
+/*
  * Common propagator and branching patterns
  *
  */
 
+namespace Gecode {
+
+  /**
+   * \defgroup TaskModelBranch Generic branching support
+   *
+   * Support for randomization and tie-breaking that are independent
+   * of a particular variable domain.
+   *
+   * \ingroup TaskModel
+   */
+  
+  /** 
+   * \defgroup TaskModelBranchExec Branch with a function
+   * 
+   * This does not really branch (it just offers a single alternative) but
+   * executes a single function during branching. A typical
+   * application is to post more constraints after another brancher 
+   * has finished.
+   *
+   * \ingroup TaskModelBranch
+   */
+  //@{
+  /// Call the function \a f (with the current space as argument) for branching
+  GECODE_KERNEL_EXPORT void
+  branch(Home home, void (*f)(Space& home));
+  //@}
+
+}
+
 #include <gecode/kernel/propagator.hpp>
 #include <gecode/kernel/advisor.hpp>
-#include <gecode/kernel/branch.hpp>
-#include <gecode/kernel/brancher.hpp>
+#include <gecode/kernel/afc.hpp>
+#include <gecode/kernel/activity.hpp>
+#include <gecode/kernel/branch-traits.hpp>
+#include <gecode/kernel/branch-var.hpp>
+#include <gecode/kernel/branch-tiebreak.hpp>
+#include <gecode/kernel/branch-val.hpp>
+#include <gecode/kernel/brancher-merit.hpp>
+#include <gecode/kernel/brancher-view-sel.hpp>
 #include <gecode/kernel/brancher-view.hpp>
-#include <gecode/kernel/brancher-tiebreak.hpp>
-#include <gecode/kernel/brancher-val.hpp>
+#include <gecode/kernel/brancher-val-sel.hpp>
+#include <gecode/kernel/brancher-val-commit.hpp>
+#include <gecode/kernel/brancher-val-sel-commit.hpp>
+#include <gecode/kernel/brancher-view-val.hpp>
 
 
 /*

@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-07-14 02:51:41 +1000 (Thu, 14 Jul 2011) $ by $Author: tack $
- *     $Revision: 12193 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,7 +54,7 @@ namespace Gecode {
       throw Int::ArgumentSizeMismatch("Int::unary");
     for (int i=p.size(); i--; ) {
       Int::Limits::nonnegative(p[i],"Int::unary");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i],
+      Int::Limits::check(static_cast<long long int>(s[i].max()) + p[i],
                          "Int::unary");
     }
     if (home.failed()) return;
@@ -97,7 +97,7 @@ namespace Gecode {
         Int::Limits::nonnegative(fix[i],"Int::unary");
       else
         Int::Limits::check(fix[i],"Int::unary");
-      Int::Limits::check(static_cast<double>(flex[i].max()) + fix[i],
+      Int::Limits::check(static_cast<long long int>(flex[i].max()) + fix[i],
                          "Int::unary");
     }
     if (home.failed()) return;
@@ -127,7 +127,7 @@ namespace Gecode {
       throw Int::ArgumentSizeMismatch("Int::unary");
     for (int i=p.size(); i--; ) {
       Int::Limits::nonnegative(p[i],"Int::unary");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i],
+      Int::Limits::check(static_cast<long long int>(s[i].max()) + p[i],
                          "Int::unary");
     }
     bool allMandatory = true;
@@ -165,7 +165,7 @@ namespace Gecode {
         fixp = false;
         Int::Limits::check(fix[i],"Int::unary");
       }
-      Int::Limits::check(static_cast<double>(flex[i].max()) + fix[i],
+      Int::Limits::check(static_cast<long long int>(flex[i].max()) + fix[i],
                          "Int::unary");
     }
     if (home.failed()) return;

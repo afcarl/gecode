@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2011-08-09 02:04:53 +1000 (Tue, 09 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12253 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -223,7 +223,11 @@ namespace Gecode { namespace Int { namespace Arithmetic {
   template<class View>
   ExecStatus
   NaryMaxBnd<View>::propagate(Space& home, const ModEventDelta&) {
-    return prop_nary_max_bnd(home,*this,x,y,PC_INT_BND);
+    ExecStatus es = prop_nary_max_bnd(home,*this,x,y,PC_INT_BND);
+    GECODE_ES_CHECK(es);
+    if (x.size() == 1)
+      GECODE_REWRITE(*this,(Rel::EqBnd<View,View>::post(home(*this),x[0],y)));
+    return es;
   }
 
 

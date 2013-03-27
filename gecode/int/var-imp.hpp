@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2010-06-03 05:01:00 +1000 (Thu, 03 Jun 2010) $ by $Author: schulte $
- *     $Revision: 11008 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -246,7 +246,7 @@ namespace Gecode { namespace Int {
     /// Test whether \a n is contained in domain
     bool in(int n) const;
     /// Test whether \a n is contained in domain
-    bool in(double n) const;
+    bool in(long long int n) const;
     //@}
 
   protected:
@@ -278,22 +278,22 @@ namespace Gecode { namespace Int {
     /// Restrict domain values to be less or equal than \a n
     ModEvent lq(Space& home, int n);
     /// Restrict domain values to be less or equal than \a n
-    ModEvent lq(Space& home, double n);
+    ModEvent lq(Space& home, long long int n);
 
     /// Restrict domain values to be greater or equal than \a n
     ModEvent gq(Space& home, int n);
     /// Restrict domain values to be greater or equal than \a n
-    ModEvent gq(Space& home, double n);
+    ModEvent gq(Space& home, long long int n);
 
     /// Restrict domain values to be different from \a n
     ModEvent nq(Space& home, int n);
     /// Restrict domain values to be different from \a n
-    ModEvent nq(Space& home, double n);
+    ModEvent nq(Space& home, long long int n);
 
     /// Restrict domain values to be equal to \a n
     ModEvent eq(Space& home, int n);
     /// Restrict domain values to be equal to \a n
-    ModEvent eq(Space& home, double n);
+    ModEvent eq(Space& home, long long int n);
     //@}
 
     /**
@@ -563,7 +563,7 @@ namespace Gecode { namespace Int {
     /// Test whether \a n is contained in domain
     bool in(int n) const;
     /// Test whether \a n is contained in domain
-    bool in(double n) const;
+    bool in(long long int n) const;
     //@}
 
     /// \name Domain update by value
@@ -571,22 +571,22 @@ namespace Gecode { namespace Int {
     /// Restrict domain values to be less or equal than \a n
     ModEvent lq(Space& home, int n);
     /// Restrict domain values to be less or equal than \a n
-    ModEvent lq(Space& home, double n);
+    ModEvent lq(Space& home, long long int n);
 
     /// Restrict domain values to be greater or equal than \a n
     ModEvent gq(Space& home, int n);
     /// Restrict domain values to be greater or equal than \a n
-    ModEvent gq(Space& home, double n);
+    ModEvent gq(Space& home, long long int n);
 
     /// Restrict domain values to be different from \a n
     ModEvent nq(Space& home, int n);
     /// Restrict domain values to be different from \a n
-    ModEvent nq(Space& home, double n);
+    ModEvent nq(Space& home, long long int n);
 
     /// Restrict domain values to be equal to \a n
     ModEvent eq(Space& home, int n);
     /// Restrict domain values to be equal to \a n
-    ModEvent eq(Space& home, double n);
+    ModEvent eq(Space& home, long long int n);
     //@}
 
     /**

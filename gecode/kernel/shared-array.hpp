@@ -13,8 +13,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2011-01-27 23:03:05 +1100 (Thu, 27 Jan 2011) $ by $Author: schulte $
- *     $Revision: 11570 $
+ *     $Date: 2013-03-13 06:01:49 +0100 (Wed, 13 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13521 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -79,6 +79,15 @@ namespace Gecode {
 
       /// Return number of elements
       int size(void) const;
+      
+      /// Return beginning of array (for iterators)
+      T* begin(void);
+      /// Return beginning of array (for iterators)
+      const T* begin(void) const;
+      /// Return end of array (for iterators)
+      T* end(void);
+      /// Return end of array (for iterators)
+      const T* end(void) const;
     };
   public:
     /// \name Associated types
@@ -216,6 +225,29 @@ namespace Gecode {
     return n;
   }
 
+  template<class T>
+  forceinline T*
+  SharedArray<T>::SAO::begin(void) {
+    return a;
+  }
+
+  template<class T>
+  forceinline const T*
+  SharedArray<T>::SAO::begin(void) const {
+    return a;
+  }
+
+  template<class T>
+  forceinline T*
+  SharedArray<T>::SAO::end(void) {
+    return a+n;
+  }
+
+  template<class T>
+  forceinline const T*
+  SharedArray<T>::SAO::end(void) const {
+    return a+n;
+  }
 
 
   template<class T>
@@ -272,56 +304,56 @@ namespace Gecode {
   forceinline typename SharedArray<T>::iterator
   SharedArray<T>::begin(void) {
     assert(object() != NULL);
-    return &(*static_cast<SAO*>(object()))[0];
+    return static_cast<SAO*>(object())->begin();
   }
 
   template<class T>
   forceinline typename SharedArray<T>::const_iterator
   SharedArray<T>::begin(void) const {
     assert(object() != NULL);
-    return &(*static_cast<SAO*>(object()))[0];
+    return static_cast<SAO*>(object())->begin();
   }
 
   template<class T>
   forceinline typename SharedArray<T>::iterator
   SharedArray<T>::end(void) {
     assert(object() != NULL);
-    return &(*static_cast<SAO*>(object()))[0] + size();
+    return static_cast<SAO*>(object())->end();
   }
 
   template<class T>
   forceinline typename SharedArray<T>::const_iterator
   SharedArray<T>::end(void) const {
     assert(object() != NULL);
-    return &(*static_cast<SAO*>(object()))[0] + size();
+    return static_cast<SAO*>(object())->end();
   }
 
   template<class T>
   forceinline typename SharedArray<T>::reverse_iterator
   SharedArray<T>::rbegin(void) {
     assert(object() != NULL);
-    return reverse_iterator(&(*static_cast<SAO*>(object()))[0] + size());
+    return reverse_iterator(static_cast<SAO*>(object())->end());
   }
 
   template<class T>
   forceinline typename SharedArray<T>::const_reverse_iterator
   SharedArray<T>::rbegin(void) const {
     assert(object() != NULL);
-    return const_reverse_iterator(&(*static_cast<SAO*>(object()))[0] + size());
+    return const_reverse_iterator(static_cast<SAO*>(object())->end());
   }
 
   template<class T>
   forceinline typename SharedArray<T>::reverse_iterator
   SharedArray<T>::rend(void) {
     assert(object() != NULL);
-    return reverse_iterator(&(*static_cast<SAO*>(object()))[0]);
+    return reverse_iterator(static_cast<SAO*>(object())->begin());
   }
 
   template<class T>
   forceinline typename SharedArray<T>::const_reverse_iterator
   SharedArray<T>::rend(void) const {
     assert(object() != NULL);
-    return const_reverse_iterator(&(*static_cast<SAO*>(object()))[0]);
+    return const_reverse_iterator(static_cast<SAO*>(object())->begin());
   }
 
   template<class Char, class Traits, class T>

@@ -7,8 +7,8 @@
  *     Guido Tack, 2005
  *
  *  Last modified:
- *     $Date: 2011-02-22 20:26:48 +1100 (Tue, 22 Feb 2011) $ by $Author: tack $
- *     $Revision: 11761 $
+ *     $Date: 2012-10-19 05:58:26 +0200 (Fri, 19 Oct 2012) $ by $Author: tack $
+ *     $Revision: 13156 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -102,8 +102,8 @@ namespace Test { namespace Set {
       }
       /// Post reified constraint on \a x
       virtual void post(Space& home, SetVarArray& x, IntVarArray& y,
-                        BoolVar b) {
-        Gecode::min(home, x[0], y[0], b);
+                        Reify r) {
+        Gecode::min(home, x[0], y[0], r);
       }
     };
     Min _min("Int::Min");
@@ -144,8 +144,8 @@ namespace Test { namespace Set {
       }
       /// Post reified constraint on \a x
       virtual void post(Space& home, SetVarArray& x, IntVarArray& y,
-                        BoolVar b) {
-        Gecode::max(home, x[0], y[0], b);
+                        Reify r) {
+        Gecode::max(home, x[0], y[0], r);
       }
     };
     Max _max("Int::Max");
@@ -187,8 +187,9 @@ namespace Test { namespace Set {
         Gecode::rel(home, x[0], SRT_SUP, y[0]);
       }
       /// Post reified constraint on \a x for \a b
-      virtual void post(Space& home, SetVarArray& x, IntVarArray& y, BoolVar b) {
-        Gecode::rel(home, x[0], SRT_SUP, y[0], b);
+      virtual void post(Space& home, SetVarArray& x, IntVarArray& y,
+                        Reify r) {
+        Gecode::rel(home, x[0], SRT_SUP, y[0], r);
       }
     };
     Elem _elem("Int::Elem");
@@ -267,11 +268,11 @@ namespace Test { namespace Set {
       }
       /// Post reified constraint on \a x for \a b
       virtual void post(Space& home, SetVarArray& x, IntVarArray& y,
-                        BoolVar b) {
+                        Reify r) {
         if (!inverse)
-          Gecode::rel(home, x[0], srt, y[0], b);
+          Gecode::rel(home, x[0], srt, y[0], r);
         else
-          Gecode::rel(home, y[0], srt, x[0], b);
+          Gecode::rel(home, y[0], srt, x[0], r);
       }
     };
     Rel _rel_eq(Gecode::SRT_EQ,false);
@@ -412,120 +413,6 @@ namespace Test { namespace Set {
     const int w4v[] = {1,1,0,0,0,0,0};
     IntArgs w4(7,w4v);
     Weights _weights4("Int::Weights::4", el1, w4);
-
-    /// %Test for match constraint
-    class Match : public SetTest {
-    public:
-      /// Create and register test
-      Match(const char* t)
-        : SetTest(t,1,ds_33,false,3) {}
-      /// %Test whether \a x is solution
-      virtual bool solution(const SetAssignment& x) const {
-        if (x.ints()[0]>=x.ints()[1] ||
-            x.ints()[1]>=x.ints()[2])
-          return false;
-        CountableSetValues xr(x.lub, x[0]);
-        if (!xr())
-          return false;
-        if (xr.val() != x.ints()[0])
-          return false;
-        ++xr;
-        if (!xr())
-          return false;
-        if (xr.val() != x.ints()[1])
-          return false;
-        ++xr;
-        if (!xr())
-          return false;
-        if (xr.val() != x.ints()[2])
-          return false;
-        ++xr;
-        if (xr())
-          return false;
-        return true;
-      }
-      /// Post constraint on \a x
-      virtual void post(Space& home, SetVarArray& x, IntVarArray& y) {
-        Gecode::channelSorted(home, y, x[0]);
-      }
-    };
-    Match _match("Int::Match");
-
-    /// %Test for integer channel constraint
-    class ChannelInt : public SetTest {
-    private:
-      int ssize, isize;
-    public:
-      /// Create and register test
-      ChannelInt(const char* t, const IntSet& d, int _ssize, int _isize)
-        : SetTest(t,_ssize,d,false,_isize), ssize(_ssize), isize(_isize) {}
-      /// %Test whether \a x is solution
-      virtual bool solution(const SetAssignment& x) const {
-        for (int i=0; i<isize; i++) {
-          if (x.ints()[i] < 0 || x.ints()[i] >= ssize)
-            return false;
-          Iter::Ranges::Singleton single(i,i);
-          CountableSetRanges csr(x.lub, x[x.ints()[i]]);
-          if (!Iter::Ranges::subset(single, csr))
-            return false;
-        }
-        for (int i=0; i<ssize; i++) {
-          int size = 0;
-          for (CountableSetValues csv(x.lub, x[i]); csv(); ++csv) {
-            if (csv.val() < 0 || csv.val() >= isize) return false;
-            if (x.ints()[csv.val()] != i) return false;
-            size++;
-          }
-        }
-        return true;
-      }
-      /// Post constraint on \a x
-      virtual void post(Space& home, SetVarArray& x, IntVarArray& y) {
-        Gecode::channel(home, y, x);
-      }
-    };
-
-    ChannelInt _channelint1("Int::Channel::Int::1", d2, 2, 3);
-    ChannelInt _channelint2("Int::Channel::Int::2", d3, 3, 3);
-
-    /// %Test for Boolean channel constraint
-    class ChannelBool : public SetTest {
-    private:
-      int isize;
-    public:
-      /// Create and register test
-      ChannelBool(const char* t, const IntSet& d, int _isize)
-        : SetTest(t,1,d,false,_isize), isize(_isize) {}
-      /// %Test whether \a x is solution
-      virtual bool solution(const SetAssignment& x) const {
-        for (int i=0; i<isize; i++) {
-          if (x.ints()[i] < 0 || x.ints()[i] > 1)
-            return false;
-        }
-        int cur = 0;
-        for (CountableSetValues csv(x.lub, x[0]); csv(); ++csv) {
-          if (csv.val() < 0 || csv.val() >= isize) return false;
-          if (x.ints()[csv.val()] != 1) return false;
-          for (; cur<csv.val(); cur++)
-            if (x.ints()[cur] != 0) return false;
-          cur = csv.val() + 1;
-        }
-        for (; cur<isize; cur++)
-          if (x.ints()[cur] != 0) return false;
-        return true;
-      }
-      /// Post constraint on \a x
-      virtual void post(Space& home, SetVarArray& x, IntVarArray& y) {
-        BoolVarArgs b(y.size());
-        for (int i=y.size(); i--;)
-          b[i] = channel(home, y[i]);
-        Gecode::channel(home, b, x[0]);
-      }
-    };
-
-    ChannelBool _channelbool1("Int::Channel::Bool::1", d2, 3);
-    ChannelBool _channelbool2("Int::Channel::Bool::2", d3, 3);
-    ChannelBool _channelbool3("Int::Channel::Bool::3", d4, 5);
 
 }}}
 

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2009-10-14 00:19:20 +1100 (Wed, 14 Oct 2009) $ by $Author: schulte $
- *     $Revision: 9887 $
+ *     $Date: 2012-09-27 08:00:33 +0200 (Thu, 27 Sep 2012) $ by $Author: tack $
+ *     $Revision: 13118 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -42,7 +42,12 @@ namespace Gecode { namespace Support {
   /*
    * Threads
    */
-  Mutex Thread::m;
+  
+  Mutex* Thread::m(void) {
+    static Mutex* m = new Mutex;
+    return m;
+  }
+  
   Thread::Run* Thread::idle = NULL;
 
   void
@@ -59,9 +64,9 @@ namespace Gecode { namespace Support {
         delete e;
       }
       // Put into idle stack
-      Thread::m.acquire();
+      Thread::m()->acquire();
       n=Thread::idle; Thread::idle=this;
-      Thread::m.release();
+      Thread::m()->release();
       // Wait for next runnable
       e.wait();
     }

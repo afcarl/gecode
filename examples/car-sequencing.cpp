@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2009
  *
  *  Last modified:
- *     $Date: 2011-09-19 22:02:26 +1000 (Mon, 19 Sep 2011) $ by $Author: schulte $
- *     $Revision: 12400 $
+ *     $Date: 2013-03-12 21:05:23 +0100 (Tue, 12 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13515 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -211,11 +211,6 @@ namespace {
  */
 class CarSequencing : public Script {
 public:
-  /// Search variants
-  enum {
-    SEARCH_BAB,    ///< Use branch and bound to optimize
-    SEARCH_RESTART ///< Use restart to optimize
-  };
   /// Branching variants
   enum {
     BRANCH_INORDER,  ///< Branch from left to right
@@ -282,7 +277,7 @@ public:
     for (int i = noptions; i--; ) n[i] = 0;
     // Read data
     for (int c = 0; c < nclasses; ++c) {
-      *probit++;
+      probit++;
       ncc[c] = *probit++;
       for (int o = 0; o < noptions; ++o) {
         if (*probit++) {
@@ -351,7 +346,7 @@ public:
     // Branching
     switch (opt.branching()) {
     case BRANCH_INORDER:
-      branch(*this, s, INT_VAR_NONE, INT_VAL_MIN);
+      branch(*this, s, INT_VAR_NONE(), INT_VAL_MIN());
       break;
     case BRANCH_MIDDLE: {
       IntVarArgs m(s.size());
@@ -365,7 +360,7 @@ public:
           m[pos++] = s[mid+i];
       }
       assert(pos == m.size());
-      branch(*this, m, INT_VAR_NONE, INT_VAL_MIN);
+      branch(*this, m, INT_VAR_NONE(), INT_VAL_MIN());
       break;
     }
     }
@@ -431,9 +426,6 @@ main(int argc, char* argv[]) {
   CarOptions opt("CarSequencing");
   opt.solutions(0);
   opt.size(0);
-  opt.search(CarSequencing::SEARCH_BAB);
-  opt.search(CarSequencing::SEARCH_BAB, "bab");
-  opt.search(CarSequencing::SEARCH_RESTART, "restart");
   opt.branching(CarSequencing::BRANCH_INORDER);
   opt.branching(CarSequencing::BRANCH_INORDER,  "inorder");
   opt.branching(CarSequencing::BRANCH_MIDDLE, "middle");
@@ -447,12 +439,7 @@ main(int argc, char* argv[]) {
     return 1;
   }
 
-  switch (opt.search()) {
-  case CarSequencing::SEARCH_BAB:
-    Script::run<CarSequencing,BAB,CarOptions>(opt); break;
-  case CarSequencing::SEARCH_RESTART:
-    Script::run<CarSequencing,Restart,CarOptions>(opt); break;
-  }
+  Script::run<CarSequencing,BAB,CarOptions>(opt);
   return 0;
 }
 

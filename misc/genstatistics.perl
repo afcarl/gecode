@@ -7,8 +7,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2011-10-07 20:31:48 +1100 (Fri, 07 Oct 2011) $ by $Author: schulte $
-#     $Revision: 12428 $
+#     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+#     $Revision: 13347 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -35,6 +35,47 @@
 #
 #
 
+@modorder = ("kernel","search","int","set","float","minimodel","gist","driver",
+	     "iter","support","example","test","flatzinc");
+
+@catorder = ("core","memory","var","prop","branch","post",
+	     "int","set","float","minimodel","stress","any",
+	     "sequential","parallel","search",
+	     "other");
+
+$modclear{"kernel"} = "Kernel";
+$modclear{"search"} = "Search engines";
+$modclear{"gist"} = "Gist";
+$modclear{"int"} = "Integer and Boolean variables and constraints";
+$modclear{"set"} = "Set variables and constraints";
+$modclear{"float"} = "Float variables and constraints";
+$modclear{"minimodel"} = "Minimal modeling support";
+$modclear{"driver"} = "Script commandline driver";
+$modclear{"iter"} = "Range and value iterators";
+$modclear{"support"} = "Support algorithms and datastructures";
+$modclear{"example"} = "\%Example scripts";
+$modclear{"test"} = "Systematic tests";
+$modclear{"flatzinc"} = "FlatZinc interpreter";
+
+
+$catclear{"core"} = "Core functionality";
+$catclear{"memory"} = "Memory management";
+$catclear{"var"} = "Variables, views, and variable implementations";
+$catclear{"prop"} = "Propagators";
+$catclear{"branch"} = "Branchers";
+$catclear{"sequential"} = "Sequential search engines";
+$catclear{"parallel"} = "Parallel search engines";
+$catclear{"post"} = "Posting propagators for constraints";
+$catclear{"any"} = "All";
+$catclear{"other"} = "Miscellaneous";
+$catclear{"int"} = "Integer and Boolean variables and constraints";
+$catclear{"set"} = "Set variables and constraints";
+$catclear{"float"} = "Float variables and constraints";
+$catclear{"minimodel"} = "Minimal modeling support";
+$catclear{"stress"} = "System stress";
+$catclear{"search"} = "Search";
+$catclear{"ignore"} = "ignored";
+
 #
 # Get statistics for all files
 #
@@ -53,6 +94,8 @@ while ($file = @ARGV[$i++]) {
     if ($l =~ /\/\/ STATISTICS: ([A-Za-z]+)-([A-Za-z]+)/) {
       $module = $1;
       $cat    = $2;
+      exists $modclear{$module} or die "Module $m undefined (file $file)";
+      exists $catclear{$cat} or die "Category $cat undefined (file $file)";
     }
     if ($l =~ /^[ \t]*$/) {
       $n_blank += 1;
@@ -83,41 +126,7 @@ while ($file = @ARGV[$i++]) {
   close FILE;
 }
 
-@modorder = ("kernel","search","int","set","minimodel","driver",
-	     "iter","support","example","test","flatzinc");
-
-@catorder = ("core","var","prop","branch","post",
-	     "int","set","minimodel","stress","any",
-	     "sequential","parallel",
-	     "other");
 $i = 0;
-
-$modclear{"kernel"} = "Kernel";
-$modclear{"search"} = "Search engines";
-$modclear{"int"} = "Finite domain integers";
-$modclear{"set"} = "Finite integer sets";
-$modclear{"minimodel"} = "Minimal modeling support";
-$modclear{"driver"} = "Script commandline driver";
-$modclear{"iter"} = "Range and value iterators";
-$modclear{"support"} = "Support algorithms and datastructures";
-$modclear{"example"} = "\%Example scripts";
-$modclear{"test"} = "Systematic tests";
-$modclear{"flatzinc"} = "FlatZinc interpreter";
-
-
-$catclear{"core"} = "Core functionality";
-$catclear{"var"} = "Variables, views, and variable implementations";
-$catclear{"prop"} = "Propagators";
-$catclear{"branch"} = "Branchers";
-$catclear{"sequential"} = "Sequential search engines";
-$catclear{"parallel"} = "Parallel search engines";
-$catclear{"post"} = "Posting propagators for constraints";
-$catclear{"any"} = "All";
-$catclear{"other"} = "Miscellaneous";
-$catclear{"int"} = "Finite domain integers";
-$catclear{"set"} = "Finite integer sets";
-$catclear{"minimodel"} = "Minimal modeling support";
-$catclear{"stress"} = "System stress";
 
 print <<EOF
 /**

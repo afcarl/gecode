@@ -6,9 +6,9 @@ dnl Copyright:
 dnl   Guido Tack, 2004, 2005
 dnl
 dnl Last modified:
-dnl   $Date: 2012-03-22 12:42:32 +1100 (Thu, 22 Mar 2012) $
-dnl   by $Author: tack $
-dnl   $Revision: 12614 $
+dnl   $Date: 2013-03-11 15:32:50 +0100 (Mon, 11 Mar 2013) $
+dnl   by $Author: schulte $
+dnl   $Revision: 13494 $
 dnl
 dnl This file is part of Gecode, the generic constraint
 dnl development environment:
@@ -35,15 +35,15 @@ dnl WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 dnl
 dnl
 
-AC_REVISION([$Id: configure.ac.in 12614 2012-03-22 01:42:32Z tack $])
+AC_REVISION([$Id: configure.ac.in 13494 2013-03-11 14:32:50Z schulte $])
 AC_PREREQ(2.53)
-AC_INIT(GECODE, 3.7.3, users@gecode.org)
+AC_INIT(GECODE, 4.0.0, users@gecode.org)
 AC_CONFIG_HEADERS([gecode/support/config.hpp])
 AC_CONFIG_SRCDIR(gecode/kernel.hh)
 
-ac_gecode_soversion=32
+ac_gecode_soversion=33
 AC_SUBST(GECODE_SOVERSION, ${ac_gecode_soversion})
-ac_gecode_flatzincversion=1.5
+ac_gecode_flatzincversion=1.6
 AC_SUBST(GECODE_FLATZINC_VERSION, ${ac_gecode_flatzincversion})
 
 # checks for programs
@@ -147,9 +147,6 @@ AC_GECODE_GCOV
 dnl check platform specific behaviour of arithmetic
 AC_GECODE_CHECK_ARITH
 
-dnl check whether we compile with boost support
-AC_GECODE_BOOST
-
 dnl checking for thread support
 AC_GECODE_THREADS
 
@@ -167,8 +164,15 @@ gnu)
   if test "${enable_debug:-no}" = "no" -a "${enable_gcov:-no}" = "no"; then
     dnl compiler flags for an optimized build
     AC_GECODE_GCC_OPTIMIZED_SWITCHES
-
-    AC_GECODE_CHECK_COMPILERFLAG([-ffast-math])
+    dnl compiler flags for optimize float computings
+    dnl AC_GECODE_CHECK_COMPILERFLAG([-ffast-math])
+    dnl ffast-math implies:-fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fcx-limited-range
+    dnl but -funsafe-math-optimizations break IEEE float comptability, so we have to avoid it
+    AC_GECODE_CHECK_COMPILERFLAG([-fno-math-errno])
+    AC_GECODE_CHECK_COMPILERFLAG([-ffinite-math-only])
+    AC_GECODE_CHECK_COMPILERFLAG([-fno-rounding-math])
+    AC_GECODE_CHECK_COMPILERFLAG([-fno-signaling-nans])
+    AC_GECODE_CHECK_COMPILERFLAG([-fcx-limited-range])
     AC_GECODE_CHECK_COMPILERFLAG([-mthreads])
   else
     if test "${enable_debug:-no}" = "yes"; then
@@ -226,17 +230,17 @@ dnl @VTIS@
 
 AC_GECODE_VIS
 
-dnl AC_GECODE_VTI(float,
-dnl        [float variable library (requires boost interval library)],
-dnl        no,
-dnl				[\$(top_srcdir)/contribs/float/var-imp/float.vis]],
-dnl				[
-dnl	ac_gecode_save_CPPFLAGS="${CPPFLAGS}"
-dnl   	CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ } ${BOOST_CPPFLAGS}"
-dnl	AC_CHECK_HEADER([boost/numeric/interval.hpp],[],[
-dnl	AC_MSG_ERROR([The boost interval library could not be found.])])
-dnl	CPPFLAGS="${ac_gecode_save_CPPFLAGS}"
-dnl        ],[])
+AC_GECODE_VTI(float,
+	[float variable library (implies --enable-int-vars)],
+	yes,
+	[\$(top_srcdir)/gecode/float/var-imp/float.vis],
+	[enable_int_vars="yes";
+	 AC_SUBST(LINKFLOAT,[${LINKLIBDIR}${LINKPREFIX}${FLOAT}${DLL_ARCH}${LINKSUFFIX}])
+	],
+	[
+	 AC_SUBST(LINKFLOAT,[]) 
+	]
+      )
 
 AC_GECODE_VTI(set,
 	[finite set library (implies --enable-int-vars)],
@@ -262,6 +266,7 @@ AC_GECODE_VTI(int, finite domain library, yes,
 dnl End of definition of variable types
 dnl ------------------------------------------------------------------
 
+AC_GECODE_MPFR
 AC_GECODE_QT
 AC_GECODE_GIST
 AC_GECODE_FLEXBISON

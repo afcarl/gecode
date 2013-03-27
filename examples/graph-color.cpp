@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13313 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -349,20 +349,20 @@ public:
       if (opt.model() == MODEL_CLIQUE)
         rel(*this, m, IRT_GQ, n-1);
     }
-    branch(*this, m, INT_VAL_MIN);
+    branch(*this, m, INT_VAL_MIN());
     switch (opt.branching()) {
     case BRANCH_SIZE:
-      branch(*this, v, INT_VAR_SIZE_MIN, INT_VAL_MIN);
+      branch(*this, v, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
       break;
     case BRANCH_DEGREE:
-      branch(*this, v, tiebreak(INT_VAR_DEGREE_MAX,INT_VAR_SIZE_MIN),
-             INT_VAL_MIN);
+      branch(*this, v, tiebreak(INT_VAR_DEGREE_MAX(),INT_VAR_SIZE_MIN()),
+             INT_VAL_MIN());
       break;
     case BRANCH_SIZE_DEGREE:
-      branch(*this, v, INT_VAR_SIZE_DEGREE_MIN, INT_VAL_MIN);
+      branch(*this, v, INT_VAR_DEGREE_SIZE_MAX(), INT_VAL_MIN());
       break;
     case BRANCH_SIZE_AFC:
-      branch(*this, v, INT_VAR_SIZE_AFC_MIN, INT_VAL_MIN);
+      branch(*this, v, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
       break;
     default:
       break;

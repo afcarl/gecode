@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2009-10-13 02:36:53 +1100 (Tue, 13 Oct 2009) $ by $Author: schulte $
- *     $Revision: 9878 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

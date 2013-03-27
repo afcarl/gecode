@@ -7,8 +7,8 @@
  *     Christian Schulte, 2010
  *
  *  Last modified:
- *     $Date: 2010-07-29 01:58:23 +1000 (Thu, 29 Jul 2010) $ by $Author: tack $
- *     $Revision: 11296 $
+ *     $Date: 2012-09-07 17:42:21 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13069 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -79,7 +79,7 @@ namespace Gecode { namespace Iter { namespace Values {
     ValueListIter(Region& r);
     /// Initialize
     void init(Region& r);
-    /// Assignment operator
+    /// Assignment operator (both iterators must be allocated from the same region)
     ValueListIter& operator =(const ValueListIter& i);
     //@}
 

@@ -9,8 +9,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2013-02-25 21:43:24 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13406 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -43,6 +43,9 @@
 
 #if defined(GECODE_HAS_QT) && defined(GECODE_HAS_GIST)
 #include <QtGui>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#endif
 #endif
 
 using namespace Gecode;
@@ -141,9 +144,9 @@ public:
     return new (home) Warnsdorff(home, share, *this);
   }
   /// Post brancher
-  static void post(Home home, const IntVarArgs& x) {
+  static BrancherHandle post(Home home, const IntVarArgs& x) {
     ViewArray<Int::IntView> xv(home, x);
-    (void) new (home) Warnsdorff(home, xv);
+    return *new (home) Warnsdorff(home, xv);
   }
   /// Delete brancher and return its size
   virtual size_t dispose(Space&) {
@@ -199,7 +202,7 @@ public:
     : n(opt.size()), succ(*this,n*n,0,n*n-1) {
     switch (opt.branching()) {
     case BRANCH_NAIVE:
-      branch(*this, succ, INT_VAR_NONE, INT_VAL_MIN);
+      branch(*this, succ, INT_VAR_NONE(), INT_VAL_MIN());
       break;
     case BRANCH_WARNSDORFF:
       Warnsdorff::post(*this, succ);
@@ -408,7 +411,7 @@ main(int argc, char* argv[]) {
   opt.propagation(Knights::PROP_REIFIED, "reified");
   opt.propagation(Knights::PROP_CIRCUIT, "circuit");
   opt.branching(Knights::BRANCH_NAIVE);
-  opt.branching(Knights::BRANCH_NAIVE, "reified");
+  opt.branching(Knights::BRANCH_NAIVE, "naive");
   opt.branching(Knights::BRANCH_WARNSDORFF, "warnsdorff");
 
 #if defined(GECODE_HAS_QT) && defined(GECODE_HAS_GIST)

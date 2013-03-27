@@ -9,8 +9,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2011-08-18 20:26:27 +1000 (Thu, 18 Aug 2011) $ by $Author: tack $
- *     $Revision: 12314 $
+ *     $Date: 2012-10-19 05:58:26 +0200 (Fri, 19 Oct 2012) $ by $Author: tack $
+ *     $Revision: 13156 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,8 +41,6 @@
 
 #include <gecode/set/int.hh>
 #include <gecode/set/rel.hh>
-
-using namespace Gecode::Int;
 
 namespace Gecode {
 
@@ -101,7 +99,7 @@ namespace Gecode {
       }
       break;
     default:
-      throw UnknownRelation("Set::rel");
+      throw Int::UnknownRelation("Set::rel");
     }
 
   }
@@ -130,10 +128,23 @@ namespace Gecode {
     GECODE_ES_FAIL(Set::Int::NotMinElement<Set::SetView>::post(home,s,x));
   }
   void
-  min(Home home, SetVar s, IntVar x, BoolVar b){
+  min(Home home, SetVar s, IntVar x, Reify r){
     if (home.failed()) return;
-    GECODE_ES_FAIL(
-                   Set::Int::ReMinElement<Set::SetView>::post(home,s,x,b));
+    switch (r.mode()) {
+    case RM_EQV:
+      GECODE_ES_FAIL((Set::Int::ReMinElement<Set::SetView,RM_EQV>
+                     ::post(home,s,x,r.var())));
+      break;
+    case RM_IMP:
+      GECODE_ES_FAIL((Set::Int::ReMinElement<Set::SetView,RM_IMP>
+                     ::post(home,s,x,r.var())));
+      break;
+    case RM_PMI:
+      GECODE_ES_FAIL((Set::Int::ReMinElement<Set::SetView,RM_PMI>
+                     ::post(home,s,x,r.var())));
+      break;
+    default: throw Gecode::Int::UnknownReifyMode("Set::min");
+    }
   }
   void
   max(Home home, SetVar s, IntVar x){
@@ -146,37 +157,23 @@ namespace Gecode {
     GECODE_ES_FAIL(Set::Int::NotMaxElement<Set::SetView>::post(home,s,x));
   }
   void
-  max(Home home, SetVar s, IntVar x, BoolVar b){
+  max(Home home, SetVar s, IntVar x, Reify r){
     if (home.failed()) return;
-    GECODE_ES_FAIL(
-                   Set::Int::ReMaxElement<Set::SetView>::post(home,s,x,b));
-  }
-
-  void
-  channelSorted(Home home, const IntVarArgs& x, SetVar y) {
-    if (home.failed()) return;
-    ViewArray<IntView> xa(home,x);
-    GECODE_ES_FAIL(Set::Int::Match<Set::SetView>::post(home,y,xa));
-  }
-
-  void
-  channel(Home home, const IntVarArgs& x, const SetVarArgs& y) {
-    if (home.failed()) return;
-    ViewArray<Int::CachedView<Int::IntView> > xa(home,x.size());
-    for (int i=x.size(); i--;)
-      new (&xa[i]) Int::CachedView<Int::IntView>(x[i]);
-    ViewArray<Set::CachedView<Set::SetView> > ya(home,y.size());
-    for (int i=y.size(); i--;)
-      new (&ya[i]) Set::CachedView<Set::SetView>(y[i]);
-    GECODE_ES_FAIL((Set::Int::ChannelInt<Set::SetView>::post(home,xa,ya)));
-  }
-
-  void
-  channel(Home home, const BoolVarArgs& x, SetVar y) {
-    if (home.failed()) return;
-    ViewArray<Int::BoolView> xv(home,x);
-    GECODE_ES_FAIL((Set::Int::ChannelBool<Set::SetView>
-                         ::post(home,xv,y)));
+    switch (r.mode()) {
+    case RM_EQV:
+      GECODE_ES_FAIL((Set::Int::ReMaxElement<Set::SetView,RM_EQV>
+                     ::post(home,s,x,r.var())));
+      break;
+    case RM_IMP:
+      GECODE_ES_FAIL((Set::Int::ReMaxElement<Set::SetView,RM_IMP>
+                     ::post(home,s,x,r.var())));
+      break;
+    case RM_PMI:
+      GECODE_ES_FAIL((Set::Int::ReMaxElement<Set::SetView,RM_PMI>
+                     ::post(home,s,x,r.var())));
+      break;
+    default: throw Gecode::Int::UnknownReifyMode("Set::max");
+    }
   }
 
   void weights(Home home, IntSharedArray elements, IntSharedArray weights,

@@ -9,8 +9,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2009-10-13 02:36:53 +1100 (Tue, 13 Oct 2009) $ by $Author: schulte $
- *     $Revision: 9878 $
+ *     $Date: 2011-11-14 19:23:54 +0100 (Mon, 14 Nov 2011) $ by $Author: schulte $
+ *     $Revision: 12464 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,7 +56,7 @@ namespace Gecode { namespace Int { namespace Dom {
    * Requires \code #include <gecode/int/dom.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View>
+  template<class View, ReifyMode rm>
   class ReRange : public ReUnaryPropagator<View,PC_INT_BND,BoolView> {
   protected:
     using ReUnaryPropagator<View,PC_INT_BND,BoolView>::x0;
@@ -84,7 +84,7 @@ namespace Gecode { namespace Int { namespace Dom {
    * Requires \code #include <gecode/int/dom.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View>
+  template<class View, ReifyMode rm>
   class ReIntSet : public ReUnaryPropagator<View,PC_INT_DOM,BoolView> {
   protected:
     using ReUnaryPropagator<View,PC_INT_DOM,BoolView>::x0;
@@ -110,7 +110,7 @@ namespace Gecode { namespace Int { namespace Dom {
 }}}
 
 #include <gecode/int/dom/range.hpp>
-#include <gecode/int/dom/spec.hpp>
+#include <gecode/int/dom/set.hpp>
 
 #endif
 

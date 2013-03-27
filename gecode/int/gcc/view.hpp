@@ -12,7 +12,7 @@
  *     Christian Schulte, 2009
  *     Guido Tack, 2009
  *
- *  Last modified: $Date: 2010-06-29 18:39:13 +1000 (Tue, 29 Jun 2010) $ by $Author: schulte $
+ *  Last modified: $Date: 2010-06-29 10:39:13 +0200 (Tue, 29 Jun 2010) $ by $Author: schulte $
  *  $Revision: 11118 $
  *
  *  This file is part of Gecode, the generic constrain

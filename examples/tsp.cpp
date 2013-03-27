@@ -10,8 +10,8 @@
  *     Geoffrey Chu
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -266,10 +266,10 @@ public:
     }
 
     // First enumerate cost values, prefer those that maximize cost reduction
-    branch(*this, costs, INT_VAR_REGRET_MAX_MAX, INT_VAL_SPLIT_MIN);
+    branch(*this, costs, INT_VAR_REGRET_MAX_MAX(), INT_VAL_SPLIT_MIN());
 
     // Then fix the remaining successors
-    branch(*this, succ,  INT_VAR_MIN_MIN, INT_VAL_MIN);
+    branch(*this, succ,  INT_VAR_MIN_MIN(), INT_VAL_MIN());
   }
   /// Return solution cost
   virtual IntVar cost(void) const {

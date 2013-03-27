@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2009-05-09 04:33:02 +1000 (Sat, 09 May 2009) $ by $Author: schulte $
- *     $Revision: 9047 $
+ *     $Date: 2013-03-07 22:14:40 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13467 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -43,9 +43,16 @@ namespace Gecode { namespace Search {
    */
   forceinline
   Stop::Stop(void) {}
-
   forceinline
   Stop::~Stop(void) {}
+  forceinline void*
+  Stop::operator new(size_t s) {
+    return heap.ralloc(s);
+  }
+  forceinline void
+  Stop::operator delete(void* p) {
+    heap.rfree(p);
+  }
 
 
 
@@ -130,6 +137,44 @@ namespace Gecode { namespace Search {
   forceinline void
   TimeStop::reset(void) {
     t.start();
+  }
+
+
+  /*
+   * Stopping for meta search engines
+   *
+   */
+
+  forceinline
+  MetaStop::MetaStop(Stop* s) 
+    : e_stop(new FailStop(0)), m_stop(s), e_stopped(false) {}
+
+  forceinline void
+  MetaStop::limit(const Search::Statistics& s, unsigned long int l) {
+    m_stat += s;
+    e_stopped = false;
+    e_stop->limit(l);
+  }
+
+  forceinline Stop*
+  MetaStop::enginestop(void) const { 
+    return e_stop; 
+  }
+
+  forceinline bool
+  MetaStop::enginestopped(void) const { 
+    return e_stopped; 
+  }
+
+  forceinline Statistics 
+  MetaStop::metastatistics(void) const { 
+    return m_stat; 
+  }
+
+  forceinline
+  MetaStop::~MetaStop(void) {
+    delete e_stop;
+    delete m_stop;
   }
 
 }}

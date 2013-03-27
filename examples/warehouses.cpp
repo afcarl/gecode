@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -135,10 +135,10 @@ public:
     c_total = expr(*this, c_fixed*sum(open) + sum(c_store));
 
     // Branch with largest minimum regret on store cost
-    branch(*this, c_store, INT_VAR_REGRET_MIN_MAX, INT_VAL_MIN);
+    branch(*this, c_store, INT_VAR_REGRET_MIN_MAX(), INT_VAL_MIN());
 
     // Branch by assigning a supplier to each store
-    branch(*this, supplier, INT_VAR_NONE, INT_VAL_MIN);
+    branch(*this, supplier, INT_VAR_NONE(), INT_VAL_MIN());
   }
   /// Return solution cost
   virtual IntVar cost(void) const {

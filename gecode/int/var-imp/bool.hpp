@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2010-07-29 01:35:33 +1000 (Thu, 29 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11294 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -122,7 +122,7 @@ namespace Gecode { namespace Int {
     return (n >= min()) && (n <= max());
   }
   forceinline bool
-  BoolVarImp::in(double n) const {
+  BoolVarImp::in(long long int n) const {
     return (n >= min()) && (n <= max());
   }
 
@@ -204,12 +204,11 @@ namespace Gecode { namespace Int {
     return one(home);
   }
   forceinline ModEvent
-  BoolVarImp::gq(Space& home, double n) {
+  BoolVarImp::gq(Space& home, long long int n) {
     if (n <= 0) return ME_INT_NONE;
     if (n > 1)  return ME_INT_FAILED;
     return one(home);
   }
-
 
   forceinline ModEvent
   BoolVarImp::lq(Space& home, int n) {
@@ -218,12 +217,11 @@ namespace Gecode { namespace Int {
     return zero(home);
   }
   forceinline ModEvent
-  BoolVarImp::lq(Space& home, double n) {
+  BoolVarImp::lq(Space& home, long long int n) {
     if (n < 0)  return ME_INT_FAILED;
     if (n >= 1) return ME_INT_NONE;
     return zero(home);
   }
-
 
   forceinline ModEvent
   BoolVarImp::eq(Space& home, int n) {
@@ -231,11 +229,10 @@ namespace Gecode { namespace Int {
     return (n == 0) ? zero(home): one(home);
   }
   forceinline ModEvent
-  BoolVarImp::eq(Space& home, double n) {
+  BoolVarImp::eq(Space& home, long long int n) {
     if ((n < 0) || (n > 1)) return ME_INT_FAILED;
     return (n == 0) ? zero(home): one(home);
   }
-
 
   forceinline ModEvent
   BoolVarImp::nq(Space& home, int n) {
@@ -243,7 +240,7 @@ namespace Gecode { namespace Int {
     return (n == 0) ? one(home): zero(home);
   }
   forceinline ModEvent
-  BoolVarImp::nq(Space& home, double n) {
+  BoolVarImp::nq(Space& home, long long int n) {
     if ((n < 0) || (n > 1)) return ME_INT_NONE;
     return (n == 0) ? one(home): zero(home);
   }

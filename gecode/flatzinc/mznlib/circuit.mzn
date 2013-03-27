@@ -6,8 +6,8 @@
 %     Guido Tack, 2007
 %
 %  Last modified:
-%     $Date: 2012-03-21 16:25:08 +1100 (Wed, 21 Mar 2012) $ by $Author: tack $
-%     $Revision: 12605 $
+%     $Date: 2012-10-22 00:04:10 +0200 (Mon, 22 Oct 2012) $ by $Author: tack $
+%     $Revision: 13159 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -34,7 +34,11 @@
 %
 %
 
-predicate gecode_circuit(array[int] of var int: x);
+predicate gecode_circuit(int: offset, array[int] of var int: x);
 
 predicate circuit(array[int] of var int: x) =
-  gecode_circuit([x[i]-min(index_set(x)) | i in index_set(x)]);
+  if min(index_set(x)) >= 0 then
+    gecode_circuit(min(index_set(x)),x)
+  else
+    gecode_circuit(0,[x[i]-min(index_set(x)) | i in index_set(x)])
+  endif;

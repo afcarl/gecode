@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2013-03-11 06:26:07 +0100 (Mon, 11 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13487 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -45,16 +45,10 @@ namespace Gecode { namespace Int {
     return (x == -Int::Limits::infinity) ? x : x+y;
   }
 
-  forceinline double 
-  plus(double x, double y) {
-    assert(y != -Int::Limits::double_infinity);
-    return (x == -Int::Limits::double_infinity) ? x : x+y;
-  }
-
-  forceinline double 
-  div(double x, double y) {
-    assert(y != -Int::Limits::double_infinity);
-    return (x == -Int::Limits::double_infinity) ? x : x / y;
+  forceinline long long int 
+  plus(long long int x, long long int y) {
+    assert(y != -Int::Limits::llinfinity);
+    return (x == -Int::Limits::llinfinity) ? x : x+y;
   }
 
   template<class TaskView, class Node>

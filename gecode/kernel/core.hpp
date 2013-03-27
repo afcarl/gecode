@@ -18,8 +18,8 @@
  *     Alexander Samoilov <alexander_samoilov@yahoo.com>
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:18:28 +1100 (Wed, 22 Feb 2012) $ by $Author: tack $
- *     $Revision: 12538 $
+ *     $Date: 2013-03-05 15:37:20 +0100 (Tue, 05 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13437 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -119,7 +119,7 @@ namespace Gecode {
     SharedHandle(SharedHandle::Object* so);
     /// Copy constructor maintaining reference count
     SharedHandle(const SharedHandle& sh);
-    /// Assignment operator mainitaining reference count
+    /// Assignment operator maintaining reference count
     SharedHandle& operator =(const SharedHandle& sh);
     /// Updating during cloning
     void update(Space& home, bool share, SharedHandle& sh);
@@ -218,6 +218,9 @@ namespace Gecode {
   class Propagator;
   class LocalObject;
   class Advisor;
+  class AFC;
+  class Brancher;
+  class BrancherHandle;
   template<class A> class Council;
   template<class A> class Advisors;
   template<class VIC> class VarImp;
@@ -443,7 +446,7 @@ namespace Gecode {
      * Note that the accumulated failure count of a variable implementation
      * is not available during cloning.
      */
-    double afc(void) const;
+    double afc(const Space& home) const;
     //@}
 
     /// \name Cloning variables
@@ -672,6 +675,8 @@ namespace Gecode {
     static Actor* cast(ActorLink* al);
     /// Static cast for a non-null pointer (to give a hint to optimizer)
     static const Actor* cast(const ActorLink* al);
+    /// Static member to test against during space cloning
+    GECODE_KERNEL_EXPORT static Actor* sentinel;
   public:
     /// Create copy
     virtual Actor* copy(Space& home, bool share) = 0;
@@ -721,6 +726,8 @@ namespace Gecode {
     //@{
     /// Initialize the home with space \a s and propagator \a p
     Home(Space& s, Propagator* p=NULL);
+    /// Assignment operator
+    Home& operator =(const Home& h);
     /// Retrieve the space of the home
     operator Space&(void);
     //@}
@@ -761,8 +768,8 @@ namespace Gecode {
       /// A list of advisors (used during cloning)
       Gecode::ActorLink* advisors;
     } u;
-    /// A reference to global propagator information
-    PropInfo& pi;
+    /// A reference to a counter for afc
+    GlobalAFC::Counter& gafc;
     /// Static cast for a non-null pointer (to give a hint to optimizer)
     static Propagator* cast(ActorLink* al);
     /// Static cast for a non-null pointer (to give a hint to optimizer)
@@ -851,7 +858,7 @@ namespace Gecode {
     /// \name Information
     //@{
     /// Return the accumlated failure count
-    double afc(void) const;
+    double afc(const Space& home) const;
     //@}
   };
 
@@ -956,7 +963,6 @@ namespace Gecode {
   };
 
 
-  class Brancher;
   /**
    * \brief %Choice for performing commit
    *
@@ -1050,6 +1056,33 @@ namespace Gecode {
     /// Return unsigned brancher id
     unsigned int id(void) const;
     //@}
+  };
+
+  /**
+   * \brief Handle for brancher
+   *
+   * Supports few operations on a brancher, in particular to kill
+   * a brancher.
+   *
+   * \ingroup TaskActor
+   */
+  class BrancherHandle {
+  private:
+    /// Id of the brancher
+    unsigned int _id;
+  public:
+    /// Create handle as unitialized
+    BrancherHandle(void);
+    /// Create handle for brancher \a b
+    BrancherHandle(const Brancher& b);
+    /// Update during cloning
+    void update(Space& home, bool share, BrancherHandle& bh);
+    /// Return brancher id
+    unsigned int id(void) const;
+    /// Check whether brancher is still active
+    bool operator ()(const Space& home) const;
+    /// Kill the brancher
+    void kill(Space& home);
   };
 
   /**
@@ -1174,6 +1207,7 @@ namespace Gecode {
     CommitStatistics& operator +=(const CommitStatistics& s);
   };
 
+
   /**
    * \brief Computation spaces
    */
@@ -1187,13 +1221,15 @@ namespace Gecode {
     friend class SharedHandle;
     friend class LocalObject;
     friend class Region;
+    friend class AFC;
+    friend class BrancherHandle;
   private:
     /// Manager for shared memory areas
     SharedMemory* sm;
     /// Performs memory management for space
     MemoryManager mm;
-    /// Global propagator information
-    GlobalPropInfo gpi;
+    /// Global AFC information
+    GlobalAFC gafc;
     /// Doubly linked list of all propagators
     ActorLink pl;
     /// Doubly linked list of all branchers
@@ -1216,6 +1252,13 @@ namespace Gecode {
      * If equal to &bl, no brancher does exist.
      */
     Brancher* b_commit;
+    /// Find brancher with identity \a id
+    Brancher* brancher(unsigned int id);
+    /// Kill brancher with identity \a id
+    GECODE_KERNEL_EXPORT
+    void kill_brancher(unsigned int id);
+    /// Reserved brancher id (never created)
+    static const unsigned reserved_branch_id = 0U;
     union {
       /// Data only available during propagation
       struct {
@@ -1281,13 +1324,25 @@ namespace Gecode {
     GECODE_KERNEL_EXPORT void d_resize(void);
 
     /**
-     * \brief Number of weakly monotonic propagators
+     * \brief Number of weakly monotonic propagators and AFC flag
      *
-     * If zero, none exists. If one, then none exists right now but
-     * there has been one since the last fixpoint computed. Otherwise,
-     * it gives the number of weakly monotoning propagators minus one.
+     * The least significant bit encodes whether AFC information
+     * must be collected, the remaining bits encode counting for
+     * weakly monotonic propagators as follows. If zero, none
+     * exists. If one, then none exists right now but there has
+     * been one since the last fixpoint computed. Otherwise, it
+     * gives the number of weakly monotoning propagators minus
+     * one.
      */
-    unsigned int n_wmp;
+    unsigned int _wmp_afc;
+    /// Set that AFC information must be recorded
+    void afc_enable(void);
+    /// Whether AFC information must be recorded
+    bool afc_enabled(void) const;
+    /// Set number of wmp propagators to \a n
+    void wmp(unsigned int n);
+    /// Return number of wmp propagators
+    unsigned int wmp(void) const;
 
     /// Used for default argument
     GECODE_KERNEL_EXPORT static StatusStatistics unused_status;
@@ -1295,10 +1350,6 @@ namespace Gecode {
     GECODE_KERNEL_EXPORT static CloneStatistics unused_clone;
     /// Used for default argument
     GECODE_KERNEL_EXPORT static CommitStatistics unused_commit;
-    /// Used for default argument
-    GECODE_KERNEL_EXPORT static unsigned long int unused_uli;
-    /// Used for default arguments
-    GECODE_KERNEL_EXPORT static bool unused_b;
 
     /**
      * \brief Clone space
@@ -1313,6 +1364,10 @@ namespace Gecode {
      * datastructures must be created. This means that a clone with no
      * sharing can be used in a different thread without any interaction
      * with the original space.
+     *
+     * Throws an exception of type SpaceNotCloned when the copy constructor
+     * of the Space class is not invoked during cloning.
+     *
      */
     GECODE_KERNEL_EXPORT Space* _clone(bool share=true);
 
@@ -1351,6 +1406,11 @@ namespace Gecode {
     GECODE_KERNEL_EXPORT
     void _commit(const Choice& c, unsigned int a);
 
+    /// Set AFC decay factor to \a d
+    GECODE_KERNEL_EXPORT
+    void afc_decay(double d);
+    /// Return AFC decay factor
+    double afc_decay(void) const;
   public:
     /**
      * \brief Default constructor
@@ -1386,12 +1446,39 @@ namespace Gecode {
      * Must constrain this space to be better than the so far best
      * solution \a best.
      *
-     * If best solution search is used and this method is not redefined,
-     * an exception of type SpaceConstrainUndefined is thrown.
+     * The default function does nothing.
      *
      * \ingroup TaskModelScript
      */
     GECODE_KERNEL_EXPORT virtual void constrain(const Space& best);
+    /**
+     * \brief Master configuration function for restart meta search engine
+     *
+     * A restart meta search engine calls this function on its
+     * master space whenever it finds a solution or exploration
+     * restarts. \a i is the number of the restart. \a s is 
+     * either the solution space or NULL.
+     *
+     * The default function does nothing.
+     *
+     * \ingroup TaskModelScript
+     */
+    GECODE_KERNEL_EXPORT 
+    virtual void master(unsigned long int i, const Space* s);
+    /**
+     * \brief Slave configuration function for restart meta search engine
+     *
+     * A restart meta search engine calls this function on its
+     * slave space whenever it finds a solution or exploration
+     * restarts. \a i is the number of the restart. \a s is 
+     * either the solution space or NULL.
+     *
+     * The default function does nothing.
+     *
+     * \ingroup TaskModelScript
+     */
+    GECODE_KERNEL_EXPORT 
+    virtual void slave(unsigned long int i, const Space* s);
     /**
      * \brief Allocate memory from heap for new space
      * \ingroup TaskModelScript
@@ -1483,6 +1570,9 @@ namespace Gecode {
      * datastructures must be created. This means that a clone with no
      * sharing can be used in a different thread without any interaction
      * with the original space.
+     *
+     * Throws an exception of type SpaceNotCloned when the copy constructor
+     * of the Space class is not invoked during cloning.
      *
      * \ingroup TaskSearch
      */
@@ -1864,13 +1954,12 @@ namespace Gecode {
      */
     size_t allocated(void) const;
     /**
-     * \brief Flush cached memory blocks and AFC information
+     * \brief Flush cached memory blocks
      *
      * All spaces that are obtained as non-shared clones from some same space
      * try to cache memory blocks from failed spaces. To minimize memory
      * consumption, these blocks can be flushed.
      *
-     * Also, the numbers for AFC are reset to zero.
      */
     GECODE_KERNEL_EXPORT void flush(void);
     //@}
@@ -2424,6 +2513,23 @@ namespace Gecode {
   }
 
   forceinline void
+  Space::afc_enable(void) {
+    _wmp_afc |= 1U;
+  }
+  forceinline bool
+  Space::afc_enabled(void) const {
+    return (_wmp_afc & 1U) != 0U;
+  }
+  forceinline void
+  Space::wmp(unsigned int n) {
+    _wmp_afc = (_wmp_afc & 1U) | (n << 1);
+  }
+  forceinline unsigned int
+  Space::wmp(void) const {
+    return _wmp_afc >> 1U;
+  }
+
+  forceinline void
   Space::notice(Actor& a, ActorProperty p) {
     if (p & AP_DISPOSE) {
       if (d_cur == d_lst)
@@ -2431,10 +2537,10 @@ namespace Gecode {
       *(d_cur++) = &a;
     }
     if (p & AP_WEAKLY) {
-      if (n_wmp == 0)
-        n_wmp = 2;
+      if (wmp() == 0)
+        wmp(2);
       else
-        n_wmp++;
+        wmp(wmp()+1);
     }
   }
 
@@ -2456,8 +2562,8 @@ namespace Gecode {
       }
     }
     if (p & AP_WEAKLY) {
-      assert(n_wmp > 1);
-      n_wmp--;
+      assert(wmp() > 1U);
+      wmp(wmp()-1);
     }
   }
 
@@ -2474,6 +2580,11 @@ namespace Gecode {
     _commit(c,a);
   }
 
+  forceinline double
+  Space::afc_decay(void) const {
+    return gafc.decay();
+  }
+
   forceinline size_t
   Actor::dispose(Space&) {
     return sizeof(*this);
@@ -2486,6 +2597,11 @@ namespace Gecode {
    */
   forceinline
   Home::Home(Space& s0, Propagator* p0) : s(s0), p(p0) {}
+  forceinline Home&
+  Home::operator =(const Home& h) {
+    s=h.s; p=h.p;
+    return *this;
+  }
   forceinline
   Home::operator Space&(void) { 
     return s; 
@@ -2525,11 +2641,11 @@ namespace Gecode {
 
   forceinline
   Propagator::Propagator(Home home) 
-    : pi((home.propagator() != NULL) ?
-         // Inherit propagator information
-         home.propagator()->pi :
-         // New propagator information
-         static_cast<Space&>(home).gpi.allocate()) {
+    : gafc((home.propagator() != NULL) ?
+           // Inherit time counter information
+           home.propagator()->gafc :
+           // New propagator information
+           static_cast<Space&>(home).gafc.allocate()) {
     u.advisors = NULL;
     assert((u.med == 0) && (u.size == 0));
     static_cast<Space&>(home).pl.head(this);
@@ -2537,7 +2653,7 @@ namespace Gecode {
 
   forceinline
   Propagator::Propagator(Space&, bool, Propagator& p) 
-    : pi(p.pi) {
+    : gafc(p.gafc) {
     u.advisors = NULL;
     assert((u.med == 0) && (u.size == 0));
     // Set forwarding pointer
@@ -2550,8 +2666,8 @@ namespace Gecode {
   }
 
   forceinline double
-  Propagator::afc(void) const {
-    return pi.afc();
+  Propagator::afc(const Space& home) const {
+    return const_cast<Space&>(home).gafc.afc(gafc);
   }
 
   forceinline ExecStatus
@@ -2628,6 +2744,69 @@ namespace Gecode {
     return _id;
   }
 
+  forceinline Brancher*
+  Space::brancher(unsigned int id) {
+    /*
+     * Due to weakly monotonic propagators the following scenario might
+     * occur: a brancher has been committed with all its available
+     * choices. Then, propagation determines less information
+     * than before and the brancher now will create new choices.
+     * Later, during recomputation, all of these choices
+     * can be used together, possibly interleaved with 
+     * choices for other branchers. That means all branchers
+     * must be scanned to find the matching brancher for the choice.
+     *
+     * b_commit tries to optimize scanning as it is most likely that
+     * recomputation does not generate new choices during recomputation
+     * and hence b_commit is moved from newer to older branchers.
+     */
+    Brancher* b_old = b_commit;
+    // Try whether we are lucky
+    while (b_commit != Brancher::cast(&bl))
+      if (id != b_commit->id())
+        b_commit = Brancher::cast(b_commit->next());
+      else
+        return b_commit;
+    if (b_commit == Brancher::cast(&bl)) {
+      // We did not find the brancher, start at the beginning
+      b_commit = Brancher::cast(bl.next());
+      while (b_commit != b_old)
+        if (id != b_commit->id())
+          b_commit = Brancher::cast(b_commit->next());
+        else
+          return b_commit;
+    }
+    return NULL;
+  }
+  
+  /*
+   * Brancher handle
+   *
+   */
+  forceinline
+  BrancherHandle::BrancherHandle(void)
+    : _id(Space::reserved_branch_id) {}
+  forceinline
+  BrancherHandle::BrancherHandle(const Brancher& b)
+    : _id(b.id()) {}
+  forceinline void
+  BrancherHandle::update(Space&, bool, BrancherHandle& bh) {
+    _id = bh._id;
+  }
+  forceinline unsigned int
+  BrancherHandle::id(void) const {
+    return _id;
+  }
+  forceinline bool
+  BrancherHandle::operator ()(const Space& home) const {
+    return const_cast<Space&>(home).brancher(_id) != NULL;
+  }
+  forceinline void
+  BrancherHandle::kill(Space& home) {
+    home.kill_brancher(_id);
+  }
+
+  
   /*
    * Local objects
    *
@@ -3001,16 +3180,14 @@ namespace Gecode {
 
   template<class VIC>
   forceinline double
-  VarImp<VIC>::afc(void) const {
-    if (degree() == 0)
-      return 0.0;
-    double d = degree();
+  VarImp<VIC>::afc(const Space& home) const {
+    double d = 0.0;
     // Count the afc of each propagator
     {
       ActorLink** a = const_cast<VarImp<VIC>*>(this)->actor(0);
       ActorLink** e = const_cast<VarImp<VIC>*>(this)->actorNonZero(pc_max+1);
       while (a < e) {
-        d += Propagator::cast(*a)->afc(); a++;
+        d += Propagator::cast(*a)->afc(home); a++;
       }
     }
     // Count the afc of each advisor's propagator
@@ -3018,7 +3195,7 @@ namespace Gecode {
       ActorLink** a = const_cast<VarImp<VIC>*>(this)->actorNonZero(pc_max+1);
       ActorLink** e = const_cast<VarImp<VIC>*>(this)->b.base+entries;
       while (a < e) {
-        d += Advisor::cast(*a)->propagator().afc(); a++;
+        d += Advisor::cast(*a)->propagator().afc(home); a++;
       }
     }
     return d;
@@ -3338,7 +3515,8 @@ namespace Gecode {
       case ES_FIX:
         break;
       case ES_FAILED:
-        p.pi.fail(home.gpi);
+        if (home.afc_enabled())
+          home.gafc.fail(p.gafc);
         return false;
       case ES_NOFIX:
         schedule(home,p,me);

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2011-04-28 22:05:18 +1000 (Thu, 28 Apr 2011) $ by $Author: tack $
- *     $Revision: 11968 $
+ *     $Date: 2012-03-30 01:56:07 +0200 (Fri, 30 Mar 2012) $ by $Author: tack $
+ *     $Revision: 12663 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,10 +56,11 @@ namespace Gecode {
   }
   forceinline
   IntArgs::IntArgs(const std::vector<int>& x)
-    : PrimArgArray<int>(static_cast<int>(x.size())) {
-    for (std::vector<int>::size_type i=x.size(); i--;)
-      a[i] = x[i];
-  }
+  : PrimArgArray<int>(x) {}
+  template<class InputIterator>
+  forceinline
+  IntArgs::IntArgs(InputIterator first, InputIterator last)
+  : PrimArgArray<int>(first,last) {}
   
   forceinline
   IntArgs::IntArgs(int n, const int* e) : PrimArgArray<int>(n, e) {}

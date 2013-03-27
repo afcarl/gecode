@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2013-03-11 06:26:07 +0100 (Mon, 11 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13487 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -52,7 +52,7 @@ namespace Gecode { namespace Int { namespace Cumulative {
     for (int i=0; i<f.size(); i++) {
       if (f[i].mandatory())
         o.insert(i);
-      if (o.env() > static_cast<double>(c)*f[i].lct())
+      if (o.env() > static_cast<long long int>(c)*f[i].lct())
         GECODE_ME_CHECK(f[i].excluded(home));
     }
     return ES_OK;

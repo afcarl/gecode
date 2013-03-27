@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-11 20:41:24 +1000 (Wed, 11 Aug 2010) $ by $Author: tack $
- *     $Revision: 11340 $
+ *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13458 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -49,7 +49,7 @@ namespace Gecode { namespace Gist {
    : NodeCursor<VisualNode>(theNode,na) {}
 
   forceinline void
-  LayoutCursor::processCurrentNode() {
+  LayoutCursor::processCurrentNode(void) {
     VisualNode* currentNode = node();
     if (currentNode->isDirty()) {
       if (currentNode->isHidden()) {

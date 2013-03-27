@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2011-02-22 23:52:12 +1100 (Tue, 22 Feb 2011) $ by $Author: schulte $
- *     $Revision: 11766 $
+ *     $Date: 2013-02-20 20:15:12 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13352 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,19 +41,11 @@
 namespace Gecode {
 
   namespace Driver {
+
     /*
      * String option
      *
      */
-    inline
-    StringValueOption::StringValueOption(const char* o, const char* e, 
-                                         const char* v)
-      : BaseOption(o,e), cur(strdup(v)) {}
-    inline void
-    StringValueOption::value(const char* v) {
-      strdel(cur);
-      cur = strdup(v);
-    }
     inline const char*
     StringValueOption::value(void) const {
       return cur;
@@ -114,7 +106,7 @@ namespace Gecode {
      */
     inline
     DoubleOption::DoubleOption(const char* o, const char* e,
-                               unsigned int v)
+                               double v)
       : BaseOption(o,e), cur(v) {}
     inline void
     DoubleOption::value(double v) {
@@ -130,8 +122,8 @@ namespace Gecode {
      *
      */
     inline
-    BoolOption::BoolOption(const char* o, const char* e) 
-      : BaseOption(o,e), cur(false) {}
+    BoolOption::BoolOption(const char* o, const char* e, bool v) 
+      : BaseOption(o,e), cur(v) {}
     inline void
     BoolOption::value(bool v) {
       cur = v;
@@ -148,16 +140,6 @@ namespace Gecode {
    * Options
    *
    */
-  inline void
-  BaseOptions::add(Driver::BaseOption& o) {
-    o.next = NULL;
-    if (fst == NULL) {
-      fst=&o;
-    } else {
-      lst->next=&o;
-    }
-    lst=&o;
-  }
   inline const char*
   BaseOptions::name(void) const {
     return _name;
@@ -229,6 +211,16 @@ namespace Gecode {
   Options::branching(void) const {
     return _branching.value();
   }
+
+  inline void
+  Options::decay(double d) {
+    _decay.value(d);
+  }
+  inline double
+  Options::decay(void) const {
+    return _decay.value();
+  }
+  
   
   /*
    * Search options
@@ -309,6 +301,34 @@ namespace Gecode {
   Options::time(void) const {
     return _time.value();
   }
+
+  inline void
+  Options::restart(RestartMode rm) {
+    _restart.value(rm);
+  }
+  inline RestartMode
+  Options::restart(void) const {
+    return static_cast<RestartMode>(_restart.value());
+  }
+  
+  inline void
+  Options::restart_base(double n) {
+    _r_base.value(n);
+  }
+  inline double
+  Options::restart_base(void) const {
+    return _r_base.value();
+  }
+  
+  inline void
+  Options::restart_scale(unsigned int n) {
+    _r_scale.value(n);
+  }
+  inline unsigned int
+  Options::restart_scale(void) const {
+    return _r_scale.value();
+  }
+  
   
   inline void
   Options::interrupt(bool b) {
@@ -316,7 +336,7 @@ namespace Gecode {
   }
   inline bool
   Options::interrupt(void) const {
-    return static_cast<bool>(_interrupt.value());
+    return _interrupt.value();
   }
   
   
@@ -334,6 +354,15 @@ namespace Gecode {
   }
   
   inline void
+  Options::samples(unsigned int s) {
+    _samples.value(s);
+  }
+  inline unsigned int
+  Options::samples(void) const {
+    return _samples.value();
+  }
+
+  inline void
   Options::iterations(unsigned int i) {
     _iterations.value(i);
   }
@@ -343,12 +372,32 @@ namespace Gecode {
   }
   
   inline void
-  Options::samples(unsigned int s) {
-    _samples.value(s);
+  Options::print_last(bool p) {
+    _print_last.value(p);
   }
-  inline unsigned int
-  Options::samples(void) const {
-    return _samples.value();
+  inline bool
+  Options::print_last(void) const {
+    return _print_last.value();
+  }
+
+  inline void
+  Options::out_file(const char *f) {
+    _out_file.value(f);
+  }
+
+  inline const char*
+  Options::out_file(void) const {
+    return _out_file.value();
+  }
+
+  inline void
+  Options::log_file(const char* f) {
+    _log_file.value(f);
+  }
+
+  inline const char*
+  Options::log_file(void) const {
+    return _log_file.value();
   }
 
 #ifdef GECODE_HAS_GIST

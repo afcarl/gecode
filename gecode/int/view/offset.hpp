@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2010-10-07 07:42:28 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11464 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -107,9 +107,10 @@ namespace Gecode { namespace Int {
     return x.in(n-c);
   }
   forceinline bool
-  OffsetView::in(double n) const {
+  OffsetView::in(long long int n) const {
     return x.in(n-c);
   }
+
 
 
   /*
@@ -121,47 +122,52 @@ namespace Gecode { namespace Int {
     return x.lq(home,n-c);
   }
   forceinline ModEvent
-  OffsetView::lq(Space& home, double n) {
+  OffsetView::lq(Space& home, long long int n) {
     return x.lq(home,n-c);
   }
+
   forceinline ModEvent
   OffsetView::le(Space& home, int n) {
     return x.le(home,n-c);
   }
   forceinline ModEvent
-  OffsetView::le(Space& home, double n) {
+  OffsetView::le(Space& home, long long int n) {
     return x.le(home,n-c);
   }
+
   forceinline ModEvent
   OffsetView::gq(Space& home, int n) {
     return x.gq(home,n-c);
   }
   forceinline ModEvent
-  OffsetView::gq(Space& home, double n) {
+  OffsetView::gq(Space& home, long long int n) {
     return x.gq(home,n-c);
   }
+
   forceinline ModEvent
   OffsetView::gr(Space& home, int n) {
     return x.gr(home,n-c);
   }
   forceinline ModEvent
-  OffsetView::gr(Space& home, double n) {
+  OffsetView::gr(Space& home, long long int n) {
     return x.gr(home,n-c);
   }
+
   forceinline ModEvent
   OffsetView::nq(Space& home, int n) {
     return x.nq(home,n-c);
   }
   forceinline ModEvent
-  OffsetView::nq(Space& home, double n) {
+  OffsetView::nq(Space& home, long long int n) {
     return x.nq(home,n-c);
   }
+
   forceinline ModEvent
   OffsetView::eq(Space& home, int n) {
     return x.eq(home,n-c);
   }
   forceinline ModEvent
-  OffsetView::eq(Space& home, double n) {
+  OffsetView::eq(Space& home, long long int n) {
     return x.eq(home,n-c);
   }
 

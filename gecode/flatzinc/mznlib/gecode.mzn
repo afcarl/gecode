@@ -6,8 +6,8 @@
 %     Guido Tack, 2007
 %
 %  Last modified:
-%     $Date: 2012-03-21 16:25:08 +1100 (Wed, 21 Mar 2012) $ by $Author: tack $
-%     $Revision: 12605 $
+%     $Date: 2013-02-22 06:40:39 +0100 (Fri, 22 Feb 2013) $ by $Author: tack $
+%     $Revision: 13381 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -42,6 +42,10 @@ annotation afc_min;
 annotation size_afc_min;
 annotation afc_max;
 annotation size_afc_max;
+annotation activity_min;
+annotation size_activity_min;
+annotation activity_max;
+annotation size_activity_max;
 annotation int_assign(array[int] of var int: x, ann:a);
 
 
@@ -58,10 +62,6 @@ predicate gecode_array_set_element_intersect_in(var set of int: x,
     array[int] of var set of int: y,
     var set of int: z, set of int: u);
 
-% y = sum of the weights of the elements of x
-predicate gecode_set_weights(array[int] of int: elements,
-    array[int] of int: weights, var set of int: x, var int: y);
-
 % Every subsequence of x of length l has at least m and at most occurrences
 % of the values in S
 predicate gecode_among_seq_int(array[int] of var int: x, set of int: S,
@@ -74,9 +74,9 @@ predicate gecode_among_seq_bool(array[int] of var bool: x, bool: b,
 
 % Overloading for among_seq
 predicate among_seq(array[int] of var int: x, set of int: S,
-    int: l, int: m, int: n) = among_seq_int(x,S,l,m,n);
+    int: l, int: m, int: n) = gecode_among_seq_int(x,S,l,m,n);
 predicate among_seq(array[int] of var bool: x, bool: b,
-    int: l, int: m, int: n) = among_seq_bool(x,b,l,m,n);
+    int: l, int: m, int: n) = gecode_among_seq_bool(x,b,l,m,n);
 
 % Circuit constraints
 predicate gecode_circuit_cost_array(array[int] of int: c,

@@ -7,8 +7,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:04:20 +1100 (Wed, 22 Feb 2012) $ by $Author: tack $
- *     $Revision: 12537 $
+ *     $Date: 2011-11-09 10:41:02 +0100 (Wed, 09 Nov 2011) $ by $Author: tack $
+ *     $Revision: 12460 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,20 +41,6 @@ namespace Gecode {
    * Operations for expressions
    *
    */
-  forceinline
-  BoolExpr::Node::Node(void) : use(1), m(NULL) {}
-
-  forceinline
-  BoolExpr::Node::~Node(void) { delete m; }
-
-  forceinline void*
-  BoolExpr::Node::operator new(size_t size) {
-    return heap.ralloc(size);
-  }
-  forceinline void
-  BoolExpr::Node::operator delete(void* p, size_t) {
-    heap.rfree(p);
-  }
 
   forceinline void*
   BoolExpr::MiscExpr::operator new(size_t size) {
@@ -63,23 +49,6 @@ namespace Gecode {
   forceinline void
   BoolExpr::MiscExpr::operator delete(void* p, size_t) {
     heap.rfree(p);
-  }
-
-  forceinline
-  BoolExpr::BoolExpr(const BoolExpr& e) : n(e.n) {
-    n->use++;
-  }
-
-  inline BoolVar
-  BoolExpr::expr(Home home, IntConLevel icl) const {
-    Region r(home);
-    return NNF::nnf(r,n,false)->expr(home,icl);
-  }
-
-  inline void
-  BoolExpr::rel(Home home, IntConLevel icl) const {
-    Region r(home);
-    return NNF::nnf(r,n,false)->rel(home,icl);
   }
 
 }

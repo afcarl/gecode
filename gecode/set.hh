@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2011-08-25 00:34:16 +1000 (Thu, 25 Aug 2011) $ by $Author: tack $
- *     $Revision: 12346 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -499,6 +499,12 @@ namespace Gecode {
     SetVarArgs(const SetVarArgs& a) : VarArgArray<SetVar>(a) {}
     /// Initialize from variable array \a a (copy elements)
     SetVarArgs(const VarArray<SetVar>& a) : VarArgArray<SetVar>(a) {}
+    /// Initialize from vector \a a
+    SetVarArgs(const std::vector<SetVar>& a) : VarArgArray<SetVar>(a) {}
+    /// Initialize from InputIterator \a first and \a last
+    template<class InputIterator>
+    SetVarArgs(InputIterator first, InputIterator last)
+    : VarArgArray<SetVar>(first,last) {}
     /**
      * \brief Create an array of size \a n.
      *
@@ -670,31 +676,42 @@ namespace Gecode {
   /// Propagates \f$ x \sim_r \{i\}\f$
   GECODE_SET_EXPORT void
   dom(Home home, SetVar x, SetRelType r, int i);
-
+  /// Propagates \f$ x_i \sim_r \{i\}\f$ for all \f$0\leq i<|x|\f$
+  GECODE_SET_EXPORT void
+  dom(Home home, const SetVarArgs& x, SetRelType r, int i);
   /// Propagates \f$ x \sim_r \{i,\dots,j\}\f$
   GECODE_SET_EXPORT void
   dom(Home home, SetVar x, SetRelType r, int i, int j);
-
+  /// Propagates \f$ x \sim_r \{i,\dots,j\}\f$ for all \f$0\leq i<|x|\f$
+  GECODE_SET_EXPORT void
+  dom(Home home, const SetVarArgs& x, SetRelType r, int i, int j);
   /// Propagates \f$ x \sim_r s\f$
   GECODE_SET_EXPORT void
   dom(Home home, SetVar x, SetRelType r, const IntSet& s);
-
-  /// Post propagator for \f$ (x \sim_r \{i\}) \Leftrightarrow b \f$
+  /// Propagates \f$ x \sim_r s\f$ for all \f$0\leq i<|x|\f$
   GECODE_SET_EXPORT void
-  dom(Home home, SetVar x, SetRelType r, int i, BoolVar b);
-
-  /// Post propagator for \f$ (x \sim_r \{i,\dots,j\}) \Leftrightarrow b \f$
-  GECODE_SET_EXPORT void
-  dom(Home home, SetVar x, SetRelType r, int i, int j, BoolVar b);
-
-  /// Post propagator for \f$ (x \sim_r s) \Leftrightarrow b \f$
-  GECODE_SET_EXPORT void
-  dom(Home home, SetVar x, SetRelType r, const IntSet& s, BoolVar b);
-
+  dom(Home home, const SetVarArgs& x, SetRelType r, const IntSet& s);
   /// Propagates \f$ i \leq |s| \leq j \f$
   GECODE_SET_EXPORT void
   cardinality(Home home, SetVar x, unsigned int i, unsigned int j);
-
+  /// Propagates \f$ i \leq |s| \leq j \f$ for all \f$0\leq i<|x|\f$
+  GECODE_SET_EXPORT void
+  cardinality(Home home, const SetVarArgs& x, unsigned int i, unsigned int j);
+  /// Post propagator for \f$ (x \sim_{rt} \{i\}) \equiv r \f$
+  GECODE_SET_EXPORT void
+  dom(Home home, SetVar x, SetRelType rt, int i, Reify r);
+  /// Post propagator for \f$ (x \sim_{rt} \{i,\dots,j\}) \equiv r \f$
+  GECODE_SET_EXPORT void
+  dom(Home home, SetVar x, SetRelType rt, int i, int j, Reify r);
+  /// Post propagator for \f$ (x \sim_{rt} s) \equiv r \f$
+  GECODE_SET_EXPORT void
+  dom(Home home, SetVar x, SetRelType rt, const IntSet& s, Reify r);
+  /// Constrain domain of \a x according to domain of \a d
+  GECODE_SET_EXPORT void
+  dom(Home home, SetVar x, SetVar d);
+  /// Constrain domain of \f$ x_i \f$ according to domain of \f$ d_i \f$ for all \f$0\leq i<|x|\f$
+  GECODE_SET_EXPORT void
+  dom(Home home, const SetVarArgs& x, const SetVarArgs& d);
   //@}
 
 
@@ -710,9 +727,9 @@ namespace Gecode {
   GECODE_SET_EXPORT void
   rel(Home home, SetVar x, SetRelType r, SetVar y);
 
-  /// Post propagator for \f$ (x \sim_r y) \Leftrightarrow b \f$
+  /// Post propagator for \f$ (x \sim_{rt} y) \equiv r\f$
   GECODE_SET_EXPORT void
-  rel(Home home, SetVar x, SetRelType r, SetVar y, BoolVar b);
+  rel(Home home, SetVar x, SetRelType rt, SetVar y, Reify r);
 
   /// Post propagator for \f$ s \sim_r \{x\}\f$
   GECODE_SET_EXPORT void
@@ -722,13 +739,13 @@ namespace Gecode {
   GECODE_SET_EXPORT void
   rel(Home home, IntVar x, SetRelType r, SetVar s);
 
-  /// Post propagator for \f$ (s \sim_r \{x\}) \Leftrightarrow b \f$
+  /// Post propagator for \f$ (s \sim_{rt} \{x\}) \equiv r\f$
   GECODE_SET_EXPORT void
-  rel(Home home, SetVar s, SetRelType r, IntVar x, BoolVar b);
+  rel(Home home, SetVar s, SetRelType rt, IntVar x, Reify r);
 
-  /// Post propagator for \f$ (\{x\} \sim_r s) \Leftrightarrow b \f$
+  /// Post propagator for \f$ (\{x\} \sim_{rt} s) \equiv r \f$
   GECODE_SET_EXPORT void
-  rel(Home home, IntVar x, SetRelType r, SetVar s, BoolVar b);
+  rel(Home home, IntVar x, SetRelType rt, SetVar s, Reify r);
 
   /// Post propagator for \f$|s|\geq 1 \land \forall i\in s:\ i \sim_r x\f$
   GECODE_SET_EXPORT void
@@ -865,7 +882,7 @@ namespace Gecode {
   /** \brief Post reified propagator for \a b iff \a x is the
    *  minimal element of \a s */
   GECODE_SET_EXPORT void
-  min(Home home, SetVar s, IntVar x, BoolVar b);
+  min(Home home, SetVar s, IntVar x, Reify r);
 
   /** \brief Post propagator that propagates that \a x is the
    *  maximal element of \a s, and that \a s is not empty */
@@ -880,24 +897,11 @@ namespace Gecode {
   /** \brief Post reified propagator for \a b iff \a x is the
    *  maximal element of \a s */
   GECODE_SET_EXPORT void
-  max(Home home, SetVar s, IntVar x, BoolVar b);
-
-  /// Post propagator for \f$\{x_0,\dots,x_{n-1}\}=y\f$ and \f$x_i<x_{i+1}\f$
-  GECODE_SET_EXPORT void
-  channelSorted(Home home, const IntVarArgs& x, SetVar y);
-
-  /// Post propagator for \f$x_i=j \Leftrightarrow i\in y_j\f$
-  GECODE_SET_EXPORT void
-  channel(Home home, const IntVarArgs& x,const SetVarArgs& y);
-
-  /// Post propagator for \f$x_i=1 \Leftrightarrow i\in y\f$
-  GECODE_SET_EXPORT void
-  channel(Home home, const BoolVarArgs& x, SetVar y);
+  max(Home home, SetVar s, IntVar x, Reify r);
 
   /// Post propagator for \f$ |s|=x \f$
   GECODE_SET_EXPORT void
   cardinality(Home home, SetVar s, IntVar x);
-
 
   /**
    * \brief Post propagator for \f$y = \mathrm{weight}(x)\f$
@@ -912,6 +916,32 @@ namespace Gecode {
   GECODE_SET_EXPORT void
   weights(Home home, IntSharedArray elements, IntSharedArray weights,
           SetVar x, IntVar y);
+
+  //@}
+
+  /**
+   * \defgroup TaskModelSetChannel Channel constraints
+   * \ingroup TaskModelSet
+   *
+   */
+
+  //@{
+
+  /// Post propagator for \f$x_i=j \Leftrightarrow i\in y_j\f$
+  GECODE_SET_EXPORT void
+  channel(Home home, const IntVarArgs& x,const SetVarArgs& y);
+
+  /// Post propagator for \f$\{x_0,\dots,x_{n-1}\}=y\f$ and \f$x_i<x_{i+1}\f$
+  GECODE_SET_EXPORT void
+  channelSorted(Home home, const IntVarArgs& x, SetVar y);
+
+  /// Post propagator for \f$x_i=1 \Leftrightarrow i\in y\f$
+  GECODE_SET_EXPORT void
+  channel(Home home, const BoolVarArgs& x, SetVar y);
+
+  /// Post propagator for \f$j\in x_i \Leftrightarrow i\in y_j\f$
+  GECODE_SET_EXPORT void
+  channel(Home home, const SetVarArgs& x, const SetVarArgs& y);
 
   //@}
 
@@ -1052,90 +1082,489 @@ namespace Gecode {
   wait(Home home, const SetVarArgs& x, void (*c)(Space& home));
   //@}
 
+}
+
+namespace Gecode {
+
   /**
    * \defgroup TaskModelSetBranch Branching
    * \ingroup TaskModelSet
    */
 
-  //@{
-  /// Which variable to select for branching
-  enum SetVarBranch {
-    SET_VAR_NONE = 0,   ///< First unassigned
-    SET_VAR_RND,        ///< Random (uniform, for tie breaking)
-    SET_VAR_DEGREE_MIN, ///< With smallest degree
-    SET_VAR_DEGREE_MAX, ///< With largest degree
-    SET_VAR_AFC_MIN,    ///< With smallest accumulated failure count
-    SET_VAR_AFC_MAX,    ///< With largest accumulated failure count
-    SET_VAR_MIN_MIN,    ///< With smallest minimum unknown element
-    SET_VAR_MIN_MAX,    ///< With largest minimum unknown element
-    SET_VAR_MAX_MIN,    ///< With smallest maximum unknown element
-    SET_VAR_MAX_MAX,    ///< With largest maximum unknown element
-    SET_VAR_SIZE_MIN,   ///< With smallest unknown set
-    SET_VAR_SIZE_MAX,   ///< With largest unknown set
-    SET_VAR_SIZE_DEGREE_MIN, ///< With smallest domain size divided by degree
-    SET_VAR_SIZE_DEGREE_MAX, ///< With largest domain size divided by degree
-    SET_VAR_SIZE_AFC_MIN, ///< With smallest domain size divided by accumulated failure count
-    SET_VAR_SIZE_AFC_MAX  ///< With largest domain size divided by accumulated failure count
-  };
-
-  /// Which values to select first for branching
-  enum SetValBranch {
-    SET_VAL_MIN_INC, ///< Include smallest element
-    SET_VAL_MIN_EXC, ///< Exclude smallest element
-    SET_VAL_MED_INC, ///< Include median element (rounding downwards)
-    SET_VAL_MED_EXC, ///< Exclude median element (rounding downwards)
-    SET_VAL_MAX_INC, ///< Include largest element
-    SET_VAL_MAX_EXC, ///< Exclude largest element
-    SET_VAL_RND_INC, ///< Include random element
-    SET_VAL_RND_EXC  ///< Exclude random element
-  };
-
-  /// Branch over \a x with variable selection \a vars and value selection \a vals
-  GECODE_SET_EXPORT void
-  branch(Home home, const SetVarArgs& x,
-         SetVarBranch vars, SetValBranch vals,
-         const VarBranchOptions& o_vars = VarBranchOptions::def,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
-  GECODE_SET_EXPORT void
-  branch(Home home, const SetVarArgs& x,
-         const TieBreakVarBranch<SetVarBranch>& vars, SetValBranch vals,
-         const TieBreakVarBranchOptions& o_vars = TieBreakVarBranchOptions::def,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with value selection \a vals
-  GECODE_SET_EXPORT void
-  branch(Home home, SetVar x, SetValBranch vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  //@}
+  /**
+   * \brief Branch filter function type for set variables
+   *
+   * The variable \a x is considered for selection and \a i refers to the
+   * variable's position in the original array passed to the brancher.
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  typedef bool (*SetBranchFilter)(const Space& home, SetVar x, int i);
 
   /**
-   * \defgroup TaskModelSetAssign Assigning
-   * \ingroup TaskModelSet
+   * \brief Branch merit function type for set variables
+   *
+   * The function must return a merit value for the variable
+   * \a x.
+   * The value \a i refers to the variable's position in the original array
+   * passed to the brancher.
+   *
+   * \ingroup TaskModelSetBranch
    */
-  //@{
-  /// Which value to select for assignment
-  enum SetAssign {
-    SET_ASSIGN_MIN_INC, ///< Include smallest element
-    SET_ASSIGN_MIN_EXC, ///< Exclude smallest element
-    SET_ASSIGN_MED_INC, ///< Include median element (rounding downwards)
-    SET_ASSIGN_MED_EXC, ///< Exclude median element (rounding downwards)
-    SET_ASSIGN_MAX_INC, ///< Include largest element
-    SET_ASSIGN_MAX_EXC, ///< Exclude largest element
-    SET_ASSIGN_RND_INC, ///< Include random element
-    SET_ASSIGN_RND_EXC  ///< Exclude random element
+  typedef double (*SetBranchMerit)(const Space& home, SetVar x, int i);
+
+  /**
+   * \brief Branch value function type for set variables
+   *
+   * Returns a value for the variable \a x that is to be used in the
+   * corresponding branch commit function. The integer \a i refers 
+   * to the variable's position in the original array passed to the 
+   * brancher.
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  typedef int (*SetBranchVal)(const Space& home, SetVar x, int i);
+
+  /**
+   * \brief Branch commit function type for set variables
+   *
+   * The function must post a constraint on the variable \a x which
+   * corresponds to the alternative \a a. The integer \a i refers 
+   * to the variable's position in the original array passed to the 
+   * brancher. The value \a n is the value
+   * computed by the corresponding branch value function.
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  typedef void (*SetBranchCommit)(Space& home, unsigned int a,
+                                  SetVar x, int i, int n);
+
+}
+
+#include <gecode/set/branch/traits.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Recording AFC information for set variables
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  class SetAFC : public AFC {
+  public:
+    /**
+     * \brief Construct as not yet initialized
+     *
+     * The only member functions that can be used on a constructed but not
+     * yet initialized AFC storage is init or the assignment operator.
+     *
+     */
+    SetAFC(void);
+    /// Copy constructor
+    SetAFC(const SetAFC& a);
+    /// Assignment operator
+    SetAFC& operator =(const SetAFC& a);      
+    /// Initialize for set variables \a x with decay factor \a d
+    SetAFC(Home home, const SetVarArgs& x, double d=1.0);
+    /**
+     * \brief Initialize for set variables \a x with decay factor \a d
+     *
+     * This member function can only be used once and only if the
+     * AFC storage has been constructed with the default constructor.
+     *
+     */
+    void init(Home, const SetVarArgs& x, double d=1.0);
   };
 
-  /// Assign all \a x with value selection \a vals
-  GECODE_SET_EXPORT void
-  assign(Home home, const SetVarArgs& x, SetAssign vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Assign \a x with value selection \a vals
-  GECODE_SET_EXPORT void
-  assign(Home home, SetVar x, SetAssign vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
+}
 
+#include <gecode/set/branch/afc.hpp>
+
+namespace Gecode {
+
+
+  /**
+   * \brief Recording activities for set variables
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  class SetActivity : public Activity {
+  public:
+    /**
+     * \brief Construct as not yet initialized
+     *
+     * The only member functions that can be used on a constructed but not
+     * yet initialized activity storage is init or the assignment operator.
+     *
+     */
+    SetActivity(void);
+    /// Copy constructor
+    SetActivity(const SetActivity& a);
+    /// Assignment operator
+    SetActivity& operator =(const SetActivity& a);      
+    /// Initialize for set variables \a x with decay factor \a d
+    GECODE_SET_EXPORT 
+    SetActivity(Home home, const SetVarArgs& x, double d=1.0);
+    /**
+     * \brief Initialize for set variables \a x with decay factor \a d
+     *
+     * This member function can only be used once and only if the
+     * activity storage has been constructed with the default constructor.
+     *
+     */
+    GECODE_SET_EXPORT void
+    init(Home, const SetVarArgs& x, double d=1.0);
+  };
+
+}
+
+#include <gecode/set/branch/activity.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Which variable to select for branching
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  class SetVarBranch : public VarBranch {
+  public:
+    /// Which variable selection
+    enum Select {
+      SEL_NONE = 0,        ///< First unassigned
+      SEL_RND,             ///< Random (uniform, for tie breaking)
+      SEL_MERIT_MIN,       ///< With least merit
+      SEL_MERIT_MAX,       ///< With highest merit
+      SEL_DEGREE_MIN,      ///< With smallest degree
+      SEL_DEGREE_MAX,      ///< With largest degree
+      SEL_AFC_MIN,         ///< With smallest accumulated failure count
+      SEL_AFC_MAX,         ///< With largest accumulated failure count
+      SEL_ACTIVITY_MIN,    ///< With lowest activity
+      SEL_ACTIVITY_MAX,    ///< With highest activity
+      SEL_MIN_MIN,         ///< With smallest minimum unknown element
+      SEL_MIN_MAX,         ///< With largest minimum unknown element
+      SEL_MAX_MIN,         ///< With smallest maximum unknown element
+      SEL_MAX_MAX,         ///< With largest maximum unknown element
+      SEL_SIZE_MIN,        ///< With smallest unknown set
+      SEL_SIZE_MAX,        ///< With largest unknown set
+      SEL_DEGREE_SIZE_MIN, ///< With smallest degree divided by domain size
+      SEL_DEGREE_SIZE_MAX, ///< With largest degree divided by domain size
+      SEL_AFC_SIZE_MIN,    ///< With smallest accumulated failure count divided by domain size
+      SEL_AFC_SIZE_MAX,    ///< With largest accumulated failure count divided by domain size
+      SEL_ACTIVITY_SIZE_MIN, ///< With smallest activity divided by domain size
+      SEL_ACTIVITY_SIZE_MAX, ///< With largest activity divided by domain size
+    };
+  protected:
+    /// Which variable to select
+    Select s;
+  public:
+    /// Initialize with strategy SEL_NONE
+    SetVarBranch(void);
+    /// Initialize with random number generator \a r
+    SetVarBranch(Rnd r);
+    /// Initialize with selection strategy \a s and tie-break limit function \a t
+    SetVarBranch(Select s, BranchTbl t);
+    /// Initialize with selection strategy \a s, decay factor \a d, and tie-break limit function \a t
+    SetVarBranch(Select s, double d, BranchTbl t);
+    /// Initialize with selection strategy \a s, afc \a a, and tie-break limit function \a t
+    SetVarBranch(Select s, AFC a, BranchTbl t);
+    /// Initialize with selection strategy \a s, activity \a a, and tie-break limit function \a t
+    SetVarBranch(Select s, Activity a, BranchTbl t);
+    /// Initialize with selection strategy \a s, branch merit function \a mf, and tie-break limit function \a t
+    SetVarBranch(Select s, VoidFunction mf, BranchTbl t);
+    /// Return selection strategy
+    Select select(void) const;
+    /// Expand decay factor into AFC or activity
+    void expand(Home home, const SetVarArgs& x);
+  };
+
+  /**
+   * \defgroup TaskModelSetBranchVar Selecting set variables
+   * \ingroup TaskModelSetBranch
+   */
+  //@{
+  /// Select first unassigned variable
+  SetVarBranch SET_VAR_NONE(void);
+  /// Select random variable (uniform distribution, for tie breaking)
+  SetVarBranch SET_VAR_RND(Rnd r);
+  /// Select variable with least merit according to branch merit function \a bm
+  SetVarBranch SET_VAR_MERIT_MIN(SetBranchMerit bm, BranchTbl tbl=NULL);
+  /// Select variable with highest merit according to branch merit function \a bm
+  SetVarBranch SET_VAR_MERIT_MAX(SetBranchMerit bm, BranchTbl tbl=NULL);
+  /// Select variable with smallest degree
+  SetVarBranch SET_VAR_DEGREE_MIN(BranchTbl tbl=NULL);
+  /// Select variable with largest degree
+  SetVarBranch SET_VAR_DEGREE_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count with decay factor \a d
+  SetVarBranch SET_VAR_AFC_MIN(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count
+  SetVarBranch SET_VAR_AFC_MIN(SetAFC a, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count with decay factor \a d
+  SetVarBranch SET_VAR_AFC_MAX(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count    
+  SetVarBranch SET_VAR_AFC_MAX(SetAFC a, BranchTbl tbl=NULL);
+  /// Select variable with lowest activity with decay factor \a d
+  SetVarBranch SET_VAR_ACTIVITY_MIN(double d=1.0, BranchTbl tbl=NULL);    
+  /// Select variable with lowest activity
+  SetVarBranch SET_VAR_ACTIVITY_MIN(SetActivity a, BranchTbl tbl=NULL);    
+  /// Select variable with highest activity with decay factor \a d
+  SetVarBranch SET_VAR_ACTIVITY_MAX(double d=1.0, BranchTbl tbl=NULL);     
+  /// Select variable with highest activity
+  SetVarBranch SET_VAR_ACTIVITY_MAX(SetActivity a, BranchTbl tbl=NULL);     
+  /// Select variable with smallest minimum unknown element
+  SetVarBranch SET_VAR_MIN_MIN(BranchTbl tbl=NULL);         
+  /// Select variable with largest minimum unknown element
+  SetVarBranch SET_VAR_MIN_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest maximum unknown element
+  SetVarBranch SET_VAR_MAX_MIN(BranchTbl tbl=NULL); 
+  /// Select variable with largest maximum unknown element
+  SetVarBranch SET_VAR_MAX_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest unknown set
+  SetVarBranch SET_VAR_SIZE_MIN(BranchTbl tbl=NULL);
+  /// Select variable with largest  unknown set
+  SetVarBranch SET_VAR_SIZE_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest degree divided by domain size
+  SetVarBranch SET_VAR_DEGREE_SIZE_MIN(BranchTbl tbl=NULL);
+  /// Select variable with largest degree divided by domain size
+  SetVarBranch SET_VAR_DEGREE_SIZE_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count divided by domain size with decay factor \a d
+  SetVarBranch SET_VAR_AFC_SIZE_MIN(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count divided by domain size
+  SetVarBranch SET_VAR_AFC_SIZE_MIN(SetAFC a, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count divided by domain size with decay factor \a d
+  SetVarBranch SET_VAR_AFC_SIZE_MAX(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count divided by domain size
+  SetVarBranch SET_VAR_AFC_SIZE_MAX(SetAFC a, BranchTbl tbl=NULL);
+  /// Select variable with smallest activity divided by domain size with decay factor \a d
+  SetVarBranch SET_VAR_ACTIVITY_SIZE_MIN(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with smallest activity divided by domain size
+  SetVarBranch SET_VAR_ACTIVITY_SIZE_MIN(SetActivity a, BranchTbl tbl=NULL);
+  /// Select variable with largest activity divided by domain size with decay factor \a d
+  SetVarBranch SET_VAR_ACTIVITY_SIZE_MAX(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with largest activity divided by domain size
+  SetVarBranch SET_VAR_ACTIVITY_SIZE_MAX(SetActivity a, BranchTbl tbl=NULL);
   //@}
 
+}
+
+#include <gecode/set/branch/var.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Which values to select for branching first
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  class SetValBranch : public ValBranch {
+  public:
+    /// Which value selection
+    enum Select {
+      SEL_MIN_INC,   ///< Include smallest element
+      SEL_MIN_EXC,   ///< Exclude smallest element
+      SEL_MED_INC,   ///< Include median element (rounding downwards)
+      SEL_MED_EXC,   ///< Exclude median element (rounding downwards)
+      SEL_MAX_INC,   ///< Include largest element
+      SEL_MAX_EXC,   ///< Exclude largest element
+      SEL_RND_INC,   ///< Include random element
+      SEL_RND_EXC,   ///< Exclude random element
+      SEL_VAL_COMMIT ///< Select value according to user-defined functions
+    };
+  protected:
+    /// Which value to select
+    Select s;
+  public:
+    /// Initialize with selection strategy \a s
+    SetValBranch(Select s = SEL_MIN_INC);
+    /// Initialize with random number generator \a r
+    SetValBranch(Select s, Rnd r);
+    /// Initialize with value function \a f and commit function \a c
+    SetValBranch(VoidFunction v, VoidFunction c);
+    /// Return selection strategy
+    Select select(void) const;
+  };
+
+  /**
+   * \defgroup TaskModelSetBranchVal Value selection for set variables
+   * \ingroup TaskModelSetBranch
+   */
+  //@{
+  /// Include smallest element
+  SetValBranch SET_VAL_MIN_INC(void);
+  /// Exclude smallest element
+  SetValBranch SET_VAL_MIN_EXC(void);
+  /// Include median element (rounding downwards)
+  SetValBranch SET_VAL_MED_INC(void);
+  /// Exclude median element (rounding downwards)
+  SetValBranch SET_VAL_MED_EXC(void);
+  /// Include largest element
+  SetValBranch SET_VAL_MAX_INC(void);
+  /// Exclude largest element
+  SetValBranch SET_VAL_MAX_EXC(void);
+  /// Include random element
+  SetValBranch SET_VAL_RND_INC(Rnd r);
+  /// Exclude random element
+  SetValBranch SET_VAL_RND_EXC(Rnd r);
+  /**
+   * \brief Select value as defined by the value function \a v and commit function \a c
+   *
+   * The default commit function posts the constraint that the value \a n
+   * must be included in the set variable \a x for the first alternative,
+   * and that \a n must be excluded from \a x otherwise.
+   */
+  SetValBranch SET_VAL(SetBranchVal v, SetBranchCommit c=NULL);
+  //@}
+
+}
+
+#include <gecode/set/branch/val.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Which value to select for assignment
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  class SetAssign : public ValBranch {
+  public:
+    /// Which value selection
+    enum Select {
+      SEL_MIN_INC,   ///< Include smallest element
+      SEL_MIN_EXC,   ///< Exclude smallest element
+      SEL_MED_INC,   ///< Include median element (rounding downwards)
+      SEL_MED_EXC,   ///< Exclude median element (rounding downwards)
+      SEL_MAX_INC,   ///< Include largest element
+      SEL_MAX_EXC,   ///< Exclude largest element
+      SEL_RND_INC,   ///< Include random element
+      SEL_RND_EXC,   ///< Exclude random element
+      SEL_VAL_COMMIT ///< Select value according to user-defined functions
+    };
+  protected:
+    /// Which value to select
+    Select s;
+  public:
+    /// Initialize with selection strategy \a s
+    SetAssign(Select s = SEL_MIN_INC);
+    /// Initialize with random number generator \a r
+    SetAssign(Select s, Rnd r);
+    /// Initialize with value function \a f and commit function \a c
+    SetAssign(VoidFunction v, VoidFunction c);
+    /// Return selection strategy
+    Select select(void) const;
+  };
+
+  /**
+   * \defgroup TaskModelSetBranchAssign Assigning set variables
+   * \ingroup TaskModelSetBranch
+   */
+  //@{
+  /// Include smallest element
+  SetAssign SET_ASSIGN_MIN_INC(void);
+  /// Exclude smallest element
+  SetAssign SET_ASSIGN_MIN_EXC(void);
+  /// Include median element (rounding downwards)
+  SetAssign SET_ASSIGN_MED_INC(void);
+  /// Exclude median element (rounding downwards)
+  SetAssign SET_ASSIGN_MED_EXC(void);
+  /// Include largest element
+  SetAssign SET_ASSIGN_MAX_INC(void);
+  /// Exclude largest element
+  SetAssign SET_ASSIGN_MAX_EXC(void);
+  /// Include random element
+  SetAssign SET_ASSIGN_RND_INC(Rnd r);
+  /// Exclude random element
+  SetAssign SET_ASSIGN_RND_EXC(Rnd r);
+  /**
+   * \brief Select value as defined by the value function \a v and commit function \a c
+   *
+   * The default commit function posts the constraint that the value \a n
+   * must be included in the set variable \a x.
+   */
+  SetAssign SET_ASSIGN(SetBranchVal v, SetBranchCommit c=NULL);
+  //@}
+
+}
+
+#include <gecode/set/branch/assign.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Branch over \a x with variable selection \a vars and value selection \a vals
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  branch(Home home, const SetVarArgs& x,
+         SetVarBranch vars, SetValBranch vals, 
+         SetBranchFilter sbf=NULL);
+  /**
+   * \brief Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  branch(Home home, const SetVarArgs& x,
+         TieBreak<SetVarBranch> vars, SetValBranch vals,
+         SetBranchFilter sbf=NULL);
+  /**
+   * \brief Branch over \a x with value selection \a vals
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  branch(Home home, SetVar x, SetValBranch vals);
+  /**
+   * \brief Assign all \a x with value selection \a vals
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  assign(Home home, const SetVarArgs& x, SetAssign vals,
+         SetBranchFilter sbf=NULL);
+  /**
+   * \brief Assign \a x with value selection \a vals
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  assign(Home home, SetVar x, SetAssign vals);
+
+}
+
+// LDSB-related declarations.
+namespace Gecode {
+  /// Variables in \a x are interchangeable
+  GECODE_SET_EXPORT SymmetryHandle VariableSymmetry(const SetVarArgs& x);
+  /**
+   * \brief Variable sequences in \a x of size \a ss are interchangeable
+   *
+   * The size of \a x must be a multiple of \a ss. 
+   */
+  GECODE_SET_EXPORT
+  SymmetryHandle VariableSequenceSymmetry(const SetVarArgs& x, int ss);
+  /**
+   * \brief Branch over \a x with variable selection \a vars and value
+   * selection \a vals with symmetry breaking
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  branch(Home home, const SetVarArgs& x,
+         SetVarBranch vars, SetValBranch vals,
+         const Symmetries& syms,
+         SetBranchFilter sbf=NULL);
+  /**
+   * \brief Branch over \a x with tie-breaking variable selection \a
+   * vars and value selection \a vals with symmetry breaking
+   *
+   * \ingroup TaskModelSetBranch
+   */
+  GECODE_SET_EXPORT BrancherHandle
+  branch(Home home, const SetVarArgs& x,
+         TieBreak<SetVarBranch> vars, SetValBranch vals,
+         const Symmetries& syms, SetBranchFilter bf=NULL);
 }
 
 #endif

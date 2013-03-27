@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2010-09-01 01:19:33 +1000 (Wed, 01 Sep 2010) $ by $Author: schulte $
- *     $Revision: 11368 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -106,7 +106,7 @@ namespace Gecode { namespace Int {
     return x->in(n);
   }
   forceinline bool
-  BoolView::in(double n) const {
+  BoolView::in(long long int n) const {
     return x->in(n);
   }
 
@@ -120,7 +120,7 @@ namespace Gecode { namespace Int {
     return x->lq(home,n);
   }
   forceinline ModEvent
-  BoolView::lq(Space& home, double n) {
+  BoolView::lq(Space& home, long long int n) {
     return x->lq(home,n);
   }
 
@@ -129,8 +129,8 @@ namespace Gecode { namespace Int {
     return x->lq(home,n-1);
   }
   forceinline ModEvent
-  BoolView::le(Space& home, double n) {
-    return lq(home,n-1.0);
+  BoolView::le(Space& home, long long int n) {
+    return x->lq(home,n-1);
   }
 
   forceinline ModEvent
@@ -138,7 +138,7 @@ namespace Gecode { namespace Int {
     return x->gq(home,n);
   }
   forceinline ModEvent
-  BoolView::gq(Space& home, double n) {
+  BoolView::gq(Space& home, long long int n) {
     return x->gq(home,n);
   }
 
@@ -147,8 +147,8 @@ namespace Gecode { namespace Int {
     return x->gq(home,n+1);
   }
   forceinline ModEvent
-  BoolView::gr(Space& home, double n) {
-    return gq(home,n+1.0);
+  BoolView::gr(Space& home, long long int n) {
+    return x->gq(home,n+1);
   }
 
   forceinline ModEvent
@@ -156,7 +156,7 @@ namespace Gecode { namespace Int {
     return x->nq(home,n);
   }
   forceinline ModEvent
-  BoolView::nq(Space& home, double n) {
+  BoolView::nq(Space& home, long long int n) {
     return x->nq(home,n);
   }
 
@@ -165,7 +165,7 @@ namespace Gecode { namespace Int {
     return x->eq(home,n);
   }
   forceinline ModEvent
-  BoolView::eq(Space& home, double n) {
+  BoolView::eq(Space& home, long long int n) {
     return x->eq(home,n);
   }
 

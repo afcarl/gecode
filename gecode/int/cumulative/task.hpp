@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-07-13 20:11:00 +1000 (Wed, 13 Jul 2011) $ by $Author: tack $
- *     $Revision: 12181 $
+ *     $Date: 2013-03-11 06:26:07 +0100 (Mon, 11 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13487 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -61,9 +61,9 @@ namespace Gecode { namespace Int { namespace Cumulative {
   ManFixPTask::c(void) const {
     return _c;
   }
-  forceinline double
+  forceinline long long int
   ManFixPTask::e(void) const {
-    return static_cast<double>(pmin())*c();
+    return static_cast<long long int>(pmin())*c();
   }
 
   forceinline void
@@ -102,9 +102,9 @@ namespace Gecode { namespace Int { namespace Cumulative {
   ManFixPSETask::c(void) const {
     return _c;
   }
-  forceinline double
+  forceinline long long int
   ManFixPSETask::e(void) const {
-    return static_cast<double>(pmin())*c();
+    return static_cast<long long int>(pmin())*c();
   }
 
   forceinline void
@@ -143,9 +143,9 @@ namespace Gecode { namespace Int { namespace Cumulative {
   ManFlexTask::c(void) const {
     return _c;
   }
-  forceinline double
+  forceinline long long int
   ManFlexTask::e(void) const {
-    return static_cast<double>(pmin())*c();
+    return static_cast<long long int>(pmin())*c();
   }
 
   forceinline void

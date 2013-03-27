@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2011-06-21 06:39:54 +1000 (Tue, 21 Jun 2011) $ by $Author: schulte $
- *     $Revision: 12069 $
+ *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13313 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -91,7 +91,8 @@ public:
     linear(*this, y, IRT_EQ, 2*n*(2*n+1)/4);
     linear(*this, sx, IRT_EQ, 2*n*(2*n+1)*(4*n+1)/12);
     linear(*this, sy, IRT_EQ, 2*n*(2*n+1)*(4*n+1)/12);
-    branch(*this, xy, INT_VAR_SIZE_AFC_MIN, INT_VAL_MIN);
+
+    branch(*this, xy, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
   }
 
   /// Constructor used during cloning \a s

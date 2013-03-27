@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-08-25 18:43:31 +1000 (Thu, 25 Aug 2011) $ by $Author: tack $
- *     $Revision: 12352 $
+ *     $Date: 2012-12-21 01:48:30 +0100 (Fri, 21 Dec 2012) $ by $Author: tack $
+ *     $Revision: 13214 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -36,6 +36,9 @@
  */
 
 #include <QtGui>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#endif
 
 #include <iostream>
 #include <gecode/gist/textoutput.hh>

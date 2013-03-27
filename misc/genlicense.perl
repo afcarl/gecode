@@ -7,8 +7,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2009-09-30 18:41:29 +1000 (Wed, 30 Sep 2009) $ by $Author: tack $
-#     $Revision: 9778 $
+#     $Date: 2013-03-08 17:29:13 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
+#     $Revision: 13486 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -86,7 +86,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </TT>
 
-\\section SecLicAuthors %Gecode authors
+\\section SecLicAuthors Gecode authors
 
 The following authors have contributed to the %Gecode library
 and its documentation (in alphabetical order of firstname):

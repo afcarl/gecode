@@ -6,9 +6,9 @@ dnl Copyright:
 dnl   Guido Tack, 2004, 2005
 dnl
 dnl Last modified:
-dnl   $Date: 2012-03-22 12:42:32 +1100 (Thu, 22 Mar 2012) $
-dnl   by $Author: tack $
-dnl   $Revision: 12614 $
+dnl   $Date: 2013-02-15 11:45:05 +0100 (Fri, 15 Feb 2013) $
+dnl   by $Author: schulte $
+dnl   $Revision: 13300 $
 dnl
 dnl This file is part of Gecode, the generic constraint
 dnl development environment:
@@ -66,7 +66,6 @@ AC_DEFUN([AC_GECODE_GET_OS],
 
 dnl Macros:
 dnl   AC_GECODE_ADD_TO_CXXFLAGS ([FLAG...])
-dnl   AC_GECODE_ADD_TO_GLDFLAGS ([FLAG...])
 dnl
 dnl Description:
 dnl   Add the flags to the corresponding variables
@@ -81,8 +80,6 @@ AC_DEFUN([AC_GECODE_ADD_TO_COMPILERFLAGS],
     CXXFLAGS="$1${CXXFLAGS:+ }${CXXFLAGS}"])
 AC_DEFUN([AC_GECODE_ADD_TO_CFLAGS],
    [CFLAGS="$1${CFLAGS:+ }${CFLAGS}"])
-AC_DEFUN([AC_GECODE_ADD_TO_GLDFLAGS],
-   [GLDFLAGS="$1${GLDFLAGS:+ }${GLDFLAGS}"])
 AC_DEFUN([AC_GECODE_ADD_TO_DLLFLAGS],
   [DLLFLAGS="$1${DLLFLAGS:+ }${DLLFLAGS}"])
 
@@ -213,33 +210,6 @@ AC_DEFUN([AC_GECODE_CHECK_COMPILERFLAG],
       AC_GECODE_CHECK_GCC_FLAG($1,[
         CFLAGS="$1${CFLAGS:+ }${CFLAGS}"],[])
    fi])dnl
-
-dnl Macro:
-dnl   AC_GECODE_CHECK_GLDFLAG (FLAG, [ACTION-IF-TRUE,
-dnl                                  [ACTION-IF-FALSE]])
-dnl
-dnl Description:
-dnl   Check whether FLAG is supported by the linker.  Run the
-dnl   shell commands ACTION-IF-TRUE if it is, ACTION-IF-FALSE
-dnl   otherwise.  If ACTION-IF-TRUE is not given, append FLAG to
-dnl   the contents of $GLDFLAGS.
-dnl
-dnl Authors:
-dnl   Leif Kornstaedt <kornstae@ps.uni-sb.de>
-dnl   Marco Kuhlmann <kuhlmann@ps.uni-sb.de>
-dnl
-AC_DEFUN([AC_GECODE_CHECK_GLDFLAG],
-  [AC_REQUIRE([AC_PROG_CXX])
-   AC_MSG_CHECKING(whether the linker accepts [$1])
-   ac_gecode_save_GLDFLAGS="${GLDFLAGS}"
-   GLDFLAGS="$1${GLDFLAGS:+ }${GLDFLAGS}"
-   AC_LINK_IFELSE([AC_LANG_PROGRAM()],
-     [AC_MSG_RESULT(yes)
-      GLDFLAGS="$ac_gecode_save_GLDFLAGS"
-      ifelse([$2], , [GLDFLAGS="$1${GLDFLAGS:+ }${GLDFLAGS}"], [$2])],
-     [AC_MSG_RESULT(no)
-      GLDFLAGS="$ac_gecode_save_GLDFLAGS"
-      ifelse([$3], , :, [$3])])])dnl
 
 dnl @synopsis _AC_C_IFDEF(MACRO-NAME, ACTION-IF-DEF, ACTION-IF-NOT-DEF)
 dnl
@@ -653,6 +623,7 @@ AC_DEFUN([AC_GECODE_GCC_GENERAL_SWITCHES],
   AC_SUBST(KERNEL,     "kernel")
   AC_SUBST(SEARCH,     "search")
   AC_SUBST(INT,        "int")
+  AC_SUBST(FLOAT,      "float")
   AC_SUBST(SET,        "set")
   AC_SUBST(MM,         "minimodel")
   AC_SUBST(GIST,       "gist")
@@ -665,16 +636,20 @@ AC_DEFUN([AC_GECODE_GCC_OPTIMIZED_SWITCHES],
   AC_LANG_PUSH([C++])
   ac_gecode_save_CXXFLAGS="${CXXFLAGS}"
   CXXFLAGS="$1${CXXFLAGS:+ }${CXXFLAGS} -Werror"
-  AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM([
-      [inline __attribute__ ((__always_inline__)) void foo(void) {}]],
-      [])],
-    [AC_MSG_RESULT(yes)
-     AC_DEFINE(forceinline, [inline __attribute__ ((__always_inline__))],
-       [How to tell the compiler to really, really inline])],
+  _AC_C_IFDEF([__clang__],
     [AC_MSG_RESULT(no)
      AC_DEFINE(forceinline, [inline],
-       [How to tell the compiler to really, really inline])])
+       [How to tell the compiler to really, really inline])],
+    [AC_COMPILE_IFELSE(
+       [AC_LANG_PROGRAM([
+         [inline __attribute__ ((__always_inline__)) void foo(void) {}]],
+         [])],
+       [AC_MSG_RESULT(yes)
+        AC_DEFINE(forceinline, [inline __attribute__ ((__always_inline__))],
+          [How to tell the compiler to really, really inline])],
+       [AC_MSG_RESULT(no)
+        AC_DEFINE(forceinline, [inline],
+          [How to tell the compiler to really, really inline])])])
   CXXFLAGS=${ac_gecode_save_CXXFLAGS}
   AC_LANG_POP([C++])
     AC_GECODE_CHECK_COMPILERFLAG([${ac_gecode_gcc_optimize_flag}])
@@ -707,6 +682,7 @@ AC_DEFUN([AC_GECODE_NO_BUILDFLAGS],
    AC_SUBST(GECODE_BUILD_KERNEL_FLAG, "")
    AC_SUBST(GECODE_BUILD_SEARCH_FLAG, "")
    AC_SUBST(GECODE_BUILD_INT_FLAG, "")
+   AC_SUBST(GECODE_BUILD_FLOAT_FLAG, "")
    AC_SUBST(GECODE_BUILD_SET_FLAG, "")
    AC_SUBST(GECODE_BUILD_MINIMODEL_FLAG, "")
    AC_SUBST(GECODE_BUILD_GIST_FLAG, "")
@@ -718,6 +694,7 @@ AC_DEFUN([AC_GECODE_BUILDFLAGS],
    AC_SUBST(GECODE_BUILD_KERNEL_FLAG, "-DGECODE_BUILD_KERNEL")
    AC_SUBST(GECODE_BUILD_SEARCH_FLAG, "-DGECODE_BUILD_SEARCH")
    AC_SUBST(GECODE_BUILD_INT_FLAG, "-DGECODE_BUILD_INT")
+   AC_SUBST(GECODE_BUILD_FLOAT_FLAG, "-DGECODE_BUILD_FLOAT")
    AC_SUBST(GECODE_BUILD_SET_FLAG, "-DGECODE_BUILD_SET")
    AC_SUBST(GECODE_BUILD_MINIMODEL_FLAG, "-DGECODE_BUILD_MINIMODEL")
    AC_SUBST(GECODE_BUILD_GIST_FLAG, "-DGECODE_BUILD_GIST")
@@ -773,16 +750,15 @@ AC_DEFUN([AC_GECODE_UNIX_PATHS],
 AC_DEFUN([AC_GECODE_MSVC_SWITCHES],
  [dnl general compiler flags
   AC_DEFINE(forceinline,[__forceinline])
-  AC_GECODE_ADD_TO_COMPILERFLAGS([-nologo])
+  AC_GECODE_ADD_TO_COMPILERFLAGS([-nologo -bigobj])
   AC_GECODE_ADD_TO_CFLAGS([-D_CRT_SECURE_NO_DEPRECATE])
   AC_GECODE_ADD_TO_CXXFLAGS([-EHsc])
   AC_DEFINE([GECODE_MEMORY_ALIGNMENT], [sizeof(void*)],
             [Heap memory alignment])
-
   if test "${enable_debug:-no}" = "no"; then
     dnl compiler flags for an optimized build
     AC_GECODE_ADD_TO_COMPILERFLAGS([${ac_gecode_cl_optimize_flag}])
-    AC_GECODE_ADD_TO_COMPILERFLAGS([-MD -fp:fast -GS- -wd4355])
+    AC_GECODE_ADD_TO_COMPILERFLAGS([-MD -GS- -wd4355])
     AC_GECODE_CHECK_COMPILERFLAG([-arch:SSE2])
 
     dnl flags for creating optimized dlls
@@ -833,7 +809,6 @@ AC_DEFUN([AC_GECODE_MSVC_SWITCHES],
   AC_SUBST(COMPILESBJ, "-c -Fa")
   AC_SUBST(CXXIN, "-Tp")
   AC_SUBST(CCIN, "-Tc")
-  AC_SUBST(EXAMPLES_EXTRA_CXXFLAGS, "-bigobj")
 
   dnl Install stub .lib files (required for msvc)
   AC_SUBST(INSTALLLIBS, "yes")
@@ -848,6 +823,7 @@ AC_DEFUN([AC_GECODE_MSVC_SWITCHES],
   AC_SUBST(KERNEL,     "Kernel")
   AC_SUBST(SEARCH,     "Search")
   AC_SUBST(INT,        "Int")
+  AC_SUBST(FLOAT,      "Float")
   AC_SUBST(SET,        "Set")
   AC_SUBST(MM,         "Minimodel")
   AC_SUBST(GIST,       "Gist")
@@ -1040,26 +1016,198 @@ AC_DEFUN([AC_GECODE_FRAMEWORK],
 ])
 
 dnl Macro:
-dnl   AC_GECODE_BOOST
+dnl   AC_GECODE_MPFR_INCLUDE
 dnl
 dnl Description:
-dnl   Produces the configure switch --with-boost-include
-dnl   for supplying the path to the boost library.
+dnl   Produces the configure switch --with-mpfr-include
+dnl   for supplying the path to the mpfr header.
 dnl
-dnl Authors:
-dnl   Guido Tack <tack@gecode.org>
-AC_DEFUN([AC_GECODE_BOOST],
-  [dnl build with support for the boost library
-  AC_ARG_WITH([boost-include],
-    AC_HELP_STRING([--with-boost-include],
-    [path to the boost header files]))
-  if test "${with_boost_include:-no}" != "no"; then
-      AC_SUBST(BOOST_CPPFLAGS,[-I${with_boost_include}])
-      AC_SUBST(BOOST_LINK,["-L${with_boost_include}/../../lib -lboost_serialization"])
-      AC_DEFINE([GECODE_HAS_BOOST],[],
-                [Whether to compile boost dependent parts])
+AC_DEFUN([AC_GECODE_MPFR_INCLUDE],
+  [dnl build with support for the mpfr header
+  AC_ARG_WITH([mpfr-include],
+    AC_HELP_STRING([--with-mpfr-include],
+    [path to the mpfr header file]))
+  if test "${with_mpfr_include:-no}" != "no"; then
+      AC_SUBST(MPFR_CPPFLAGS,[-I${with_mpfr_include}])
   fi
 ])
+
+dnl Macro:
+dnl   AC_GECODE_MPFR_LIB
+dnl
+dnl Description:
+dnl   Produces the configure switch --with-mpfr-lib
+dnl   for supplying the path to the mpfr library.
+dnl
+AC_DEFUN([AC_GECODE_MPFR_LIB],
+  [dnl build with support for the mpfr library
+  AC_ARG_WITH([mpfr-lib],
+    AC_HELP_STRING([--with-mpfr-lib],
+    [path to the mpfr library]))
+  if test "${with_mpfr_lib:-no}" != "no"; then
+      case $ac_gecode_compiler_vendor in
+        gnu)
+          AC_SUBST(MPFR_LIB_PATH,["-L${with_mpfr_lib}"])
+        ;;
+        microsoft)
+          AC_SUBST(MPFR_LIB_PATH,["/LIBPATH:${with_mpfr_lib}"])
+        ;;
+       esac
+  else
+       AC_SUBST(MPFR_LIB_PATH,[""])
+  fi
+  case $ac_gecode_compiler_vendor in
+    gnu)
+     AC_SUBST(MPFR_LINK,["-lmpfr"])
+    ;;
+    microsoft)
+      AC_SUBST(MPFR_LINK,["mpfr.lib"])
+    ;;
+  esac
+])
+
+dnl Macro:
+dnl   AC_GECODE_GMP_INCLUDE
+dnl
+dnl Description:
+dnl   Produces the configure switch --with-gmp-include
+dnl   for supplying the path to the gmp or mpir headers.
+dnl
+AC_DEFUN([AC_GECODE_GMP_INCLUDE],
+  [dnl build with support for the gmp headers
+  AC_ARG_WITH([gmp-include],
+    AC_HELP_STRING([--with-gmp-include],
+    [path to the gmp or mpir header files]))
+  if test "${with_gmp_include:-no}" != "no"; then
+      AC_SUBST(GMP_CPPFLAGS,[-I${with_gmp_include}])
+  fi
+])
+
+dnl Macro:
+dnl   AC_GECODE_GMP_LIB
+dnl
+dnl Description:
+dnl   Produces the configure switch --with-gmp-lib
+dnl   for supplying the path to the GMP library.
+dnl
+AC_DEFUN([AC_GECODE_GMP_LIB],
+  [dnl build with support for the GMP library
+  AC_ARG_WITH([gmp-lib],
+    AC_HELP_STRING([--with-gmp-lib],
+    [path to the gmp or mpir library]))
+
+  ac_gecode_tmp_gmp_lib=""
+  if test "${with_gmp_lib:-no}" != "no"; then
+      case $ac_gecode_compiler_vendor in
+        gnu)
+          AC_SUBST(GMP_LIB_PATH,["-L${with_gmp_lib}"])
+        ;;
+        microsoft)
+          AC_SUBST(GMP_LIB_PATH,["/LIBPATH:${with_gmp_lib}"])
+        ;;
+       esac
+  else
+       AC_SUBST(GMP_LIB_PATH,[""])
+  fi
+
+  ac_gecode_save_CPPFLAGS="${CPPFLAGS}"
+  ac_gecode_save_LIBS="${LIBS}"
+  case $ac_gecode_compiler_vendor in
+    gnu)
+      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ } ${GMP_CPPFLAGS}"
+      LIBS="${LIBS}${LIBS:+ } ${GMP_LIB_PATH}"
+      AC_CHECK_LIB(gmp, __gmpz_init,[
+        AC_SUBST(GMP_LINK,"${ac_gecode_tmp_gmp_lib} -lgmp")
+      ],[
+        AC_CHECK_LIB(mpir, __gmpz_init,[
+          AC_SUBST(GMP_LINK,"${ac_gecode_tmp_gmp_lib} -lmpir")
+          ],[
+          enable_mpfr=no;
+          ])
+      ])
+    ;;
+    microsoft)
+      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ } ${GMP_CPPFLAGS}"
+      LIBS="${LIBS}${LIBS:+ } /link ${GMP_LIB_PATH} gmp.lib"
+      AC_CHECK_LIB(gmp, __gmpz_init,[
+        AC_SUBST(GMP_LINK,"${ac_gecode_tmp_gmp_lib} gmp.lib")
+      ],[
+        LIBS="${ac_gecode_save_LIBS}"
+        LIBS="${LIBS}${LIBS:+ } /link ${GMP_LIB_PATH} mpir.lib"
+        AC_CHECK_LIB(mpir, __gmpz_init,[
+          AC_SUBST(GMP_LINK,"${ac_gecode_tmp_gmp_lib} mpir.lib")
+          ],[
+          enable_mpfr=no;
+          ])
+      ])
+    ;;
+  esac
+  CPPFLAGS="${ac_gecode_save_CPPFLAGS}"
+  LIBS="${ac_gecode_save_LIBS}"
+  ])
+
+
+dnl Macro:
+dnl   AC_GECODE_MPFR
+dnl
+dnl Description:
+dnl   Produces the configure switch --enable-mpfr
+dnl   for compiling parts of Gecode that need the MPFR library.
+dnl
+dnl Authors:
+AC_DEFUN([AC_GECODE_MPFR],
+  [
+  AC_ARG_ENABLE([mpfr],
+    AC_HELP_STRING([--enable-mpfr],
+      [build with MPFR support @<:@default=yes@:>@]))
+  if test "${enable_float_vars:-yes}" = "yes"; then
+    AC_MSG_CHECKING(whether to build with MPFR support)
+    if test "${enable_mpfr:-yes}" = "yes"; then
+      AC_MSG_RESULT(yes)
+      AC_GECODE_GMP_INCLUDE
+      AC_GECODE_GMP_LIB
+      AC_GECODE_MPFR_INCLUDE
+      AC_GECODE_MPFR_LIB
+      ac_gecode_save_CPPFLAGS="${CPPFLAGS}"
+      ac_gecode_save_LIBS="${LIBS}"
+      case $ac_gecode_compiler_vendor in
+        gnu)
+          CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ } ${MPFR_CPPFLAGS} ${GMP_CPPFLAGS}"
+          LIBS="${LIBS}${LIBS:+ } ${MPFR_LIB_PATH} ${GMP_LIB_PATH} ${MPFR_LINK} ${GMP_LINK}"
+          AC_CHECK_HEADERS([gmp.h], 
+            AC_CHECK_HEADERS([mpfr.h], 
+                             AC_CHECK_LIB(mpfr, mpfr_add,
+                                          AC_DEFINE([GECODE_HAS_MPFR],[],[Whether MPFR is available])
+                                          enable_mpfr=yes;,
+                                          enable_mpfr=no;),
+                             enable_mpfr=no; ),
+                           enable_mpfr=no; )
+        ;;
+        microsoft)
+          CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ } ${MPFR_CPPFLAGS} ${GMP_CPPFLAGS}"
+          LIBS="${LIBS}${LIBS:+ } /link ${MPFR_LIB_PATH} ${GMP_LIB_PATH} ${MPFR_LINK} ${GMP_LINK}"
+          AC_CHECK_HEADERS([gmp.h], 
+            AC_CHECK_HEADERS([mpfr.h], 
+                             AC_CHECK_FUNC(mpfr_add,
+                                          AC_DEFINE([GECODE_HAS_MPFR],[],[Whether MPFR is available])
+                                          enable_mpfr=yes;,
+                                          enable_mpfr=no;),
+                             enable_mpfr=no; ),
+                           enable_mpfr=no; )
+        ;;
+      esac
+      CPPFLAGS="${ac_gecode_save_CPPFLAGS}"
+      LIBS="${ac_gecode_save_LIBS}"
+    else
+      AC_MSG_RESULT(no)
+      enable_mpfr=no;
+    fi
+  else
+    enable_mpfr=no;
+  fi
+  AC_SUBST(enable_mpfr, ${enable_mpfr})
+])
+
 
 dnl Macro:
 dnl   AC_GECODE_QT
@@ -1100,6 +1248,9 @@ AC_DEFUN([AC_GECODE_QT],
         ac_gecode_qt_tmpdir=`mktemp -d gistqt.XXXXXX` || exit 1
         cd ${ac_gecode_qt_tmpdir}
         echo "CONFIG += release" > a.pro
+        if test ${ac_gecode_qt_major} -eq 5; then
+          echo "QT += widgets printsupport" >> a.pro
+        fi
         ${QMAKE}
         if test -d a.xcodeproj; then
           ac_gecode_qt_makefile=a.xcodeproj/qt_preprocess.mak

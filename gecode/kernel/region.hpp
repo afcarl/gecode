@@ -11,8 +11,8 @@
  *     LOGIS, s.r.o., 2009
  *
  *  Last modified:
- *     $Date: 2011-04-08 22:12:09 +1000 (Fri, 08 Apr 2011) $ by $Author: schulte $
- *     $Revision: 11917 $
+ *     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13347 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -72,7 +72,7 @@ namespace Gecode {
       /// Limit of allocated heap blocks
       unsigned int size;
       /// Pointers to allocated heap blocks (more entries)
-      void* blocks[0];
+      void* blocks[1];
     };
     /**
      * \brief Heap allocation information
@@ -456,4 +456,4 @@ namespace Gecode {
 
 }
 
-// STATISTICS: kernel-other
+// STATISTICS: kernel-memory

@@ -8,8 +8,8 @@
  *     Guido Tack, 2005
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2013-03-08 17:29:13 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13486 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -62,7 +62,7 @@
  */
 
 /**
- * \defgroup TaskModelInt Using finite domain integers
+ * \defgroup TaskModelInt Using integer variables and constraints
  * \ingroup TaskModel
  */
 
@@ -89,12 +89,22 @@
  */
 
 /**
- * \defgroup TaskModelSet Using finite integer sets
+ * \defgroup TaskModelSet Using integer set variables and constraints
  * \ingroup TaskModel
  */
 
 /**
  * \defgroup TaskModelSetVars Set variables
+ * \ingroup TaskModelSet
+ */
+
+/**
+ * \defgroup TaskModelFloat Using float variables and constraints
+ * \ingroup TaskModel
+ */
+
+/**
+ * \defgroup TaskModelFloatVars Float variables
  * \ingroup TaskModelSet
  */
 
@@ -125,6 +135,11 @@
 
 /**
  * \defgroup TaskActorSet Programming set actors
+ * \ingroup TaskActor
+ */
+
+/**
+ * \defgroup TaskActorFloat Programming float actors
  * \ingroup TaskActor
  */
 
@@ -258,30 +273,6 @@
  */
 
 /**
- * \defgroup FuncIntSelView Integer view selection for brancher
- *
- * Contains a description of view selection strategies on integer
- * views that can be used together with the generic view/value
- * brancher class Gecode::ViewValBrancher (argument \a ViewSel).
- *
- * All view selection classes require 
- * \code #include <gecode/int/branch.hh> \endcode
- * \ingroup Other
- */
-
-/**
- * \defgroup FuncIntSelVal Integer value selection for brancher
- *
- * Contains a description of value selection strategies on integer
- * views that can be used together with the generic view/value
- * brancher class Gecode::ViewValBrancher (argument \a ValSel).
- *
- * All value selection classes require 
- * \code #include <gecode/int/branch.hh> \endcode
- * \ingroup Other
- */
-
-/**
  * \defgroup FuncSetProp Set propagators
  *
  * This module contains a description of all predefined finite set
@@ -292,26 +283,12 @@
  */
 
 /**
- * \defgroup FuncSetSelView Set view selection for brancher
+ * \defgroup FuncFloatProp Float propagators
  *
- * Contains a description of view selection strategies on set
- * views that can be used together with the generic view/value
- * brancher class Gecode::ViewValBrancher (argument \a ViewSel).
- *
- * All view selection classes require 
- * \code #include <gecode/set/branch.hh> \endcode
- * \ingroup Other
- */
-
-/**
- * \defgroup FuncSetSelVal Set value selection for brancher
- *
- * Contains a description of value selection strategies on set
- * views that can be used together with the generic view/value
- * brancher class Gecode::ViewValBrancher (argument \a ValSel).
- *
- * All value selection classes require 
- * \code #include <gecode/set/branch.hh> \endcode
+ * This module contains a description of all predefined float
+ * propagators. They can be reused, for example, for rewriting
+ * newly defined float propagators into already available
+ * propagators.
  * \ingroup Other
  */
 
@@ -339,6 +316,11 @@
 /**
  * \namespace Gecode::Kernel
  * \brief %Kernel functionality
+ */
+
+/**
+ * \namespace Gecode::Search
+ * \brief %Search engines
  */
 
 /**
@@ -590,5 +572,43 @@ not clutter the include namespace of a client program.
 The constrain method used for best solution search must be
 virtual and takes an argument of type const Space& rather than
 Space* as argument.
+
+*/
+
+/**
+ * \page PageHowToChange_4 How to Change from %Gecode 3.7.3 to %Gecode 4.0.0
+ *
+
+As %Gecode 4.0.0 is a major revision, your programs that
+are written for %Gecode 3.7.3 are likely to require some
+modifications before they work again.
+
+\section SecChange4NewBranch Changed branching parameters
+
+The pre-defined variable-value branchings have been extended
+considerably and hence some changes are required.
+
+In order to change, you have to add () to all variants of
+INT_VAR, INT_VAL, INT_ASSIGN, SET_VAR, SET_VAL, and
+SET_ASSIGN. For example, INT_VAR_MIN_MIN becomes the function
+call INT_VAR_MIN_MIN() and INT_VAL_MIN becomes the function
+call INT_VAL_MIN(). Some of these functions expect additional
+arguments and can take also optional arguments (this replaces the
+VarBranchOptions and ValBranchOptions). Please read MPG for
+details.
+
+\section SecChange4SizeBranch Branchings treat SIZE differently
+
+Variable selection for branching used the quotient of size
+divided by degree, accumulated failure count, or activity. 
+Now the inverse is used. That is, for example, it is not any longer
+INT_VAR_SIZE_DEGREE_MIN() but INT_VAR_DEGREE_SIZE_MAX() (that is,
+largest degree divided by size).
+
+That looks like an annoying change but is in fact essential: the
+strategies using accumulated failure count and activity now could
+have run into division by zero issues. And just changing the
+implementation is not good enough because the values of these
+measures can now be exposed during tie-breaking.
 
 */

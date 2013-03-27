@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2011-09-28 22:14:32 +1000 (Wed, 28 Sep 2011) $ by $Author: tack $
- *     $Revision: 12417 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -121,8 +121,8 @@ namespace Gecode { namespace Int {
   }
   template<class Char, class Traits>
   inline std::basic_ostream<Char,Traits>&
-  operator <<(std::basic_ostream<Char,Traits>& os, const DoubleScaleView& x) {
-    return print_scale<Char,Traits,double,double>(os,x);
+  operator <<(std::basic_ostream<Char,Traits>& os, const LLongScaleView& x) {
+    return print_scale<Char,Traits,long long int,unsigned long long int>(os,x);
   }
 
   template<class Char, class Traits>

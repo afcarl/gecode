@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-07-09 00:08:27 +1000 (Sat, 09 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12168 $
+ *     $Date: 2012-09-10 19:36:08 +0200 (Mon, 10 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13072 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -37,41 +37,41 @@
 
 namespace Gecode { namespace Int { namespace NoOverlap {
 
-  template<class Dim, int d>
+  template<class Box>
   forceinline
-  ManProp<Dim,d>::ManProp(Home home, ManBox<Dim,d>* b, int n)
-    : Base<ManBox<Dim,d> >(home, b, n) {}
+  ManProp<Box>::ManProp(Home home, Box* b, int n)
+    : Base<Box>(home, b, n) {}
 
-  template<class Dim, int d>
+  template<class Box>
   inline ExecStatus
-  ManProp<Dim,d>::post(Home home, ManBox<Dim,d>* b, int n) {
+  ManProp<Box>::post(Home home, Box* b, int n) {
     if (n > 1)
-      (void) new (home) ManProp<Dim,d>(home,b,n);
+      (void) new (home) ManProp<Box>(home,b,n);
     return ES_OK;
   }
 
-  template<class Dim, int d>
+  template<class Box>
   forceinline size_t 
-  ManProp<Dim,d>::dispose(Space& home) {
-    (void) Base<ManBox<Dim,d> >::dispose(home);
+  ManProp<Box>::dispose(Space& home) {
+    (void) Base<Box>::dispose(home);
     return sizeof(*this);
   }
 
 
-  template<class Dim, int d>
+  template<class Box>
   forceinline
-  ManProp<Dim,d>::ManProp(Space& home, bool shared, ManProp<Dim,d>& p) 
-    : Base<ManBox<Dim,d> >(home, shared, p, p.n) {}
+  ManProp<Box>::ManProp(Space& home, bool shared, ManProp<Box>& p) 
+    : Base<Box>(home, shared, p, p.n) {}
 
-  template<class Dim, int d>
+  template<class Box>
   Actor* 
-  ManProp<Dim,d>::copy(Space& home, bool share) {
-    return new (home) ManProp<Dim,d>(home,share,*this);
+  ManProp<Box>::copy(Space& home, bool share) {
+    return new (home) ManProp<Box>(home,share,*this);
   }
 
-  template<class Dim, int d>
+  template<class Box>
   ExecStatus 
-  ManProp<Dim,d>::propagate(Space& home, const ModEventDelta&) {
+  ManProp<Box>::propagate(Space& home, const ModEventDelta&) {
     Region r(home);
 
     // Number of disjoint boxes

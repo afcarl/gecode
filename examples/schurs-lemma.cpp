@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-07-08 20:09:31 +1000 (Fri, 08 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12164 $
+ *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13313 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -108,7 +108,7 @@ public:
     // Break value symmetries
     precede(*this, box, IntArgs::create(opt.c, 1));
 
-    branch(*this, box, INT_VAR_SIZE_AFC_MIN, INT_VAL_MIN);
+    branch(*this, box, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
   }
   /// Print solution
   virtual void

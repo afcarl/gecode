@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
- *     $Revision: 10684 $
+ *     $Date: 2011-11-03 14:57:30 +0100 (Thu, 03 Nov 2011) $ by $Author: tack $
+ *     $Revision: 12455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -140,4 +140,4 @@ namespace Test {
 
 }
 
-// STATISTICS: test-kernel
+// STATISTICS: test-core

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2011-08-29 20:13:11 +1000 (Mon, 29 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12357 $
+ *     $Date: 2013-03-07 20:40:42 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13462 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -68,11 +68,6 @@ protected:
   /// Array for ruler marks
   IntVarArray m;
 public:
-  /// Search variants
-  enum {
-    SEARCH_BAB,    ///< Use branch and bound to optimize
-    SEARCH_RESTART ///< Use restart to optimize
-  };
   /// Actual model
   GolombRuler(const SizeOptions& opt)
     : m(*this,opt.size(),0,
@@ -104,7 +99,7 @@ public:
     if (n > 2)
       rel(*this, d[0], IRT_LE, d[n_d-1]);
 
-    branch(*this, m, INT_VAR_NONE, INT_VAL_MIN);
+    branch(*this, m, INT_VAR_NONE(), INT_VAL_MIN());
   }
 
   /// Return cost
@@ -139,17 +134,9 @@ main(int argc, char* argv[]) {
   opt.solutions(0);
   opt.size(10);
   opt.icl(ICL_BND);
-  opt.search(GolombRuler::SEARCH_BAB);
-  opt.search(GolombRuler::SEARCH_BAB, "bab");
-  opt.search(GolombRuler::SEARCH_RESTART, "restart");
   opt.parse(argc,argv);
   if (opt.size() > 0)
-    switch (opt.search()) {
-    case GolombRuler::SEARCH_BAB:
-      MinimizeScript::run<GolombRuler,BAB,SizeOptions>(opt); break;
-    case GolombRuler::SEARCH_RESTART:
-      MinimizeScript::run<GolombRuler,Restart,SizeOptions>(opt); break;
-    }
+    MinimizeScript::run<GolombRuler,BAB,SizeOptions>(opt);
   return 0;
 }
 

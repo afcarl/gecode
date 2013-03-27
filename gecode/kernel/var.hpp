@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2010-09-01 00:19:34 +1000 (Wed, 01 Sep 2010) $ by $Author: schulte $
- *     $Revision: 11366 $
+ *     $Date: 2013-02-18 21:53:58 +0100 (Mon, 18 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13310 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -65,8 +65,8 @@ namespace Gecode {
     VarImp* varimp(void) const;
     /// Return degree (number of subscribed propagators and advisors)
     unsigned int degree(void) const;
-    /// Return accumulated failure count (plus degree)
-    double afc(void) const;
+    /// Return accumulated failure count
+    double afc(const Space& home) const;
     //@}
 
     /// \name Domain tests
@@ -115,8 +115,8 @@ namespace Gecode {
   }
   template<class VarImp>
   forceinline double
-  VarImpVar<VarImp>::afc(void) const {
-    return x->afc();
+  VarImpVar<VarImp>::afc(const Space& home) const {
+    return x->afc(home);
   }
   template<class VarImp>
   forceinline bool

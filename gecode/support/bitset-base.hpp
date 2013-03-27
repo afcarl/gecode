@@ -11,8 +11,8 @@
  *     Christian Schulte, 2007
  *
  *  Last modified:
- *     $Date: 2010-06-11 16:42:02 +1000 (Fri, 11 Jun 2010) $ by $Author: tack $
- *     $Revision: 11068 $
+ *     $Date: 2012-07-13 02:37:25 +0200 (Fri, 13 Jul 2012) $ by $Author: tack $
+ *     $Revision: 12962 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -122,6 +122,11 @@ namespace Gecode { namespace Support {
     bool _get(unsigned int i) const;
     /// Set bit \a i (no index check)
     void _set(unsigned int i);
+  private:
+    /// Copy constructor (disabled)
+    BitSetBase(const BitSetBase&);
+    /// Assignment operator (disabled)
+    BitSetBase& operator =(const BitSetBase&);
   public:
     /// Default constructor (yields empty set)
     BitSetBase(void);
@@ -166,7 +171,7 @@ namespace Gecode { namespace Support {
   }
   forceinline unsigned int
   BitSetData::data(unsigned int s) {
-    return (s+bpb-1) / bpb;
+    return s == 0 ? 0 : ((s-1) / bpb + 1);
   }
   forceinline bool
   BitSetData::operator ()(unsigned int i) const {

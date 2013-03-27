@@ -7,8 +7,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2011-07-13 20:31:25 +1000 (Wed, 13 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12182 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -147,7 +147,7 @@ public:
       precede(*this, groups, IntArgs::create(groups.size(),0));
     }
 
-    branch(*this, groups, SET_VAR_MIN_MIN, SET_VAL_MIN_INC);
+    branch(*this, groups, SET_VAR_MIN_MIN(), SET_VAL_MIN_INC());
   }
 
   /// Print solution

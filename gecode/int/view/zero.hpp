@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2010-07-29 01:35:33 +1000 (Thu, 29 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11294 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -96,7 +96,7 @@ namespace Gecode { namespace Int {
     return n == 0;
   }
   forceinline bool
-  ZeroIntView::in(double n) const {
+  ZeroIntView::in(long long int n) const {
     return n == 0;
   }
 
@@ -110,7 +110,7 @@ namespace Gecode { namespace Int {
     return (0 <= n) ? ME_INT_NONE : ME_INT_FAILED;
   }
   forceinline ModEvent
-  ZeroIntView::lq(Space&, double n) {
+  ZeroIntView::lq(Space&, long long int n) {
     return (0 <= n) ? ME_INT_NONE : ME_INT_FAILED;
   }
 
@@ -119,7 +119,7 @@ namespace Gecode { namespace Int {
     return (0 < n) ? ME_INT_NONE : ME_INT_FAILED;
   }
   forceinline ModEvent
-  ZeroIntView::le(Space&, double n) {
+  ZeroIntView::le(Space&, long long int n) {
     return (0 < n) ? ME_INT_NONE : ME_INT_FAILED;
   }
 
@@ -128,7 +128,7 @@ namespace Gecode { namespace Int {
     return (0 >= n) ? ME_INT_NONE : ME_INT_FAILED;
   }
   forceinline ModEvent
-  ZeroIntView::gq(Space&, double n) {
+  ZeroIntView::gq(Space&, long long int n) {
     return (0 >= n) ? ME_INT_NONE : ME_INT_FAILED;
   }
 
@@ -137,7 +137,7 @@ namespace Gecode { namespace Int {
     return (0 > n) ? ME_INT_NONE : ME_INT_FAILED;
   }
   forceinline ModEvent
-  ZeroIntView::gr(Space&, double n) {
+  ZeroIntView::gr(Space&, long long int n) {
     return (0 > n) ? ME_INT_NONE : ME_INT_FAILED;
   }
 
@@ -146,7 +146,7 @@ namespace Gecode { namespace Int {
     return (0 != n) ? ME_INT_NONE : ME_INT_FAILED;
   }
   forceinline ModEvent
-  ZeroIntView::nq(Space&, double n) {
+  ZeroIntView::nq(Space&, long long int n) {
     return (0 != n) ? ME_INT_NONE : ME_INT_FAILED;
   }
 
@@ -155,7 +155,7 @@ namespace Gecode { namespace Int {
     return (0 == n) ? ME_INT_NONE : ME_INT_FAILED;
   }
   forceinline ModEvent
-  ZeroIntView::eq(Space&, double n) {
+  ZeroIntView::eq(Space&, long long int n) {
     return (0 == n) ? ME_INT_NONE : ME_INT_FAILED;
   }
 

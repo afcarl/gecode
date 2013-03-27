@@ -2,13 +2,19 @@
 /*
  *  Main authors:
  *     Mikael Lagerkvist <lagerkvist@gecode.org>
+ *     Christian Schulte <schulte@gecode.org>
+ *
+ *  Contributing authors:
+ *     Vincent Barichard <Vincent.Barichard@univ-angers.fr>
  *
  *  Copyright:
  *     Mikael Lagerkvist, 2006
+ *     Christian Schulte, 2009
+ *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
- *     $Revision: 10684 $
+ *     $Date: 2012-04-05 12:00:11 +0200 (Thu, 05 Apr 2012) $ by $Author: vbarichard $
+ *     $Revision: 12703 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -44,6 +50,10 @@
 
 #ifdef GECODE_HAS_SET_VARS
 #include <gecode/set.hh>
+#endif
+
+#ifdef GECODE_HAS_FLOAT_VARS
+#include <gecode/float.hh>
 #endif
 
 #include "test/test.hh"
@@ -107,6 +117,29 @@ namespace Test {
       virtual bool run(void);
       /// Post propagators on variables \a x
       virtual void post(Gecode::Space& home, Gecode::SetVarArray& x) = 0;
+    };
+#endif
+
+#ifdef GECODE_HAS_FLOAT_VARS
+    /**
+     * \brief %Base class for tests for branching on float variables
+     *
+     */
+    class FloatTest : public Base {
+    protected:
+      /// Number of variables
+      int arity;
+      /// Domain of variables
+      Gecode::FloatVal dom;
+      /// Maximum number of solutions searched during solving
+      int nbSols;
+    public:
+      /// Construct and register test
+      FloatTest(const std::string& s, int a, const Gecode::FloatVal& d, int nbs);
+      /// Perform test
+      virtual bool run(void);
+      /// Post propagators on variables \a x
+      virtual void post(Gecode::Space& home, Gecode::FloatVarArray& x) = 0;
     };
 #endif
 

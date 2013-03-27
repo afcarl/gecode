@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-08-30 19:40:00 +1000 (Tue, 30 Aug 2011) $ by $Author: tack $
- *     $Revision: 12374 $
+ *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13458 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -36,6 +36,8 @@
  */
 
 #include <QtGui/QPainter>
+#include <QPrinter>
+#include <QPrintDialog>
 
 #include <stack>
 #include <fstream>
@@ -60,6 +62,7 @@ namespace Gecode { namespace Gist {
     , compareNodes(false), compareNodesBeforeFP(false)
     , autoHideFailed(true), autoZoom(false)
     , refresh(500), refreshPause(0), smoothScrollAndZoom(false)
+    , moveDuringSearch(false)
     , zoomTimeLine(500)
     , scrollTimeLine(1000), targetX(0), sourceX(0), targetY(0), sourceY(0)
     , targetW(0), targetH(0), targetScale(0)
@@ -97,6 +100,10 @@ namespace Gecode { namespace Gist {
               this, SLOT(inspectSolution(const Space*)));
       connect(&searcher, SIGNAL(solution(const Space*)),
               this, SLOT(inspectSolution(const Space*)),
+              Qt::BlockingQueuedConnection);
+
+      connect(&searcher, SIGNAL(moveToNode(VisualNode*,bool)),
+              this, SLOT(setCurrentNode(VisualNode*,bool)),
               Qt::BlockingQueuedConnection);
 
       connect(&searcher, SIGNAL(searchFinished(void)), this, SIGNAL(searchFinished(void)));
@@ -361,7 +368,7 @@ namespace Gecode { namespace Gist {
   };
 
   void
-  SearcherThread::run() {
+  SearcherThread::run(void) {
     {
       if (!node->isOpen())
         return;
@@ -426,15 +433,17 @@ namespace Gecode { namespace Gist {
                          static_cast<long unsigned int>(depth+stck.size()));
             }
           }
+          if (t->moveDuringSearch)
+            emit moveToNode(n,false);
         }
       }
       node->dirtyUp(*t->na);
       t->stopSearchFlag = false;
       t->mutex.unlock();
       if (sol != NULL) {
-        t->setCurrentNode(sol,false);
+        t->setCurrentNode(sol,true,false);
       } else {
-        t->setCurrentNode(node,false);
+        t->setCurrentNode(node,true,false);
       }
     }
     updateCanvas();
@@ -648,8 +657,17 @@ namespace Gecode { namespace Gist {
               if (moveInspectors[i].second) {
                 failedInspectorType = 0;
                 failedInspector = i;
-                moveInspectors[i].first->
-                  inspect(*currentNode->getWorkingSpace());
+                if (currentNode->getStatus() == FAILED) {
+                  if (!currentNode->isRoot()) {
+                    Space* curSpace =
+                      currentNode->getSpace(*na,curBest,c_d,a_d);
+                    moveInspectors[i].first->inspect(*curSpace);
+                    delete curSpace;
+                  }
+                } else {
+                  moveInspectors[i].first->
+                    inspect(*currentNode->getWorkingSpace());
+                }
                 failedInspectorType = -1;
               }
             }
@@ -683,8 +701,10 @@ namespace Gecode { namespace Gist {
             curSpace = currentNode->getSpace(*na,curBest,c_d,a_d);
             if (currentNode->getStatus() == SOLVED &&
                 curSpace->status() != SS_SOLVED) {
-              // in the presence of weakly monotonic propagators, we may have to
-              // use search to find the solution here
+              // in the presence of weakly monotonic propagators, we may have
+              // to use search to find the solution here
+              assert(curSpace->status() == SS_BRANCH &&
+                     "Something went wrong - probably an incorrect brancher");
               Space* dfsSpace = Gecode::dfs(curSpace);
               delete curSpace;
               curSpace = dfsSpace;
@@ -726,23 +746,20 @@ namespace Gecode { namespace Gist {
         }
         break;
       }
-    } catch (Exception e) {
+    } catch (Exception& e) {
       switch (failedInspectorType) {
       case 0:
-        std::cerr << "Exception in move inspector "
-                  << failedInspector;
+        qFatal("Exception in move inspector %d: %s.\n Stopping.",
+               failedInspector, e.what());
         break;
       case 1:
-        std::cerr << "Exception in double-click inspector "
-                  << failedInspector;
+        qFatal("Exception in double click inspector %d: %s.\n Stopping.",
+               failedInspector, e.what());
         break;
       default:
-        std::cerr << "Exception ";
+        qFatal("Exception: %s.\n Stopping.", e.what());
         break;
       }
-      std::cerr << ": " << e.what() << "." << std::endl;
-      std::cerr << "Stopping..." << std::endl;
-      std::exit(EXIT_FAILURE);
     }
 
     currentNode->dirtyUp(*na);
@@ -773,23 +790,20 @@ namespace Gecode { namespace Gist {
         }
       }
       delete c;
-    } catch (Exception e) {
+    } catch (Exception& e) {
       switch (failedInspectorType) {
       case 0:
-        std::cerr << "Exception in move inspector "
-                  << failedInspector;
+        qFatal("Exception in move inspector %d: %s.\n Stopping.",
+               failedInspector, e.what());
         break;
       case 1:
-        std::cerr << "Exception in solution inspector "
-                  << failedInspector;
+        qFatal("Exception in solution inspector %d: %s.\n Stopping.",
+               failedInspector, e.what());
         break;
       default:
-        std::cerr << "Exception ";
+        qFatal("Exception: %s.\n Stopping.", e.what());
         break;
       }
-      std::cerr << ": " << e.what() << "." << std::endl;
-      std::cerr << "Stopping..." << std::endl;
-      std::exit(EXIT_FAILURE);      
     }
   }
 
@@ -1277,8 +1291,9 @@ namespace Gecode { namespace Gist {
   }
 
   void
-  TreeCanvas::setCurrentNode(VisualNode* n, bool update) {
-    QMutexLocker locker(&mutex);
+  TreeCanvas::setCurrentNode(VisualNode* n, bool finished, bool update) {
+    if (finished)
+      mutex.lock();
     if (update && n != NULL && n != currentNode &&
         n->getStatus() != UNDETERMINED && !n->isHidden()) {
       Space* curSpace = NULL;
@@ -1288,11 +1303,9 @@ namespace Gecode { namespace Gist {
             curSpace = n->getSpace(*na,curBest,c_d,a_d);
           try {
             moveInspectors[i].first->inspect(*curSpace);
-          } catch (Exception e) {
-            std::cerr << "Exception in move inspector " << i
-                      << ": " << e.what() << "." << std::endl;
-            std::cerr << "Stopping..." << std::endl;
-            std::exit(EXIT_FAILURE);
+          } catch (Exception& e) {
+            qFatal("Exception in move inspector %d: %s.\n Stopping.",
+                   i, e.what());
           }
         }
       }
@@ -1301,13 +1314,15 @@ namespace Gecode { namespace Gist {
       currentNode->setMarked(false);
       currentNode = n;
       currentNode->setMarked(true);
-      emit statusChanged(currentNode,stats,true);
+      emit statusChanged(currentNode,stats,finished);
       if (update) {
         compareNodes = false;
         setCursor(QCursor(Qt::ArrowCursor));
         QWidget::update();
       }
     }
+    if (finished)
+      mutex.unlock();
   }
 
   void
@@ -1344,7 +1359,12 @@ namespace Gecode { namespace Gist {
                     }
                   }
                 }
-                comparators[i].first->compare(*curSpace,*compareSpace);
+                try {
+                  comparators[i].first->compare(*curSpace,*compareSpace);
+                } catch (Exception& e) {
+                  qFatal("Exception in comparator %d: %s.\n Stopping.",
+                    i, e.what());
+                }
               }
             }
           }
@@ -1423,6 +1443,16 @@ namespace Gecode { namespace Gist {
   void
   TreeCanvas::setSmoothScrollAndZoom(bool b) {
     smoothScrollAndZoom = b;
+  }
+
+  bool
+  TreeCanvas::getMoveDuringSearch(void) {
+    return moveDuringSearch;
+  }
+
+  void
+  TreeCanvas::setMoveDuringSearch(bool b) {
+    moveDuringSearch = b;
   }
 
 }}

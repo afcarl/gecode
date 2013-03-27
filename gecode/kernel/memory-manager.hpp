@@ -6,13 +6,16 @@
  *  Contributing authors:
  *     Guido Tack <tack@gecode.org>
  *
+ *  Bugfixes provided by:
+ *     Zandra Norman
+ *
  *  Copyright:
  *     Christian Schulte, 2002
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2009-09-09 05:10:29 +1000 (Wed, 09 Sep 2009) $ by $Author: schulte $
- *     $Revision: 9692 $
+ *     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13347 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -244,7 +247,7 @@ namespace Gecode {
     if (s > region.free)
       return false;
     region.free -= s;
-    p = Support::ptr_cast<char*>(&region.area[0]) + region.free;
+    p = ptr_cast<char*>(&region.area[0]) + region.free;
     return true;
   }
   forceinline HeapChunk*
@@ -350,7 +353,8 @@ namespace Gecode {
     // Adjust current heap chunk size
     if (((requested > MemoryConfig::hcsz_inc_ratio*cur_hcsz) ||
          (sz > cur_hcsz)) &&
-        (cur_hcsz < MemoryConfig::hcsz_max)) {
+        (cur_hcsz < MemoryConfig::hcsz_max) &&
+        !first) {
       cur_hcsz <<= 1;
     }
     // Increment the size that it caters for the initial overhead
@@ -361,7 +365,7 @@ namespace Gecode {
                        (((size_t) (sz / cur_hcsz)) + 1) * cur_hcsz : cur_hcsz);
     // Request a chunk of preferably size allocate, but at least size sz
     HeapChunk* hc = sm->heap_alloc(allocate,sz);
-    start = Support::ptr_cast<char*>(&hc->area[0]);
+    start = ptr_cast<char*>(&hc->area[0]);
     lsz   = hc->size - overhead;
     // Link heap chunk, where the first heap chunk is kept in place
     if (first) {
@@ -479,33 +483,31 @@ namespace Gecode {
       MemoryChunk* m = slack;
       slack = NULL;
       do {
-        char*  block = Support::ptr_cast<char*>(m);
+        char*  block = ptr_cast<char*>(m);
         size_t s     = m->size;
         assert(s >= sz);
         m = m->next;
-        fl[sz2i(sz)] = Support::ptr_cast<FreeList*>(block);
+        fl[sz2i(sz)] = ptr_cast<FreeList*>(block);
         while (s >= 2*sz) {
-          Support::ptr_cast<FreeList*>(block)->next
-            (Support::ptr_cast<FreeList*>(block+sz));
+          ptr_cast<FreeList*>(block)->next(ptr_cast<FreeList*>(block+sz));
           block += sz;
           s     -= sz;
         }
-        Support::ptr_cast<FreeList*>(block)->next(NULL);
+        ptr_cast<FreeList*>(block)->next(NULL);
       } while (m != NULL);
     } else {
       char* block = static_cast<char*>(alloc(sm,MemoryConfig::fl_refill*sz));
-      fl[sz2i(sz)] = Support::ptr_cast<FreeList*>(block);
+      fl[sz2i(sz)] = ptr_cast<FreeList*>(block);
       int i = MemoryConfig::fl_refill-2;
       do {
-        Support::ptr_cast<FreeList*>(block+i*sz)->next
-          (Support::ptr_cast<FreeList*>(block+(i+1)*sz));
+        ptr_cast<FreeList*>(block+i*sz)->next(ptr_cast<FreeList*>(block+(i+1)*sz));
       } while (--i >= 0);
-      Support::ptr_cast<FreeList*>(block+
-                                   (MemoryConfig::fl_refill-1)*sz)->next
-        (Support::ptr_cast<FreeList*>(NULL));
+      ptr_cast<FreeList*>(block+
+                          (MemoryConfig::fl_refill-1)*sz)->next
+        (ptr_cast<FreeList*>(NULL));
     }
   }
 
 }
 
-// STATISTICS: kernel-core
+// STATISTICS: kernel-memory

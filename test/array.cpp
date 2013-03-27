@@ -7,8 +7,8 @@
  *     Gregory Crosswhite, 2011
  *
  *  Last modified:
- *     $Date: 2011-05-26 00:56:41 +1000 (Thu, 26 May 2011) $ by $Author: schulte $
- *     $Revision: 12022 $
+ *     $Date: 2011-11-03 14:57:30 +0100 (Thu, 03 Nov 2011) $ by $Author: tack $
+ *     $Revision: 12455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -274,4 +274,4 @@ namespace Test {
 
 }}
 
-// STATISTICS: test-kernel
+// STATISTICS: test-core

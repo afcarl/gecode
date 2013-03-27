@@ -7,8 +7,8 @@
  *     Christian Schulte, 2007
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -113,6 +113,7 @@
 
 #include <gecode/support/bitset-base.hpp>
 #include <gecode/support/bitset.hpp>
+#include <gecode/support/bitset-offset.hpp>
 #include <gecode/support/block-allocator.hpp>
 #include <gecode/support/dynamic-array.hpp>
 #include <gecode/support/dynamic-queue.hpp>
@@ -129,6 +130,7 @@
 
 #include <gecode/support/thread.hpp>
 #include <gecode/support/timer.hpp>
+#include <gecode/support/hw-rnd.hpp>
 
 #endif
 

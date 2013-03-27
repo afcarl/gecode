@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2010-10-07 07:44:30 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11465 $
+ *     $Date: 2013-02-26 14:40:29 +0100 (Tue, 26 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13419 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -68,6 +68,18 @@ namespace Gecode {
       heap.rfree(const_cast<char*>(s));
     }
 
+    char*
+    BaseOption::argument(int argc, char* argv[]) const {
+      if ((argc < 2) || strcmp(argv[1],opt))
+        return NULL;
+      if (argc == 2) {
+        std::cerr << "Missing argument for option \"" << opt << "\"" 
+                  << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      return argv[2];
+    }
+
     BaseOption::BaseOption(const char* o, const char* e)
       : opt(strdup(o)), exp(strdup(e)) {}
 
@@ -77,30 +89,28 @@ namespace Gecode {
     }
 
 
-    bool
-    StringValueOption::parse(int& argc, char* argv[]) {
-      if ((argc < 2) || strcmp(argv[1],opt))
-        return false;
-      if (argc == 2) {
-        std::cerr << "Missing argument for option \"" << opt << "\"" << std::endl;
-        exit(EXIT_FAILURE);
-      }
-      cur = strdup(argv[2]);
-      // Remove options
-      argc -= 2;
-      for (int i=1; i<argc; i++)
-        argv[i] = argv[i+2];
-      return true;
+    StringValueOption::StringValueOption(const char* o, const char* e, 
+                                         const char* v)
+      : BaseOption(o,e), cur(strdup(v)) {}
+    void
+    StringValueOption::value(const char* v) {
+      strdel(cur);
+      cur = strdup(v);
     }
-    
+    int
+    StringValueOption::parse(int argc, char* argv[]) {
+      if (char* a = argument(argc,argv)) {
+        cur = strdup(a);
+        return 2;
+      }
+      return 0;
+    }
     void
     StringValueOption::help(void) {
-      using namespace std;
-      cerr << '\t' << opt << " (string) default: " 
-           << ((cur == NULL) ? "NONE" : cur) << endl
-           << "\t\t" << exp << endl;
+      std::cerr << '\t' << opt << " (string) default: " 
+                << ((cur == NULL) ? "NONE" : cur) << std::endl
+                << "\t\t" << exp << std::endl;
     }
-  
     StringValueOption::~StringValueOption(void) {
       strdel(cur);
     }
@@ -121,30 +131,21 @@ namespace Gecode {
       }
       lst = n;
     }
-    
-    bool
-    StringOption::parse(int& argc, char* argv[]) {
-      if ((argc < 2) || strcmp(argv[1],opt))
-        return false;
-      if (argc == 2) {
-        std::cerr << "Missing argument for option \"" << opt << "\"" << std::endl;
+    int
+    StringOption::parse(int argc, char* argv[]) {
+      if (char* a = argument(argc,argv)) {
+        for (Value* v = fst; v != NULL; v = v->next)
+          if (!strcmp(a,v->opt)) {
+            cur = v->val;
+            return 2;
+          }
+        std::cerr << "Wrong argument \"" << a
+                  << "\" for option \"" << opt << "\""
+                  << std::endl;
         exit(EXIT_FAILURE);
       }
-      for (Value* v = fst; v != NULL; v = v->next)
-        if (!strcmp(argv[2],v->opt)) {
-          cur = v->val;
-          // Remove options
-          argc -= 2;
-          for (int i=1; i<argc; i++)
-            argv[i] = argv[i+2];
-          return true;
-        }
-      std::cerr << "Wrong argument \"" << argv[2]
-                << "\" for option \"" << opt << "\""
-                << std::endl;
-      exit(EXIT_FAILURE);
+      return 0;
     }
-    
     void
     StringOption::help(void) {
       if (fst == NULL)
@@ -177,68 +178,46 @@ namespace Gecode {
     }
     
     
-    bool
-    IntOption::parse(int& argc, char* argv[]) {
-      if ((argc < 2) || strcmp(argv[1],opt))
-        return false;
-      if (argc == 2) {
-        std::cerr << "Missing argument for option \"" << opt << "\"" << std::endl;
-        exit(EXIT_FAILURE);
+    int
+    IntOption::parse(int argc, char* argv[]) {
+      if (char* a = argument(argc,argv)) {
+        cur = atoi(a);
+        return 2;
       }
-      cur = atoi(argv[2]);
-      // Remove options
-      argc -= 2;
-      for (int i=1; i<argc; i++)
-        argv[i] = argv[i+2];
-      return true;
+      return 0;
     }
     
     void
     IntOption::help(void) {
-      using namespace std;
-      cerr << '\t' << opt << " (int) default: " << cur << endl
-           << "\t\t" << exp << endl;
+      std::cerr << '\t' << opt << " (int) default: " << cur << std::endl
+                << "\t\t" << exp << std::endl;
     }
   
 
-    bool
-    UnsignedIntOption::parse(int& argc, char* argv[]) {
-      if ((argc < 2) || strcmp(argv[1],opt))
-        return false;
-      if (argc == 2) {
-        std::cerr << "Missing argument for option \"" << opt << "\"" << std::endl;
-        exit(EXIT_FAILURE);
+    int
+    UnsignedIntOption::parse(int argc, char* argv[]) {
+      if (char* a = argument(argc,argv)) {
+        cur = static_cast<unsigned int>(atoi(a));
+        return 2;
       }
-      cur = static_cast<unsigned int>(atoi(argv[2]));
-      // Remove options
-      argc -= 2;
-      for (int i=1; i<argc; i++)
-        argv[i] = argv[i+2];
-      return true;
+      return 0;
     }
     
     void
     UnsignedIntOption::help(void) {
-      using namespace std;
-      cerr << '\t' << opt << " (unsigned int) default: " << cur << endl
-           << "\t\t" << exp << endl;
+      std::cerr << '\t' << opt << " (unsigned int) default: " 
+                << cur << std::endl
+                << "\t\t" << exp << std::endl;
     }
   
 
-    bool
-    DoubleOption::parse(int& argc, char* argv[]) {
-      if ((argc < 2) || strcmp(argv[1],opt))
-        return false;
-      if (argc == 2) {
-        std::cerr << "Missing argument for option \"" << opt << "\"" << std::endl;
-        exit(EXIT_FAILURE);
+    int
+    DoubleOption::parse(int argc, char* argv[]) {
+      if (char* a = argument(argc,argv)) {
+        cur = atof(a);
+        return 2;
       }
-      cur = atof(argv[2]);
-      // Remove options
-      argc -= 2;
-      for (int i=1; i<argc; i++)
-        argv[i] = argv[i+2];
-      return true;
+      return 0;
     }
     
     void
@@ -248,28 +227,49 @@ namespace Gecode {
            << "\t\t" << exp << endl;
     }
 
-    bool
-    BoolOption::parse(int& argc, char* argv[]) {
-      if ((argc < 2) || strcmp(argv[1],opt)) {
-        return false;
+    int
+    BoolOption::parse(int argc, char* argv[]) {
+      if ((argc < 2) || strcmp(argv[1],opt))
+        return 0;
+      if (argc == 2) {
+        // Option without argument
+        cur = true;
+        return 1;
+      } else if (!strcmp(argv[2],"true") || !strcmp(argv[2],"1")) {
+        cur = true;
+        return 2;
+      } else if (!strcmp(argv[2],"false") || !strcmp(argv[2],"0")) {
+        cur = false;
+        return 2;
+      } else {
+        // Option without argument
+        cur = true;
+        return 1;
       }
-      // Remove options
-      argc--;
-      for (int i=1; i<argc; i++)
-        argv[i] = argv[i+1];
-      cur = true;
-      return true;
+      return 0;
     }
 
     void 
     BoolOption::help(void) {
       using namespace std;
-      cerr << '\t' << opt << endl << "\t\t" << exp << endl;
+      cerr << '\t' << opt << " (optional: false, 0, true, 1) default: " 
+           << (cur ? "true" : "false") << endl 
+           << "\t\t" << exp << endl;
     }
 
   
   }
 
+  void
+  BaseOptions::add(Driver::BaseOption& o) {
+    o.next = NULL;
+    if (fst == NULL) {
+      fst=&o;
+    } else {
+      lst->next=&o;
+    }
+    lst=&o;
+  }
   BaseOptions::BaseOptions(const char* n)
     : fst(NULL), lst(NULL), 
       _name(Driver::BaseOption::strdup(n)) {}
@@ -289,10 +289,20 @@ namespace Gecode {
     std::cerr << "BoolVar IntVar ";
 #endif
 #ifdef GECODE_HAS_SET_VARS
-    std::cerr << "SetVar";
+    std::cerr << "SetVar ";
 #endif
-    std::cerr << std::endl
-              << " - Thread support: ";
+#ifdef GECODE_HAS_FLOAT_VARS
+    std::cerr << "FloatVar "
+              << std::endl
+              << " - Trigonometric and transcendental float constraints: ";
+#ifdef GECODE_HAS_MPFR
+    std::cerr  << "enabled";
+#else
+    std::cerr << "disabled";
+#endif
+    std::cerr << std::endl;
+#endif
+    std::cerr << " - Thread support: ";
 #ifdef GECODE_HAS_THREADS
     if (Support::Thread::npu() == 1)
       std::cerr << "enabled (1 processing unit)";
@@ -319,17 +329,25 @@ namespace Gecode {
 
   void
   BaseOptions::parse(int& argc, char* argv[]) {
+    int c = argc;
+    char** v = argv;
   next:
     for (Driver::BaseOption* o = fst; o != NULL; o = o->next)
-      if (o->parse(argc,argv))
+      if (int a = o->parse(c,v)) {
+        c -= a; v += a;
         goto next;
-    if (argc < 2)
-      return;
-    if (!strcmp(argv[1],"-help") || !strcmp(argv[1],"--help") ||
-        !strcmp(argv[1],"-?")) {
-      help();
-      exit(EXIT_SUCCESS);
+      }
+    if (c >= 2) {
+      if (!strcmp(v[1],"-help") || !strcmp(v[1],"--help") ||
+          !strcmp(v[1],"-?")) {
+        help();
+        exit(EXIT_SUCCESS);
+      }
     }
+    // Copy remaining arguments
+    argc = c;
+    for (int i=1; i<argc; i++)
+      argv[i] = v[i];
     return;
   }
   
@@ -346,6 +364,7 @@ namespace Gecode {
       _propagation("-propagation","propagation variants"),
       _icl("-icl","integer consistency level",ICL_DEF),
       _branching("-branching","branching variants"),
+      _decay("-decay","decay factor",1.0),
       
       _search("-search","search engine variants"),
       _solutions("-solutions","number of solutions (0 = all)",1),
@@ -356,11 +375,22 @@ namespace Gecode {
       _node("-node","node cutoff (0 = none, solution mode)"),
       _fail("-fail","failure cutoff (0 = none, solution mode)"),
       _time("-time","time (in ms) cutoff (0 = none, solution mode)"),
-      _interrupt("-interrupt","whether to catch Ctrl-C (true) or not (false)", true),
+      _restart("-restart","restart sequence type",RM_NONE),
+      _r_base("-restart-base","base for geometric restart sequence",1.5),
+      _r_scale("-restart-scale","scale factor for restart sequence",250),
+      _interrupt("-interrupt","whether to catch Ctrl-C (true) or not (false)",
+                 true),
       
       _mode("-mode","how to execute script",SM_SOLUTION),
       _samples("-samples","how many samples (time mode)",1),
-      _iterations("-iterations","iterations per sample (time mode)",1)
+      _iterations("-iterations","iterations per sample (time mode)",1),
+      _print_last("-print-last",
+                  "whether to only print the last solution (solution mode)",
+                  false),
+      _out_file("-file-sol", "where to print solutions "
+                "(supports stdout, stdlog, stderr)","stdout"),
+      _log_file("-file-stat", "where to print statistics "
+                "(supports stdout, stdlog, stderr)","stdout")
   {
     
     _icl.add(ICL_DEF, "def"); _icl.add(ICL_VAL, "val");
@@ -371,14 +401,19 @@ namespace Gecode {
     _mode.add(SM_STAT, "stat");
     _mode.add(SM_GIST, "gist");
     
-    _interrupt.add(false, "false");
-    _interrupt.add(true, "true");
+    _restart.add(RM_NONE,"none");
+    _restart.add(RM_CONSTANT,"constant");
+    _restart.add(RM_LINEAR,"linear");
+    _restart.add(RM_LUBY,"luby");
+    _restart.add(RM_GEOMETRIC,"geometric");
     
     add(_model); add(_symmetry); add(_propagation); add(_icl); 
-    add(_branching);
+    add(_branching); add(_decay);
     add(_search); add(_solutions); add(_threads); add(_c_d); add(_a_d);
     add(_node); add(_fail); add(_time); add(_interrupt);
-    add(_mode); add(_iterations); add(_samples);
+    add(_restart); add(_r_base); add(_r_scale);
+    add(_mode); add(_iterations); add(_samples); add(_print_last);
+    add(_out_file); add(_log_file);
   }
 
   
@@ -408,7 +443,7 @@ namespace Gecode {
   void
   InstanceOptions::instance(const char* s) {
     Driver::BaseOption::strdel(_inst);
-    _inst = strdup(s);
+    _inst = Driver::BaseOption::strdup(s);
   }
 
   void

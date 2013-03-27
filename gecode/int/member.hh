@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-23 00:02:09 +1000 (Tue, 23 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12330 $
+ *     $Date: 2011-11-18 16:02:48 +0100 (Fri, 18 Nov 2011) $ by $Author: schulte $
+ *     $Revision: 12472 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -90,7 +90,7 @@ namespace Gecode { namespace Int { namespace Member {
    * Requires \code #include <gecode/int/member.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View>
+  template<class View, ReifyMode rm>
   class ReProp : public Prop<View> {
   protected:
     using Prop<View>::x;
@@ -103,7 +103,7 @@ namespace Gecode { namespace Int { namespace Member {
     /// Constructor for posting
     ReProp(Home home, ValSet& vs, ViewArray<View>& x, View y, BoolView b);
     /// Constructor for cloning \a p
-    ReProp(Space& home, bool share, ReProp<View>& p);
+    ReProp(Space& home, bool share, ReProp<View,rm>& p);
   public:
     /// Copy propagator during cloning
     virtual Propagator* copy(Space& home, bool share);

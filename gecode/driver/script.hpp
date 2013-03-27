@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2011-06-16 18:27:32 +1000 (Thu, 16 Jun 2011) $ by $Author: tack $
- *     $Revision: 12052 $
+ *     $Date: 2013-03-07 20:40:42 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13462 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -38,6 +38,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <cstring>
 
 #ifndef GECODE_THREADS_WINDOWS
 #include <csignal>
@@ -49,7 +51,7 @@ namespace Gecode { namespace Driver {
    * \brief Stop object based on nodes, failures, and time
    *
    */
-  class Cutoff : public Search::Stop {
+  class CombinedStop : public Search::Stop {
   private:
     Search::NodeStop* ns; ///< Used node stop object
     Search::FailStop* fs; ///< Used fail stop object
@@ -57,7 +59,7 @@ namespace Gecode { namespace Driver {
     GECODE_DRIVER_EXPORT
     static bool sigint;   ///< Whether search was interrupted using Ctrl-C
     /// Initialize stop object
-    Cutoff(unsigned int node, unsigned int fail, unsigned int time)
+    CombinedStop(unsigned int node, unsigned int fail, unsigned int time)
       : ns((node > 0) ? new Search::NodeStop(node) : NULL),
         fs((fail > 0) ? new Search::FailStop(fail) : NULL),
         ts((time > 0) ? new Search::TimeStop(time) : NULL) {
@@ -94,7 +96,7 @@ namespace Gecode { namespace Driver {
       if ( (!intr) && (node == 0) && (fail == 0) && (time == 0))
         return NULL;
       else
-        return new Cutoff(node,fail,time);
+        return new CombinedStop(node,fail,time);
     }
 #ifdef GECODE_THREADS_WINDOWS
     /// Handler for catching Ctrl-C
@@ -125,7 +127,7 @@ namespace Gecode { namespace Driver {
       }
     }
     /// Destructor
-    ~Cutoff(void) {
+    ~CombinedStop(void) {
       delete ns; delete fs; delete ts;
     }
   };
@@ -149,6 +151,27 @@ namespace Gecode { namespace Driver {
   GECODE_DRIVER_EXPORT double
   dev(double t[], int n);
   
+  /// Create cutoff object from options
+  template<class Options>
+  inline Search::Cutoff* 
+  createCutoff(const Options& o) {
+    switch (o.restart()) {
+    case RM_NONE: 
+      return NULL;
+    case RM_CONSTANT: 
+      return Search::Cutoff::constant(o.restart_scale());
+    case RM_LINEAR: 
+      return Search::Cutoff::linear(o.restart_scale());
+    case RM_LUBY: 
+      return Search::Cutoff::luby(o.restart_scale());
+    case RM_GEOMETRIC: 
+      return Search::Cutoff::geometric(o.restart_scale(),o.restart_base());
+    default: GECODE_NEVER;
+    }
+    return NULL;
+  }
+  
+  
 #ifdef GECODE_HAS_GIST
   
   /**
@@ -156,6 +179,10 @@ namespace Gecode { namespace Driver {
    */
   template<class Engine>
   class GistEngine {
+  public:
+    static void explore(Space* root, const Gist::Options& opt) {
+      (void) Gist::dfs(root, opt);
+    }
   };
   
   /// Specialization for DFS
@@ -176,22 +203,56 @@ namespace Gecode { namespace Driver {
     }
   };
   
-  /// Specialization for Restart
-  template<typename S>
-  class GistEngine<Restart<S> > {
-  public:
-    static void explore(S* root, const Gist::Options& opt) {
-      (void) Gist::bab(root, opt);
-    }
-  };
-  
 #endif
+
+
+  template<class Space>
+  std::ostream&
+  ScriptBase<Space>::select_ostream(const char* name, std::ofstream& ofs) {
+    if (strcmp(name, "stdout") == 0) {
+      return std::cout;
+    } else if (strcmp(name, "stdlog") == 0) {
+      return std::clog;
+    } else if (strcmp(name, "stderr") == 0) {
+      return std::cerr;
+    } else {
+      ofs.open(name);
+      return ofs;
+    }
+  }
+
+  /**
+   * \brief Wrapper class to add engine template argument
+   */
+  template<template<class> class E, class T>
+  class EngineToMeta : public E<T> {
+  public:
+    EngineToMeta(T* s, const Search::Options& o) : E<T>(s,o) {}
+  };
 
   template<class Space>
   template<class Script, template<class> class Engine, class Options>
   void
-  ScriptBase<Space>::run(const Options& o) {
+  ScriptBase<Space>::run(const Options& o, Script* s) {
+    if (o.restart()==RM_NONE) {
+      runMeta<Script,Engine,Options,EngineToMeta>(o,s);
+    } else {
+      runMeta<Script,Engine,Options,RBS>(o,s);
+    }
+  }
+
+  template<class Space>
+  template<class Script, template<class> class Engine, class Options,
+           template<template<class> class,class> class Meta>
+  void
+  ScriptBase<Space>::runMeta(const Options& o, Script* s) {
     using namespace std;
+
+    ofstream sol_file, log_file;
+
+    ostream& s_out = select_ostream(o.out_file(), sol_file);
+    ostream& l_out = select_ostream(o.log_file(), log_file);
+
     try {
       switch (o.mode()) {
       case SM_GIST:
@@ -213,7 +274,8 @@ namespace Gecode { namespace Driver {
             opt.inspect.move(o.inspect.move(i));
           for (int i=0; o.inspect.compare(i) != NULL; i++)
             opt.inspect.compare(o.inspect.compare(i));
-          Script* s = new Script(o);
+          if (s == NULL)
+            s = new Script(o);
           (void) GistEngine<Engine<Script> >::explore(s, opt);
         }
         break;
@@ -221,77 +283,98 @@ namespace Gecode { namespace Driver {
 #endif
       case SM_SOLUTION:
         {
-          cout << o.name() << endl;
+          l_out << o.name() << endl;
           Support::Timer t;
           int i = o.solutions();
           t.start();
-          Script* s = new Script(o);
+          if (s == NULL)
+            s = new Script(o);
           unsigned int n_p = s->propagators();
           unsigned int n_b = s->branchers();
           Search::Options so;
           so.threads = o.threads();
           so.c_d     = o.c_d();
           so.a_d     = o.a_d();
-          so.stop    = Cutoff::create(o.node(),o.fail(), o.time(), 
-                                      o.interrupt());
+          so.stop    = CombinedStop::create(o.node(),o.fail(), o.time(), 
+                                            o.interrupt());
+          so.cutoff  = createCutoff(o);
           so.clone   = false;
           if (o.interrupt())
-            Cutoff::installCtrlHandler(true);
-          Engine<Script> e(s,so);
-          do {
-            Script* ex = e.next();
-            if (ex == NULL)
-              break;
-            ex->print(std::cout);
-            delete ex;
-          } while (--i != 0);
+            CombinedStop::installCtrlHandler(true);
+          Meta<Engine,Script> e(s,so);
+          if (o.print_last()) {
+            Script* px = NULL;
+            do {
+              Script* ex = e.next();
+              if (ex == NULL) {
+                if (px != NULL) {
+                  px->print(s_out);
+                  delete px;
+                }
+                break;
+              } else {
+                delete px;
+                px = ex;
+              }
+            } while (--i != 0);
+          } else {
+            do {
+              Script* ex = e.next();
+              if (ex == NULL)
+                break;
+              ex->print(s_out);
+              delete ex;
+            } while (--i != 0);
+          }
           if (o.interrupt())
-            Cutoff::installCtrlHandler(false);
+            CombinedStop::installCtrlHandler(false);
           Search::Statistics stat = e.statistics();
-          cout << endl;
+          s_out << endl;
           if (e.stopped()) {
-            cout << "Search engine stopped..." << endl
-                 << "\treason: ";
-            int r = static_cast<Cutoff*>(so.stop)->reason(stat,so);
-            if (r & Cutoff::SR_INT)
-              cout << "user interrupt " << endl;
+            l_out << "Search engine stopped..." << endl
+                  << "\treason: ";
+            int r = static_cast<CombinedStop*>(so.stop)->reason(stat,so);
+            if (r & CombinedStop::SR_INT)
+              l_out << "user interrupt " << endl;
             else {
-              if (r & Cutoff::SR_NODE)
-                cout << "node ";
-              if (r & Cutoff::SR_FAIL)
-                cout << "fail ";
-              if (r & Cutoff::SR_TIME)
-                cout << "time ";
-              cout << "limit reached" << endl << endl;
+              if (r & CombinedStop::SR_NODE)
+                l_out << "node ";
+              if (r & CombinedStop::SR_FAIL)
+                l_out << "fail ";
+              if (r & CombinedStop::SR_TIME)
+                l_out << "time ";
+              l_out << "limit reached" << endl << endl;
             }
           }
-          cout << "Initial" << endl
-               << "\tpropagators: " << n_p << endl
-               << "\tbranchers:   " << n_b << endl
-               << endl
-               << "Summary" << endl
-               << "\truntime:      ";
-          stop(t, cout);
-          cout << endl
-               << "\tsolutions:    "
-               << ::abs(static_cast<int>(o.solutions()) - i) << endl
-               << "\tpropagations: " << stat.propagate << endl
-               << "\tnodes:        " << stat.node << endl
-               << "\tfailures:     " << stat.fail << endl
-               << "\tpeak depth:   " << stat.depth << endl
-               << "\tpeak memory:  "
-               << static_cast<int>((stat.memory+1023) / 1024) << " KB"
-               << endl;
+          l_out << "Initial" << endl
+                << "\tpropagators: " << n_p << endl
+                << "\tbranchers:   " << n_b << endl
+                << endl
+                << "Summary" << endl
+                << "\truntime:      ";
+          stop(t, l_out);
+          l_out << endl
+                << "\tsolutions:    "
+                << ::abs(static_cast<int>(o.solutions()) - i) << endl
+                << "\tpropagations: " << stat.propagate << endl
+                << "\tnodes:        " << stat.node << endl
+                << "\tfailures:     " << stat.fail << endl
+                << "\trestarts:     " << stat.restart << endl
+                << "\tpeak depth:   " << stat.depth << endl
+                << "\tpeak memory:  "
+                << static_cast<int>((stat.memory+1023) / 1024) << " KB"
+                << endl;
           delete so.stop;
         }
         break;
       case SM_STAT:
         {
-          cout << o.name() << endl;
+          l_out << o.name() << endl;
           Support::Timer t;
           int i = o.solutions();
           t.start();
-          Script* s = new Script(o);
+          if (s == NULL)
+            s = new Script(o);
           unsigned int n_p = s->propagators();
           unsigned int n_b = s->branchers();
           Search::Options so;
@@ -299,11 +382,12 @@ namespace Gecode { namespace Driver {
           so.threads = o.threads();
           so.c_d     = o.c_d();
           so.a_d     = o.a_d();
-          so.stop    = Cutoff::create(o.node(),o.fail(), o.time(),
-                                      o.interrupt());
+          so.stop    = CombinedStop::create(o.node(),o.fail(), o.time(),
+                                            o.interrupt());
+          so.cutoff  = createCutoff(o);
           if (o.interrupt())
-            Cutoff::installCtrlHandler(true);
-          Engine<Script> e(s,so);
+            CombinedStop::installCtrlHandler(true);
+          Meta<Engine,Script> e(s,so);
           do {
             Script* ex = e.next();
             if (ex == NULL)
@@ -311,19 +395,20 @@ namespace Gecode { namespace Driver {
             delete ex;
           } while (--i != 0);
           if (o.interrupt())
-            Cutoff::installCtrlHandler(false);
+            CombinedStop::installCtrlHandler(false);
           Search::Statistics stat = e.statistics();
-          cout << endl
+          l_out << endl
                << "\tpropagators:  " << n_p << endl
                << "\tbranchers:    " << n_b << endl
                << "\truntime:      ";
-          stop(t, cout);
-          cout << endl
+          stop(t, l_out);
+          l_out << endl
                << "\tsolutions:    "
                << ::abs(static_cast<int>(o.solutions()) - i) << endl
                << "\tpropagations: " << stat.propagate << endl
                << "\tnodes:        " << stat.node << endl
                << "\tfailures:     " << stat.fail << endl
+               << "\trestarts:     " << stat.restart << endl
                << "\tpeak depth:   " << stat.depth << endl
                << "\tpeak memory:  "
                << static_cast<int>((stat.memory+1023) / 1024) << " KB"
@@ -332,7 +417,7 @@ namespace Gecode { namespace Driver {
         break;
       case SM_TIME:
         {
-          cout << o.name() << endl;
+          l_out << o.name() << endl;
           Support::Timer t;
           double* ts = new double[o.samples()];
           bool stopped = false;
@@ -346,8 +431,10 @@ namespace Gecode { namespace Driver {
               so.threads = o.threads();
               so.c_d     = o.c_d();
               so.a_d     = o.a_d();
-              so.stop    = Cutoff::create(o.node(),o.fail(), o.time(), false);
-              Engine<Script> e(s,so);
+              so.stop    = CombinedStop::create(o.node(),o.fail(), o.time(), 
+                                                false);
+              so.cutoff  = createCutoff(o);
+              Meta<Engine,Script> e(s,so);
               do {
                 Script* ex = e.next();
                 if (ex == NULL)
@@ -361,11 +448,11 @@ namespace Gecode { namespace Driver {
             ts[s] = t.stop() / o.iterations();
           }
           if (stopped) {
-            cout << "\tSTOPPED" << endl;
+            l_out << "\tSTOPPED" << endl;
           } else {
             double m = am(ts,o.samples());
             double d = dev(ts,o.samples()) * 100.0;
-            cout << "\tRuntime: "
+            l_out << "\truntime: "
                  << setw(20) << right
                  << showpoint << fixed
                  << setprecision(6) << m << "ms"
@@ -376,11 +463,19 @@ namespace Gecode { namespace Driver {
         }
         break;
       }
-    } catch (Exception e) {
+    } catch (Exception& e) {
       cerr << "Exception: " << e.what() << "." << endl
            << "Stopping..." << endl;
+      if (sol_file.is_open())
+        sol_file.close();
+      if (log_file.is_open())
+        log_file.close();
       exit(EXIT_FAILURE);
     }
+    if (sol_file.is_open())
+      sol_file.close();
+    if (log_file.is_open())
+      log_file.close();
   }
 
 }}

@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2011-08-09 02:04:53 +1000 (Tue, 09 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12253 $
+ *     $Date: 2013-02-27 17:15:18 +0100 (Wed, 27 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13426 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -95,13 +95,13 @@ namespace Gecode { namespace Set { namespace Rel {
       GECODE_ME_CHECK(x1.intersectI(home,ubic));
     }
 
-    if (testSetEventCard(me0,me1) ) {
+    if (testSetEventCard(me0,me1)) {
       unsigned int max = std::min(x0.cardMax(),x1.cardMax());
       unsigned int min = std::max(x0.cardMin(),x1.cardMin());
-      GECODE_ME_CHECK ( x0.cardMax(home,max) );
-      GECODE_ME_CHECK ( x1.cardMax(home,max) );
-      GECODE_ME_CHECK ( x0.cardMin(home,min) );
-      GECODE_ME_CHECK ( x1.cardMin(home,min) );
+      GECODE_ME_CHECK(x0.cardMax(home,max));
+      GECODE_ME_CHECK(x1.cardMax(home,max));
+      GECODE_ME_CHECK(x0.cardMin(home,min));
+      GECODE_ME_CHECK(x1.cardMin(home,min));
     }
 
     if (x0.assigned()) {

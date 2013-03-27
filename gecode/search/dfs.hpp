@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2009-09-09 05:10:29 +1000 (Wed, 09 Sep 2009) $ by $Author: schulte $
- *     $Revision: 9692 $
+ *     $Date: 2013-02-20 17:42:40 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13341 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -45,7 +45,7 @@ namespace Gecode {
   template<class T>
   forceinline
   DFS<T>::DFS(T* s, const Search::Options& o)
-    : e(Search::dfs(s,sizeof(T),o)) {}
+    : EngineBase(Search::dfs(s,sizeof(T),o)) {}
 
   template<class T>
   forceinline T*
@@ -63,12 +63,6 @@ namespace Gecode {
   forceinline bool
   DFS<T>::stopped(void) const {
     return e->stopped();
-  }
-
-  template<class T>
-  forceinline
-  DFS<T>::~DFS(void) {
-    delete e;
   }
 
 

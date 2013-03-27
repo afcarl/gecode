@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
- *     $Revision: 10684 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -138,7 +138,7 @@ namespace Gecode { namespace Int {
     /// Mark \a n as supported if possible
     bool support(int n);
     /// Mark \a n as supported if possible
-    bool support(double n);
+    bool support(long long int n);
     /// Remove all unsupported values
     ModEvent tell(Space& home);
     //@}

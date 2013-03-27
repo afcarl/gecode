@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:04:20 +1100 (Wed, 22 Feb 2012) $ by $Author: tack $
- *     $Revision: 12537 $
+ *     $Date: 2013-03-11 14:47:11 +0100 (Mon, 11 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13490 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -37,11 +37,13 @@
 
 namespace Gecode {
 
+  /// Initialize integer set with integer arguments
   template<>
   class IntSetInit<IntArgs> {
   public:
     static void init(IntSet& s, const IntArgs& i) {
-      s.init(&i[0],i.size());
+      if (i.size() > 0)
+        s.init(&i[0],i.size());
     }
   };
 

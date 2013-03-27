@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
- *     $Revision: 10684 $
+ *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13458 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -152,6 +152,17 @@ namespace Gecode {
   }
 
 
+  /*
+   * Constructing transitions
+   *
+   */
+
+  forceinline
+  DFA::Transition::Transition(void) {}
+
+  forceinline
+  DFA::Transition::Transition(int i_state0, int symbol0, int o_state0) 
+    : i_state(i_state0), symbol(symbol0), o_state(o_state0) {}
 
   /*
    * Iterating over all transitions

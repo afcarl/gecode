@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2010-08-24 02:53:25 +1000 (Tue, 24 Aug 2010) $ by $Author: tack $
- *     $Revision: 11358 $
+ *     $Date: 2011-11-29 17:20:37 +0100 (Tue, 29 Nov 2011) $ by $Author: schulte $
+ *     $Revision: 12486 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -66,11 +66,11 @@ namespace Test { namespace Int {
          else
            Gecode::dom(home, x, -2);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          assert(x.size() == 1);
-         Gecode::dom(home, x[0], -2, b);
+         Gecode::dom(home, x[0], -2, r);
        }
      };
 
@@ -94,11 +94,11 @@ namespace Test { namespace Int {
          else
            Gecode::dom(home, x, -2, 2);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          assert(x.size() == 1);
-         Gecode::dom(home, x[0], -2, 2, b);
+         Gecode::dom(home, x[0], -2, 2, r);
        }
      };
 
@@ -115,10 +115,10 @@ namespace Test { namespace Int {
        virtual void post(Gecode::Space& home, Gecode::IntVarArray&) {
          home.fail();
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
-         Gecode::dom(home, x[0], 3, 2, b);
+                         Gecode::Reify r) {
+         Gecode::dom(home, x[0], 3, 2, r);
        }
      };
 
@@ -150,11 +150,11 @@ namespace Test { namespace Int {
          else
            Gecode::dom(home, x, d);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          assert(x.size() == 1);
-         Gecode::dom(home, x[0], d, b);
+         Gecode::dom(home, x[0], d, r);
        }
      };
 

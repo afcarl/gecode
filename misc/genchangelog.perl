@@ -11,8 +11,8 @@
 #     Mikael Lagerkvist, 2008
 #
 #  Last modified:
-#     $Date: 2009-09-30 21:49:28 +1000 (Wed, 30 Sep 2009) $ by $Author: tack $
-#     $Revision: 9782 $
+#     $Date: 2013-03-08 17:29:13 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
+#     $Revision: 13486 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -52,6 +52,7 @@ $modclear{"kernel"} = "Kernel";
 $modclear{"search"} = "Search engines";
 $modclear{"int"} = "Finite domain integers";
 $modclear{"set"} = "Finite integer sets";
+$modclear{"float"} = "Floats";
 $modclear{"cpltset"} = "Finite integer sets with complete representation";
 $modclear{"minimodel"} = "Minimal modeling support";
 $modclear{"graph"} = "\%Graph constraints";
@@ -75,7 +76,7 @@ $whatclear{"change"} = "Other changes";
 $rankclear{"minor"} = "minor";
 $rankclear{"major"} = "major";
 
-@modorder = ("kernel","search","int","set","cpltset","scheduling",
+@modorder = ("kernel","search","int","set","float","cpltset","scheduling",
 	     "graph","minimodel","driver",
 	     "iter","support","example","test","gist","flatzinc","other");
 

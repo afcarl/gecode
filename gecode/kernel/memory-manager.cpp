@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2009-04-16 00:00:39 +1000 (Thu, 16 Apr 2009) $ by $Author: schulte $
- *     $Revision: 8706 $
+ *     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13347 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -48,6 +48,6 @@ namespace Gecode {
 
 }
 
-// STATISTICS: kernel-core
+// STATISTICS: kernel-memory
 
 

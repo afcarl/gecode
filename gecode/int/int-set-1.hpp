@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:04:20 +1100 (Wed, 22 Feb 2012) $ by $Author: tack $
- *     $Revision: 12537 $
+ *     $Date: 2013-03-11 14:47:11 +0100 (Mon, 11 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13490 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,6 +56,7 @@ namespace Gecode {
   template<class I>
   class IntSetInit {
   public:
+    /// Initialize \a s with iterator \a i
     static void init(IntSet& s, I& i) {
       Support::DynamicArray<IntSet::Range,Heap> d(heap);
       int n=0;
@@ -74,6 +75,7 @@ namespace Gecode {
     }
   };
 
+  /// Initialize integer set with integer set
   template<>
   class IntSetInit<IntSet> {
   public:
@@ -82,8 +84,15 @@ namespace Gecode {
     }
   };
 
+  /// Initialize integer set with iterator
   template<class I>
   IntSet::IntSet(I& i) {
+    IntSetInit<I>::init(*this,i);
+  }
+
+  /// Initialize integer set with iterator
+  template<class I>
+  IntSet::IntSet(const I& i) {
     IntSetInit<I>::init(*this,i);
   }
 

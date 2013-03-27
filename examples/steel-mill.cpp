@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2008
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-03-11 14:47:11 +0100 (Mon, 11 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13490 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -115,6 +115,21 @@ public:
   int norders(void) const       { return _norders;     }
 };
 
+/// Sort orders by weight
+class SortByWeight {
+public:
+  /// The orders
+  order_t orders;
+  /// Initialize orders
+  SortByWeight(order_t _orders) : orders(_orders) {}
+  /// Sort order
+  bool operator() (int i, int j) {
+    // Order i comes before order j if the weight of i is larger than
+    // the weight of j.
+    return (orders[i][order_weight] > orders[j][order_weight]) ||
+      (orders[i][order_weight] == orders[j][order_weight] && i<j);
+  }
+};
 
 /**
  * \brief %Example: Steel-mill slab design problem
@@ -171,8 +186,9 @@ protected:
 public:
   /// Branching variants
   enum {
-    SYMMETRY_NONE,   ///< Simple symmetry
-    SYMMETRY_BRANCHING ///< Breaking symmetries with symmetry
+    SYMMETRY_NONE,      ///< Simple symmetry
+    SYMMETRY_BRANCHING, ///< Breaking symmetries with symmetry
+    SYMMETRY_LDSB       ///< Use LDSB for symmetry breaking
   };
 
   /// Actual model
@@ -255,8 +271,27 @@ public:
     if (opt.symmetry() == SYMMETRY_BRANCHING) {
       // Symmetry breaking branching
       SteelMillBranch::post(*this);
-    } else { // opt.symmetry() == SYMMETRY_NONE
-      branch(*this, slab, INT_VAR_MAX_MIN, INT_VAL_MIN);
+    } else if (opt.symmetry() == SYMMETRY_NONE) {
+      branch(*this, slab, INT_VAR_MAX_MIN(), INT_VAL_MIN());
+    } else { // opt.symmetry() == SYMMETRY_LDSB
+      // There is one symmetry: the values (slabs) are interchangeable.
+      Symmetries syms;
+      syms << ValueSymmetry(IntArgs::create(nslabs,0));
+
+      // For variable order we mimic the custom brancher.  We use
+      // min-size domain, breaking ties by maximum weight (preferring
+      // to label larger weights earlier).  To do this, we first sort
+      // (stably) by maximum weight, then use min-size domain.
+      SortByWeight sbw(orders);
+      IntArgs indices(norders);
+      for (unsigned int i = 0 ; i < norders ; i++)
+        indices[i] = i;
+      Support::quicksort(&indices[0],norders,sbw);
+      IntVarArgs sorted_orders(norders);
+      for (unsigned int i = 0 ; i < norders ; i++) {
+        sorted_orders[i] = slab[indices[i]];
+      }
+      branch(*this, sorted_orders, INT_VAR_SIZE_MIN(), INT_VAL_MIN(), syms);
     }
   }
 
@@ -415,8 +450,8 @@ public:
       return new (home) SteelMillBranch(home, share, *this);
     }
     /// Post brancher
-    static void post(Home home) {
-      (void) new (home) SteelMillBranch(home);
+    static BrancherHandle post(Home home) {
+      return *new (home) SteelMillBranch(home);
     }
     /// Delete brancher and return its size
     virtual size_t dispose(Space&) {
@@ -434,6 +469,7 @@ main(int argc, char* argv[]) {
   opt.symmetry(SteelMill::SYMMETRY_BRANCHING);
   opt.symmetry(SteelMill::SYMMETRY_NONE,"none");
   opt.symmetry(SteelMill::SYMMETRY_BRANCHING,"branching");
+  opt.symmetry(SteelMill::SYMMETRY_LDSB,"ldsb");
   opt.solutions(0);
   if (!opt.parse(argc,argv))
     return 1;

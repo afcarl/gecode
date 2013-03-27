@@ -11,8 +11,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:04:20 +1100 (Wed, 22 Feb 2012) $
- *     $Revision: 12537 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2011-07-07 05:56:28 +1000 (Thu, 07 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12151 $
+ *     $Date: 2011-12-12 16:21:39 +0100 (Mon, 12 Dec 2011) $ by $Author: schulte $
+ *     $Revision: 12489 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -45,11 +45,11 @@ namespace Gecode {
   using namespace Int;
 
   void
-  rel(Home home, IntVar x0, IntRelType r, int n, IntConLevel) {
+  rel(Home home, IntVar x0, IntRelType irt, int n, IntConLevel) {
     Limits::check(n,"Int::rel");
     if (home.failed()) return;
     IntView x(x0);
-    switch (r) {
+    switch (irt) {
     case IRT_EQ: GECODE_ME_FAIL(x.eq(home,n)); break;
     case IRT_NQ: GECODE_ME_FAIL(x.nq(home,n)); break;
     case IRT_LQ: GECODE_ME_FAIL(x.lq(home,n)); break;
@@ -61,10 +61,10 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const IntVarArgs& x, IntRelType r, int n, IntConLevel) {
+  rel(Home home, const IntVarArgs& x, IntRelType irt, int n, IntConLevel) {
     Limits::check(n,"Int::rel");
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       for (int i=x.size(); i--; ) {
         IntView xi(x[i]); GECODE_ME_FAIL(xi.eq(home,n));
@@ -101,9 +101,9 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, IntVar x0, IntRelType r, IntVar x1, IntConLevel icl) {
+  rel(Home home, IntVar x0, IntRelType irt, IntVar x1, IntConLevel icl) {
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       if ((icl == ICL_DOM) || (icl == ICL_DEF)) {
         GECODE_ES_FAIL((Rel::EqDom<IntView,IntView>::post(home,x0,x1)));
@@ -127,10 +127,10 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const IntVarArgs& x, IntRelType r, IntVar y,
+  rel(Home home, const IntVarArgs& x, IntRelType irt, IntVar y,
       IntConLevel icl) {
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       {
         ViewArray<IntView> xv(home,x.size()+1);
@@ -176,40 +176,122 @@ namespace Gecode {
 
 
   void
-  rel(Home home, IntVar x0, IntRelType r, IntVar x1, BoolVar b,
+  rel(Home home, IntVar x0, IntRelType irt, IntVar x1, Reify r,
       IntConLevel icl) {
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       if ((icl == ICL_DOM) || (icl == ICL_DEF)) {
-        GECODE_ES_FAIL((Rel::ReEqDom<IntView,BoolView>::post(home,x0,x1,b)));
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Rel::ReEqDom<IntView,BoolView,RM_EQV>
+                          ::post(home,x0,x1,r.var())));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReEqDom<IntView,BoolView,RM_IMP>
+                          ::post(home,x0,x1,r.var())));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReEqDom<IntView,BoolView,RM_PMI>
+                          ::post(home,x0,x1,r.var())));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       } else {
-        GECODE_ES_FAIL((Rel::ReEqBnd<IntView,BoolView>::post(home,x0,x1,b)));
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Rel::ReEqBnd<IntView,BoolView,RM_EQV>
+                          ::post(home,x0,x1,r.var())));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReEqBnd<IntView,BoolView,RM_IMP>
+                          ::post(home,x0,x1,r.var())));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReEqBnd<IntView,BoolView,RM_PMI>
+                          ::post(home,x0,x1,r.var())));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       }
       break;
     case IRT_NQ:
       {
-        NegBoolView n(b);
+        NegBoolView n(r.var());
         if (icl == ICL_BND) {
-          GECODE_ES_FAIL((Rel::ReEqBnd<IntView,NegBoolView>
-                          ::post(home,x0,x1,n)));
+          switch (r.mode()) {
+          case RM_EQV:
+            GECODE_ES_FAIL((Rel::ReEqBnd<IntView,NegBoolView,RM_EQV>
+                            ::post(home,x0,x1,n)));
+            break;
+          case RM_IMP:
+            GECODE_ES_FAIL((Rel::ReEqBnd<IntView,NegBoolView,RM_PMI>
+                            ::post(home,x0,x1,n)));
+            break;
+          case RM_PMI:
+            GECODE_ES_FAIL((Rel::ReEqBnd<IntView,NegBoolView,RM_IMP>
+                            ::post(home,x0,x1,n)));
+            break;
+          default: throw UnknownReifyMode("Int::rel");
+          }
         } else {
-          GECODE_ES_FAIL((Rel::ReEqDom<IntView,NegBoolView>
-                          ::post(home,x0,x1,n)));
+          switch (r.mode()) {
+          case RM_EQV:
+            GECODE_ES_FAIL((Rel::ReEqDom<IntView,NegBoolView,RM_EQV>
+                            ::post(home,x0,x1,n)));
+            break;
+          case RM_IMP:
+            GECODE_ES_FAIL((Rel::ReEqDom<IntView,NegBoolView,RM_PMI>
+                            ::post(home,x0,x1,n)));
+            break;
+          case RM_PMI:
+            GECODE_ES_FAIL((Rel::ReEqDom<IntView,NegBoolView,RM_IMP>
+                            ::post(home,x0,x1,n)));
+            break;
+          default: throw UnknownReifyMode("Int::rel");
+          }
         }
       }
       break;
     case IRT_GQ:
       std::swap(x0,x1); // Fall through
     case IRT_LQ:
-      GECODE_ES_FAIL((Rel::ReLq<IntView,BoolView>::post(home,x0,x1,b)));
+      switch (r.mode()) {
+      case RM_EQV:
+        GECODE_ES_FAIL((Rel::ReLq<IntView,BoolView,RM_EQV>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      case RM_IMP:
+        GECODE_ES_FAIL((Rel::ReLq<IntView,BoolView,RM_IMP>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      case RM_PMI:
+        GECODE_ES_FAIL((Rel::ReLq<IntView,BoolView,RM_PMI>
+                        ::post(home,x0,x1,r.var())));
+        break;
+      default: throw UnknownReifyMode("Int::rel");
+      }
       break;
     case IRT_LE:
       std::swap(x0,x1); // Fall through
     case IRT_GR:
       {
-        NegBoolView n(b);
-        GECODE_ES_FAIL((Rel::ReLq<IntView,NegBoolView>::post(home,x0,x1,n)));
+        NegBoolView n(r.var());
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Rel::ReLq<IntView,NegBoolView,RM_EQV>
+                          ::post(home,x0,x1,n)));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReLq<IntView,NegBoolView,RM_PMI>
+                          ::post(home,x0,x1,n)));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReLq<IntView,NegBoolView,RM_IMP>
+                          ::post(home,x0,x1,n)));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       }
       break;
     default:
@@ -218,45 +300,123 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, IntVar x, IntRelType r, int n, BoolVar b,
+  rel(Home home, IntVar x, IntRelType irt, int n, Reify r,
       IntConLevel icl) {
     Limits::check(n,"Int::rel");
     if (home.failed()) return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       if ((icl == ICL_DOM) || (icl == ICL_DEF)) {
-        GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,BoolView>
-                        ::post(home,x,n,b)));
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,BoolView,RM_EQV>
+                          ::post(home,x,n,r.var())));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,BoolView,RM_IMP>
+                          ::post(home,x,n,r.var())));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,BoolView,RM_PMI>
+                          ::post(home,x,n,r.var())));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       } else {
-        GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,BoolView>
-                        ::post(home,x,n,b)));
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,BoolView,RM_EQV>
+                          ::post(home,x,n,r.var())));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,BoolView,RM_IMP>
+                          ::post(home,x,n,r.var())));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,BoolView,RM_PMI>
+                          ::post(home,x,n,r.var())));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       }
       break;
     case IRT_NQ:
       {
-        NegBoolView nb(b);
+        NegBoolView nb(r.var());
         if (icl == ICL_BND) {
-          GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,NegBoolView>
-                          ::post(home,x,n,nb)));
+          switch (r.mode()) {
+          case RM_EQV:
+            GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,NegBoolView,RM_EQV>
+                            ::post(home,x,n,nb)));
+            break;
+          case RM_IMP:
+            GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,NegBoolView,RM_PMI>
+                            ::post(home,x,n,nb)));
+            break;
+          case RM_PMI:
+            GECODE_ES_FAIL((Rel::ReEqBndInt<IntView,NegBoolView,RM_IMP>
+                            ::post(home,x,n,nb)));
+            break;
+          default: throw UnknownReifyMode("Int::rel");
+          }
         } else {
-          GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,NegBoolView>
-                          ::post(home,x,n,nb)));
+          switch (r.mode()) {
+          case RM_EQV:
+            GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,NegBoolView,RM_EQV>
+                            ::post(home,x,n,nb)));
+            break;
+          case RM_IMP:
+            GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,NegBoolView,RM_PMI>
+                            ::post(home,x,n,nb)));
+            break;
+          case RM_PMI:
+            GECODE_ES_FAIL((Rel::ReEqDomInt<IntView,NegBoolView,RM_IMP>
+                            ::post(home,x,n,nb)));
+            break;
+          default: throw UnknownReifyMode("Int::rel");
+          }
         }
       }
       break;
     case IRT_LE:
       n--; // Fall through
     case IRT_LQ:
-      GECODE_ES_FAIL((Rel::ReLqInt<IntView,BoolView>
-                      ::post(home,x,n,b)));
+      switch (r.mode()) {
+      case RM_EQV:
+        GECODE_ES_FAIL((Rel::ReLqInt<IntView,BoolView,RM_EQV>
+                        ::post(home,x,n,r.var())));
+        break;
+      case RM_IMP:
+        GECODE_ES_FAIL((Rel::ReLqInt<IntView,BoolView,RM_IMP>
+                        ::post(home,x,n,r.var())));
+        break;
+      case RM_PMI:
+        GECODE_ES_FAIL((Rel::ReLqInt<IntView,BoolView,RM_PMI>
+                        ::post(home,x,n,r.var())));
+        break;
+      default: throw UnknownReifyMode("Int::rel");
+      }
       break;
     case IRT_GQ:
       n--; // Fall through
     case IRT_GR:
       {
-        NegBoolView nb(b);
-        GECODE_ES_FAIL((Rel::ReLqInt<IntView,NegBoolView>
-                        ::post(home,x,n,nb)));
+        NegBoolView nb(r.var());
+        switch (r.mode()) {
+        case RM_EQV:
+          GECODE_ES_FAIL((Rel::ReLqInt<IntView,NegBoolView,RM_EQV>
+                          ::post(home,x,n,nb)));
+          break;
+        case RM_IMP:
+          GECODE_ES_FAIL((Rel::ReLqInt<IntView,NegBoolView,RM_PMI>
+                          ::post(home,x,n,nb)));
+          break;
+        case RM_PMI:
+          GECODE_ES_FAIL((Rel::ReLqInt<IntView,NegBoolView,RM_IMP>
+                          ::post(home,x,n,nb)));
+          break;
+        default: throw UnknownReifyMode("Int::rel");
+        }
       }
       break;
     default:
@@ -265,11 +425,11 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const IntVarArgs& x, IntRelType r,
+  rel(Home home, const IntVarArgs& x, IntRelType irt,
       IntConLevel icl) {
-    if (home.failed() || ((r != IRT_NQ) && (x.size() < 2))) 
+    if (home.failed() || ((irt != IRT_NQ) && (x.size() < 2))) 
       return;
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       {
         ViewArray<IntView> xv(home,x);
@@ -322,11 +482,11 @@ namespace Gecode {
   }
 
   void
-  rel(Home home, const IntVarArgs& x, IntRelType r, const IntVarArgs& y,
+  rel(Home home, const IntVarArgs& x, IntRelType irt, const IntVarArgs& y,
       IntConLevel icl) {
     if (home.failed()) return;
 
-    switch (r) {
+    switch (irt) {
     case IRT_GR:
       {
         ViewArray<IntView> xv(home,x), yv(home,y);

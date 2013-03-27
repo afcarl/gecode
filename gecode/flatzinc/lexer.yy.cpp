@@ -599,8 +599,8 @@ static yyconst flex_int32_t yy_rule_can_match_eol[57] =
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2012-03-21 16:25:08 +1100 (Wed, 21 Mar 2012) $ by $Author: tack $
- *     $Revision: 12605 $
+ *     $Date: 2012-08-17 14:23:02 +0200 (Fri, 17 Aug 2012) $ by $Author: schulte $
+ *     $Revision: 12994 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -795,7 +795,7 @@ static int input (yyscan_t yyscanner );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		yy_size_t n; \
+		int n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -959,7 +959,7 @@ yy_find_action:
 
 		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
 			{
-			yy_size_t yyl;
+			int yyl;
 			for ( yyl = 0; yyl < yyleng; ++yyl )
 				if ( yytext[yyl] == '\n' )
 					   

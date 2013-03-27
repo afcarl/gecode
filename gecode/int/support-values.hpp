@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2010-01-29 03:13:59 +1100 (Fri, 29 Jan 2010) $ by $Author: schulte $
- *     $Revision: 10244 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -132,7 +132,7 @@ namespace Gecode { namespace Int {
 
   template<class View, class A>
   forceinline bool
-  SupportValues<View,A>::support(double n) {
+  SupportValues<View,A>::support(long long int n) {
     if ((n < x.min()) || (n > x.max()))
       return false;
     return _support(static_cast<int>(n));

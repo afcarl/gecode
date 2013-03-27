@@ -4,7 +4,7 @@
  *     Christian Schulte <schulte@gecode.org>
  *
  *  Last modified:
- *     $Date: 2010-05-07 18:30:15 +1000 (Fri, 07 May 2010) $ by $Author: zayenz $
+ *     $Date: 2010-05-07 10:30:15 +0200 (Fri, 07 May 2010) $ by $Author: zayenz $
  *     $Revision: 10883 $
  *
  *  This file is part of Gecode, the generic constraint

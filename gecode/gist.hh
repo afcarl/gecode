@@ -6,8 +6,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-08-25 18:43:31 +1000 (Thu, 25 Aug 2011) $ by $Author: tack $
- *     $Revision: 12352 $
+ *     $Date: 2012-03-30 05:58:02 +0200 (Fri, 30 Mar 2012) $ by $Author: tack $
+ *     $Revision: 12665 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -42,6 +42,9 @@
 #include <gecode/int.hh>
 #ifdef GECODE_HAS_SET_VARS
 #include <gecode/set.hh>
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+#include <gecode/float.hh>
 #endif
 
 /*
@@ -147,6 +150,10 @@ namespace Gecode {
 #ifdef GECODE_HAS_SET_VARS
       /// Return string representation of difference between \a x and \a y, which are called \a x_n
       static std::string compare(std::string x_n, SetVar x, SetVar y);
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+      /// Return string representation of difference between \a x and \a y, which are called \a x_n
+      static std::string compare(std::string x_n, FloatVar x, FloatVar y);
 #endif
       //@}
     };

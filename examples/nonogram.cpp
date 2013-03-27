@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2005
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2013-02-18 21:53:58 +0100 (Mon, 18 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13310 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -49,12 +49,6 @@ namespace {
   /// Number of specifications
   extern const unsigned int n_examples;
 
-  /// Structure for computing the slack of rows/cols.
-  struct Slack {
-    int slack, n;
-    bool row;
-    bool operator<(const Slack& rhs) const { return slack < rhs.slack; }
-  };
 }
 
 /**
@@ -158,10 +152,10 @@ public:
         
         if (rows*width() > cols*height()) {
           for (int w=0; w<width(); w++)
-            branch(*this, m.col(w), INT_VAR_NONE, INT_VAL_MAX);
+            branch(*this, m.col(w), INT_VAR_NONE(), INT_VAL_MAX());
         } else {
           for (int h=0; h<height(); h++)
-            branch(*this, m.row(h), INT_VAR_NONE, INT_VAL_MAX);
+            branch(*this, m.row(h), INT_VAR_NONE(), INT_VAL_MAX());
         }
       }
       break;
@@ -171,7 +165,7 @@ public:
        * equivalent to SIZE/AFC in this case since the variables are
        * binary.
        */
-      branch(*this, b, INT_VAR_AFC_MAX, INT_VAL_MAX);
+      branch(*this, b, INT_VAR_AFC_MAX(opt.decay()), INT_VAL_MAX());
       break;
     }
   }

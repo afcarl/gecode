@@ -9,8 +9,8 @@
  *     Mikael Lagerkvist, 2005
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -93,7 +93,7 @@ namespace {
       rel(*this, kb(n-1,   0), IRT_EQ, 1);
       rel(*this, kb(n-1, n-1), IRT_EQ, 1);
       branch(*this, k,
-             tiebreak(INT_VAR_DEGREE_MAX,INT_VAR_SIZE_MIN), INT_VAL_MAX);
+             tiebreak(INT_VAR_DEGREE_MAX(),INT_VAR_SIZE_MIN()), INT_VAL_MAX());
     }
     Bishops(bool share, Bishops& s) : Space(share,s), n(s.n) {
       k.update(*this, share, s.k);
@@ -337,7 +337,7 @@ public:
     // Branching
     // ***********************
     // Place each piece in turn
-    branch(*this, s, INT_VAR_MIN_MIN, INT_VAL_MIN);
+    branch(*this, s, INT_VAR_MIN_MIN(), INT_VAL_MIN());
   }
 
   /// Constructor for cloning e

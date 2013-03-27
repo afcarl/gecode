@@ -3,12 +3,16 @@
  *  Main authors:
  *     Christian Schulte <schulte@gecode.org>
  *
+ *  Contributing authors:
+ *     Vincent Barichard <Vincent.Barichard@univ-angers.fr>
+ *
  *  Copyright:
  *     Christian Schulte, 2008
+ *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2009-03-02 21:35:30 +1100 (Mon, 02 Mar 2009) $ by $Author: schulte $
- *     $Revision: 8325 $
+ *     $Date: 2012-10-02 15:49:50 +0200 (Tue, 02 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13123 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -102,28 +106,53 @@ namespace Test { namespace Assign {
 
 #endif
 
+#ifdef GECODE_HAS_FLOAT_VARS
+
+  /// Space for executing Boolean tests
+  class FloatTestSpace : public Gecode::Space {
+  public:
+    /// Variables to be tested
+    Gecode::FloatVarArray x;
+    /// Initialize test space
+    FloatTestSpace(int n, const Gecode::FloatVal& d)
+      : x(*this, n, d.min(), d.max()) {}
+    /// Constructor for cloning \a s
+    FloatTestSpace(bool share, FloatTestSpace& s)
+      : Gecode::Space(share,s) {
+      x.update(*this, share, s.x);
+    }
+    /// Copy space during cloning
+    virtual Gecode::Space* copy(bool share) {
+      return new FloatTestSpace(share,*this);
+    }
+  };
+
+#endif
+
   /** \name Collection of possible arguments for integer assignments
    *
    * \relates IntTestSpace BoolTestSpace
    */
   //@{
-  /// Integer value assignments
-  const Gecode::IntAssign int_assign[] = {
-    Gecode::INT_ASSIGN_MIN,
-    Gecode::INT_ASSIGN_MED,
-    Gecode::INT_ASSIGN_MAX,
-    Gecode::INT_ASSIGN_RND
-  };
-  /// Number of integer value selections
-  const int n_int_assign =
-    sizeof(int_assign)/sizeof(Gecode::IntAssign);
   /// Names for integer assignments
   const char* int_assign_name[] = {
     "INT_ASSIGN_MIN",
     "INT_ASSIGN_MED",
     "INT_ASSIGN_MAX",
-    "INT_ASSIGN_RND"
+    "INT_ASSIGN_RND",
+    "INT_ASSIGN"
   };
+  /// Number of integer value selections
+  const int n_int_assign =
+    sizeof(int_assign_name)/sizeof(const char*);
+  /// Test function for branch value function
+  int int_val(const Gecode::Space&, Gecode::IntVar x, int) {
+    return x.min();
+  }
+  /// Test function for branch value function
+  int bool_val(const Gecode::Space&, Gecode::BoolVar x, int) {
+    return x.min();
+  }
   //@}
 
   IntTest::IntTest(const std::string& s, int a, const Gecode::IntSet& d)
@@ -137,12 +166,23 @@ namespace Test { namespace Assign {
     post(*root, root->x);
     (void) root->status();
 
-    for (int val = n_int_assign; val--; ) {
+    for (int val = 0; val<n_int_assign; val++) {
       IntTestSpace* clone = static_cast<IntTestSpace*>(root->clone(false));
       Gecode::Search::Options o;
       o.a_d = Base::rand(10);
       o.c_d = Base::rand(10);
-      assign(*clone, clone->x, int_assign[val]);
+
+      Rnd r(1);
+      IntAssign ia;
+      switch (val) {
+      case 0: ia = INT_ASSIGN_MIN(); break;
+      case 1: ia = INT_ASSIGN_MED(); break;
+      case 2: ia = INT_ASSIGN_MAX(); break;
+      case 3: ia = INT_ASSIGN_RND(r); break;
+      case 4: ia = INT_ASSIGN(&int_val); break;
+      }
+
+      assign(*clone, clone->x, ia);
       Gecode::DFS<IntTestSpace> e_s(clone, o);
       delete clone;
 
@@ -179,7 +219,17 @@ namespace Test { namespace Assign {
       Gecode::Search::Options o;
       o.a_d = Base::rand(10);
       o.c_d = Base::rand(10);
-      assign(*clone, clone->x, int_assign[val]);
+      Rnd r(1);
+      IntAssign ia;
+      switch (val) {
+      case 0: ia = INT_ASSIGN_MIN(); break;
+      case 1: ia = INT_ASSIGN_MED(); break;
+      case 2: ia = INT_ASSIGN_MAX(); break;
+      case 3: ia = INT_ASSIGN_RND(r); break;
+      case 4: ia = INT_ASSIGN(&bool_val); break;
+      }
+
+      assign(*clone, clone->x, ia);
       Gecode::DFS<BoolTestSpace> e_s(clone, o);
       delete clone;
 
@@ -207,20 +257,6 @@ namespace Test { namespace Assign {
    * \relates SetTestSpace
    */
   //@{
-  /// Set value assignments
-  const Gecode::SetAssign set_assign[] = {
-    Gecode::SET_ASSIGN_MIN_INC,
-    Gecode::SET_ASSIGN_MIN_EXC,
-    Gecode::SET_ASSIGN_MED_INC,
-    Gecode::SET_ASSIGN_MED_EXC,
-    Gecode::SET_ASSIGN_MAX_INC,
-    Gecode::SET_ASSIGN_MAX_EXC,
-    Gecode::SET_ASSIGN_RND_INC,
-    Gecode::SET_ASSIGN_RND_EXC
-  };
-  /// Number of set value selections
-  const int n_set_assign =
-    sizeof(set_assign)/sizeof(Gecode::SetAssign);
   /// Names for integer assignments
   const char* set_assign_name[] = {
     "SET_ASSIGN_MIN_INC",
@@ -230,8 +266,17 @@ namespace Test { namespace Assign {
     "SET_ASSIGN_MAX_INC",
     "SET_ASSIGN_MAX_EXC",
     "SET_ASSIGN_RND_INC",
-    "SET_ASSIGN_RND_EXC"
+    "SET_ASSIGN_RND_EXC",
+    "SET_ASSIGN"
   };
+  /// Number of set value selections
+  const int n_set_assign =
+    sizeof(set_assign_name)/sizeof(const char*);
+  /// Test function for branch value function
+  int set_val(const Gecode::Space&, Gecode::SetVar x, int) {
+    Gecode::SetVarUnknownRanges r(x);
+    return r.min();
+  }
   //@}
 
   SetTest::SetTest(const std::string& s, int a, const Gecode::IntSet& d)
@@ -250,7 +295,23 @@ namespace Test { namespace Assign {
       Gecode::Search::Options o;
       o.a_d = Base::rand(10);
       o.c_d = Base::rand(10);
-      assign(*clone, clone->x, set_assign[val]);
+
+      Rnd r(1);
+
+      SetAssign sa;
+      switch (val) {
+      case 0: sa = SET_ASSIGN_MIN_INC(); break;
+      case 1: sa = SET_ASSIGN_MIN_EXC(); break;
+      case 2: sa = SET_ASSIGN_MED_INC(); break;
+      case 3: sa = SET_ASSIGN_MED_EXC(); break;
+      case 4: sa = SET_ASSIGN_MAX_INC(); break;
+      case 5: sa = SET_ASSIGN_MAX_EXC(); break;
+      case 6: sa = SET_ASSIGN_RND_INC(r); break;
+      case 7: sa = SET_ASSIGN_RND_EXC(r); break;
+      case 8: sa = SET_ASSIGN(&set_val); break;
+      }
+          
+      assign(*clone, clone->x, sa);
       Gecode::DFS<SetTestSpace> e_s(clone, o);
       delete clone;
 
@@ -263,6 +324,79 @@ namespace Test { namespace Assign {
         std::cout << "FAILURE" << std::endl
                   << "\tc_d=" << o.c_d << ", a_d=" << o.a_d << std::endl
                   << "\t" << set_assign_name[val] << std::endl;
+        delete root;
+        return false;
+      }
+    }
+    delete root;
+    return true;
+  }
+
+#endif
+
+#ifdef GECODE_HAS_FLOAT_VARS
+
+  /** \name Collection of possible arguments for float assignments
+   *
+   * \relates FloatTestSpace
+   */
+  //@{
+  /// Names for float assignments
+  const char* float_assign_name[] = {
+    "FLOAT_ASSIGN_MIN",
+    "FLOAT_ASSIGN_MAX",
+    "FLOAT_ASSIGN_RND",
+    "FLOAT_ASSIGN"
+  };
+  /// Number of float value selections
+  const int n_float_assign =
+    sizeof(float_assign_name)/sizeof(const char*);
+  /// Test function for branch value function
+  Gecode::FloatNum float_val(const Gecode::Space&, Gecode::FloatVar x, int) {
+    return x.min();
+  }
+  //@}
+
+  FloatTest::FloatTest(const std::string& s, int a, const Gecode::FloatVal& d)
+    : Base("Float::Assign::"+s), arity(a), dom(d) {
+  }
+
+  bool
+  FloatTest::run(void) {
+    using namespace Gecode;
+    FloatTestSpace* root = new FloatTestSpace(arity,dom);
+    post(*root, root->x);
+    (void) root->status();
+
+    for (int val = n_float_assign; val--; ) {
+      FloatTestSpace* clone = static_cast<FloatTestSpace*>(root->clone(false));
+      Gecode::Search::Options o;
+      o.a_d = Base::rand(10);
+      o.c_d = Base::rand(10);
+
+      Rnd r(1);
+
+      FloatAssign fa;
+      switch (val) {
+      case 0: fa = FLOAT_ASSIGN_MIN(); break;
+      case 1: fa = FLOAT_ASSIGN_MAX(); break;
+      case 2: fa = FLOAT_ASSIGN_RND(r); break;
+      case 3: fa = FLOAT_ASSIGN(&float_val); break;
+      }
+          
+      assign(*clone, clone->x, fa);
+      Gecode::DFS<FloatTestSpace> e_s(clone, o);
+      delete clone;
+
+      // Find number of solutions
+      int solutions = 0;
+      while (Space* s = e_s.next()) {
+        delete s; solutions++;
+      }
+      if (solutions != 1) {
+        std::cout << "FAILURE" << std::endl
+                  << "\tc_d=" << o.c_d << ", a_d=" << o.a_d << std::endl
+                  << "\t" << float_assign_name[val] << std::endl;
         delete root;
         return false;
       }

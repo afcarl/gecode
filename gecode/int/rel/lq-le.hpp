@@ -9,8 +9,8 @@
  *     Gabor Szokoli, 2003
  *
  *  Last modified:
- *     $Date: 2011-07-14 02:58:53 +1000 (Thu, 14 Jul 2011) $ by $Author: tack $
- *     $Revision: 12196 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -407,62 +407,81 @@ namespace Gecode { namespace Int { namespace Rel {
    *
    */
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   forceinline
-  ReLq<View,CtrlView>::ReLq(Home home, View x0, View x1, CtrlView b)
+  ReLq<View,CtrlView,rm>::ReLq(Home home, View x0, View x1, CtrlView b)
     : ReBinaryPropagator<View,PC_INT_BND,CtrlView>(home,x0,x1,b) {}
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   ExecStatus
-  ReLq<View,CtrlView>::post(Home home, View x0, View x1, CtrlView b) {
-    if (b.one())
+  ReLq<View,CtrlView,rm>::post(Home home, View x0, View x1, CtrlView b) {
+    if (b.one()) {
+      if (rm == RM_PMI)
+        return ES_OK;
       return Lq<View>::post(home,x0,x1);
-    if (b.zero())
+    }
+    if (b.zero()) {
+      if (rm == RM_IMP)
+        return ES_OK;
       return Le<View>::post(home,x1,x0);
+    }
     if (!same(x0,x1)) {
       switch (rtest_lq(x0,x1)) {
       case RT_TRUE:
-        GECODE_ME_CHECK(b.one_none(home)); break;
+        if (rm != RM_IMP)
+          GECODE_ME_CHECK(b.one_none(home)); 
+        break;
       case RT_FALSE:
-        GECODE_ME_CHECK(b.zero_none(home)); break;
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero_none(home)); 
+        break;
       case RT_MAYBE:
-        (void) new (home) ReLq<View,CtrlView>(home,x0,x1,b); break;
+        (void) new (home) ReLq<View,CtrlView,rm>(home,x0,x1,b); 
+        break;
       default: GECODE_NEVER;
       }
-    } else {
+    } else if (rm != RM_IMP) {
       GECODE_ME_CHECK(b.one_none(home));
     }
     return ES_OK;
   }
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   forceinline
-  ReLq<View,CtrlView>::ReLq(Space& home, bool share, ReLq& p)
+  ReLq<View,CtrlView,rm>::ReLq(Space& home, bool share, ReLq& p)
     : ReBinaryPropagator<View,PC_INT_BND,CtrlView>(home,share,p) {}
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   Actor*
-  ReLq<View,CtrlView>::copy(Space& home, bool share) {
-    return new (home) ReLq<View,CtrlView>(home,share,*this);
+  ReLq<View,CtrlView,rm>::copy(Space& home, bool share) {
+    return new (home) ReLq<View,CtrlView,rm>(home,share,*this);
   }
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   ExecStatus
-  ReLq<View,CtrlView>::propagate(Space& home, const ModEventDelta&) {
-    if (b.one())
-      GECODE_REWRITE(*this,Lq<View>::post(home(*this),x0,x1));
-    if (b.zero())
-      GECODE_REWRITE(*this,Le<View>::post(home(*this),x1,x0));
-    switch (rtest_lq(x0,x1)) {
-    case RT_TRUE:
-      GECODE_ME_CHECK(b.one_none(home));  return home.ES_SUBSUMED(*this);
-    case RT_FALSE:
-      GECODE_ME_CHECK(b.zero_none(home)); return home.ES_SUBSUMED(*this);
-    case RT_MAYBE:
-      break;
-    default: GECODE_NEVER;
+  ReLq<View,CtrlView,rm>::propagate(Space& home, const ModEventDelta&) {
+    if (b.one()) {
+      if (rm != RM_PMI)
+        GECODE_REWRITE(*this,Lq<View>::post(home(*this),x0,x1));
+    } else if (b.zero()) {
+      if (rm != RM_IMP)
+        GECODE_REWRITE(*this,Le<View>::post(home(*this),x1,x0));
+    } else {
+      switch (rtest_lq(x0,x1)) {
+      case RT_TRUE:
+        if (rm != RM_IMP)
+          GECODE_ME_CHECK(b.one_none(home));
+        break;
+      case RT_FALSE:
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero_none(home)); 
+        break;
+      case RT_MAYBE:
+        return ES_FIX;
+      default: GECODE_NEVER;
+      }
     }
-    return ES_FIX;
+    return home.ES_SUBSUMED(*this);
   }
 
   /*
@@ -470,26 +489,33 @@ namespace Gecode { namespace Int { namespace Rel {
    *
    */
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   forceinline
-  ReLqInt<View,CtrlView>::ReLqInt(Home home, View x, int c0, CtrlView b)
+  ReLqInt<View,CtrlView,rm>::ReLqInt(Home home, View x, int c0, CtrlView b)
     : ReUnaryPropagator<View,PC_INT_BND,CtrlView>(home,x,b), c(c0) {}
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   ExecStatus
-  ReLqInt<View,CtrlView>::post(Home home, View x, int c, CtrlView b) {
+  ReLqInt<View,CtrlView,rm>::post(Home home, View x, int c, CtrlView b) {
     if (b.one()) {
-      GECODE_ME_CHECK(x.lq(home,c));
+      if (rm != RM_PMI)
+        GECODE_ME_CHECK(x.lq(home,c));
     } else if (b.zero()) {
-      GECODE_ME_CHECK(x.gr(home,c));
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(x.gr(home,c));
     } else {
       switch (rtest_lq(x,c)) {
       case RT_TRUE:
-        GECODE_ME_CHECK(b.one_none(home)); break;
+        if (rm != RM_IMP)
+          GECODE_ME_CHECK(b.one_none(home));
+        break;
       case RT_FALSE:
-        GECODE_ME_CHECK(b.zero_none(home)); break;
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero_none(home));
+        break;
       case RT_MAYBE:
-        (void) new (home) ReLqInt<View,CtrlView>(home,x,c,b); break;
+        (void) new (home) ReLqInt<View,CtrlView,rm>(home,x,c,b);
+        break;
       default: GECODE_NEVER;
       }
     }
@@ -497,37 +523,41 @@ namespace Gecode { namespace Int { namespace Rel {
   }
 
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   forceinline
-  ReLqInt<View,CtrlView>::ReLqInt(Space& home, bool share, ReLqInt& p)
+  ReLqInt<View,CtrlView,rm>::ReLqInt(Space& home, bool share, ReLqInt& p)
     : ReUnaryPropagator<View,PC_INT_BND,CtrlView>(home,share,p), c(p.c) {}
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   Actor*
-  ReLqInt<View,CtrlView>::copy(Space& home, bool share) {
-    return new (home) ReLqInt<View,CtrlView>(home,share,*this);
+  ReLqInt<View,CtrlView,rm>::copy(Space& home, bool share) {
+    return new (home) ReLqInt<View,CtrlView,rm>(home,share,*this);
   }
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   ExecStatus
-  ReLqInt<View,CtrlView>::propagate(Space& home, const ModEventDelta&) {
+  ReLqInt<View,CtrlView,rm>::propagate(Space& home, const ModEventDelta&) {
     if (b.one()) {
-      GECODE_ME_CHECK(x0.lq(home,c)); goto subsumed;
+      if (rm != RM_PMI)
+        GECODE_ME_CHECK(x0.lq(home,c));
+    } else if (b.zero()) {
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(x0.gr(home,c));
+    } else {
+      switch (rtest_lq(x0,c)) {
+      case RT_TRUE:
+        if (rm != RM_IMP)
+          GECODE_ME_CHECK(b.one_none(home));
+        break;
+      case RT_FALSE:
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero_none(home));
+        break;
+      case RT_MAYBE:
+        return ES_FIX;
+      default: GECODE_NEVER;
+      }
     }
-    if (b.zero()) {
-      GECODE_ME_CHECK(x0.gr(home,c)); goto subsumed;
-    }
-    switch (rtest_lq(x0,c)) {
-    case RT_TRUE:
-      GECODE_ME_CHECK(b.one_none(home)); goto subsumed;
-    case RT_FALSE:
-      GECODE_ME_CHECK(b.zero_none(home)); goto subsumed;
-    case RT_MAYBE:
-      break;
-    default: GECODE_NEVER;
-    }
-    return ES_FIX;
-  subsumed:
     return home.ES_SUBSUMED(*this);
   }
 

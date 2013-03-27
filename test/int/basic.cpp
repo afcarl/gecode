@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
- *     $Revision: 10684 $
+ *     $Date: 2012-10-18 16:02:42 +0200 (Thu, 18 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13154 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -53,10 +53,10 @@ namespace Test { namespace Int {
      public:
        /// Initialize test
        Basic(int n)
-         : Test("Basic",3,-n,n,true) {}
+         : Test("Basic::A",3,-n,n,true) {}
        /// Initialize test
        Basic(Gecode::IntArgs& i)
-         : Test("Basic",3,Gecode::IntSet(i),true) {}
+         : Test("Basic::B",3,Gecode::IntSet(i),true) {}
        /// Check whether \a x is a solution
        virtual bool solution(const Assignment&) const {
          return true;
@@ -64,10 +64,11 @@ namespace Test { namespace Int {
        /// Post constraint on \a x
        virtual void post(Gecode::Space&, Gecode::IntVarArray&) {
        }
-       /// Post reified constraint on \a x
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray&,
-                         Gecode::BoolVar b) {
-         Gecode::rel(home, b, Gecode::IRT_EQ, 1);
+                         Gecode::Reify r) {
+         if (r.mode() != Gecode::RM_IMP)
+           Gecode::rel(home, r.var(), Gecode::IRT_EQ, 1);
        }
      };
 

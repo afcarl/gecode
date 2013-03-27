@@ -10,8 +10,8 @@
  *     David Rijsman <david.rijsman@quintiq.com>
  *
  *  Last modified:
- *     $Date: 2010-05-11 20:29:52 +1000 (Tue, 11 May 2010) $ by $Author: tack $
- *     $Revision: 10939 $
+ *     $Date: 2012-09-27 08:00:33 +0200 (Thu, 27 Sep 2012) $ by $Author: tack $
+ *     $Revision: 13118 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -230,7 +230,7 @@ namespace Gecode { namespace Support {
       static void  operator delete(void* p);
     };
     /// Mutex for synchronization
-    GECODE_SUPPORT_EXPORT static Mutex m;
+    GECODE_SUPPORT_EXPORT static Mutex* m(void);
     /// Idle runners
     GECODE_SUPPORT_EXPORT static Run* idle;
   public:

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2011-09-02 21:27:53 +1000 (Fri, 02 Sep 2011) $ by $Author: tack $
- *     $Revision: 12389 $
+ *     $Date: 2012-10-18 16:02:42 +0200 (Thu, 18 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13154 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -44,7 +44,7 @@ namespace Test { namespace Int {
    /// %Tests for linear constraints
    namespace Linear {
 
-     /// Check whether \a has only one coefficients
+     /// Check whether \a a has only one coefficients
      bool one(const Gecode::IntArgs& a) {
       for (int i=a.size(); i--; )
         if (a[i] != 1)
@@ -75,7 +75,9 @@ namespace Test { namespace Int {
                 str(irt0)+"::"+str(icl)+"::"+s+"::"+str(c0)+"::"
                 +str(a0.size()),
                 a0.size(),d,icl != Gecode::ICL_DOM,icl),
-         a(a0), irt(irt0), c(c0) {}
+         a(a0), irt(irt0), c(c0) {
+         testfix=false;
+       }
        /// %Test whether \a x is solution
        virtual bool solution(const Assignment& x) const {
          double e = 0.0;
@@ -90,13 +92,13 @@ namespace Test { namespace Int {
          else
            Gecode::linear(home, a, x, irt, c, icl);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          if (one(a))
-           Gecode::linear(home, x, irt, c, b, icl);
+           Gecode::linear(home, x, irt, c, r, icl);
          else
-           Gecode::linear(home, a, x, irt, c, b, icl);
+           Gecode::linear(home, a, x, irt, c, r, icl);
        }
      };
 
@@ -115,7 +117,9 @@ namespace Test { namespace Int {
          : Test("Linear::Int::Var::"+
                 str(irt0)+"::"+str(icl)+"::"+s+"::"+str(a0.size()),
                 a0.size()+1,d,icl != Gecode::ICL_DOM,icl),
-           a(a0), irt(irt0) {}
+           a(a0), irt(irt0) {
+         testfix=false;
+       }
        /// %Test whether \a x is solution
        virtual bool solution(const Assignment& x) const {
          double e = 0.0;
@@ -134,17 +138,17 @@ namespace Test { namespace Int {
          else
            Gecode::linear(home, a, y, irt, x[n], icl);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          int n = a.size();
          Gecode::IntVarArgs y(n);
          for (int i=n; i--; )
            y[i] = x[i];
          if (one(a))
-           Gecode::linear(home, y, irt, x[n], b, icl);
+           Gecode::linear(home, y, irt, x[n], r, icl);
          else
-           Gecode::linear(home, a, y, irt, x[n], b, icl);
+           Gecode::linear(home, a, y, irt, x[n], r, icl);
        }
      };
 
@@ -165,6 +169,7 @@ namespace Test { namespace Int {
                 str(irt0)+"::"+s+"::"+str(a0.size())+"::"+str(c0),
                 a0.size(),0,1,true,Gecode::ICL_DEF),
            a(a0), irt(irt0), c(c0) {
+         testfix=false;
        }
        /// %Test whether \a x is solution
        virtual bool solution(const Assignment& x) const {
@@ -183,16 +188,16 @@ namespace Test { namespace Int {
          else
            Gecode::linear(home, a, y, irt, c, Gecode::ICL_DEF);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          Gecode::BoolVarArgs y(x.size());
          for (int i=x.size(); i--; )
            y[i]=Gecode::channel(home,x[i]);
          if (one(a))
-           Gecode::linear(home, y, irt, c, b, Gecode::ICL_DEF);
+           Gecode::linear(home, y, irt, c, r, Gecode::ICL_DEF);
          else
-           Gecode::linear(home, a, y, irt, c, b, Gecode::ICL_DEF);
+           Gecode::linear(home, a, y, irt, c, r, Gecode::ICL_DEF);
        }
      };
 
@@ -210,7 +215,9 @@ namespace Test { namespace Int {
                Gecode::IntRelType irt0)
          : Test("Linear::Bool::Var::"+str(irt0)+"::"+s,a0.size()+1,
                 min,max,true),
-           a(a0), irt(irt0) {}
+           a(a0), irt(irt0) {
+         testfix=false;
+       }
        /// %Test whether \a x is solution
        virtual bool solution(const Assignment& x) const {
          int n=x.size()-1;
@@ -222,7 +229,7 @@ namespace Test { namespace Int {
            e += a[i]*x[i];
          return cmp(e, irt, static_cast<double>(x[n]));
        }
-       /// %Test whether \a x is to be ignore
+       /// %Test whether \a x is to be ignored
        virtual bool ignore(const Assignment& x) const {
          for (int i=x.size()-1; i--; )
            if ((x[i] < 0) || (x[i] > 1))
@@ -240,17 +247,17 @@ namespace Test { namespace Int {
          else
            Gecode::linear(home, a, y, irt, x[n]);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          int n=x.size()-1;
          Gecode::BoolVarArgs y(n);
          for (int i=n; i--; )
            y[i]=Gecode::channel(home,x[i]);
          if (one(a))
-           Gecode::linear(home, y, irt, x[n], b);
+           Gecode::linear(home, y, irt, x[n], r);
          else
-           Gecode::linear(home, a, y, irt, x[n], b);
+           Gecode::linear(home, a, y, irt, x[n], r);
        }
      };
 

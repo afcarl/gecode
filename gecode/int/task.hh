@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2011-07-13 02:03:22 +1000 (Wed, 13 Jul 2011) $ by $Author: tack $
- *     $Revision: 12176 $
+ *     $Date: 2013-03-11 06:26:07 +0100 (Mon, 11 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13487 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -354,12 +354,12 @@ namespace Gecode { namespace Int {
   /// Safe addition in case \a x is -Int::Limits::infinity
   int plus(int x, int y);
 
+  /// Safe addition in case \a x is -Int::Limits::llinfinity
+  long long int plus(long long int x, long long int y);
+
   /// Safe addition in case \a x is -Int::Limits::double_infinity
   double plus(double x, double y);
   
-  /// Safe division in case \a x is -Int::Limits::double_infinity
-  double div(double x, double y);
-
   /// Task trees for task views with node type \a Node
   template<class TaskView, class Node>
   class TaskTree {
@@ -451,4 +451,4 @@ namespace Gecode { namespace Int {
 
 #endif
 
-// STATISTICS: scheduling-prop
+// STATISTICS: int-prop

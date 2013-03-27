@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2009-09-10 19:44:51 +1000 (Thu, 10 Sep 2009) $ by $Author: tack $
- *     $Revision: 9700 $
+ *     $Date: 2012-05-10 11:48:53 +0200 (Thu, 10 May 2012) $ by $Author: tack $
+ *     $Revision: 12805 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -45,7 +45,7 @@
 namespace Gecode { namespace FlatZinc {
 
   /// Map from constraint identifier to constraint posting functions
-  class Registry {
+  class GECODE_FLATZINC_EXPORT Registry {
   public:
     /// Type of constraint posting function
     typedef void (*poster) (FlatZincSpace&,
@@ -62,7 +62,7 @@ namespace Gecode { namespace FlatZinc {
   };
   
   /// Return global registry object
-  Registry& registry(void);
+  GECODE_FLATZINC_EXPORT Registry& registry(void);
 
 }}
 

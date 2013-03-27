@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2011-05-02 08:24:42 +1000 (Mon, 02 May 2011) $ by $Author: tack $
- *     $Revision: 11973 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -76,6 +76,7 @@ namespace Gecode {
 
 #include <gecode/iter/values-array.hpp>
 #include <gecode/iter/values-bitset.hpp>
+#include <gecode/iter/values-bitsetoffset.hpp>
 #include <gecode/iter/values-list.hpp>
 
 #include <gecode/iter/values-inter.hpp>

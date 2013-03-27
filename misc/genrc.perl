@@ -7,8 +7,8 @@
 #     Christian Schulte, 2010
 #
 #  Last modified:
-#     $Date: 2011-01-19 22:58:04 +1100 (Wed, 19 Jan 2011) $ by $Author: schulte $
-#     $Revision: 11552 $
+#     $Date: 2013-03-12 10:40:39 +0100 (Tue, 12 Mar 2013) $ by $Author: schulte $
+#     $Revision: 13502 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -40,9 +40,8 @@ $dlldescription{"Kernel"} = "kernel";
 $dlldescription{"Search"} = "search engines";
 $dlldescription{"Int"} = "finite domain integers";
 $dlldescription{"Set"} = "finite integer sets";
+$dlldescription{"Float"} = "floats";
 $dlldescription{"Minimodel"} = "minimal modeling support";
-$dlldescription{"Graph"} = "graph constraints";
-$dlldescription{"Scheduling"} = "scheduling constraints";
 $dlldescription{"Driver"} = "script commandline driver";
 $dlldescription{"FlatZinc"} = "FlatZinc interpreter library";
 $dlldescription{"Gist"} = "Gist";
@@ -155,13 +154,13 @@ if ($file =~ /Gecode(.*)-([0-9]+-[0-9]+-[0-9]+-[rd]-.+)\.dll$/) {
 } else {
   $filetype    = "VFT_APP";
   $icon        = 1;
-  if ($file =~ /fz\.exe/) {
-    $filename    = "fz.exe";
-    $basename    = "fz";
+  if ($file =~ /fzn-gecode\.exe/) {
+    $filename    = "fzn-gecode.exe";
+    $basename    = "fzn-gecode";
     $description = "Gecode FlatZinc interpreter";
   } elsif ($file =~ /test\.exe/) {
-    $filename    = "fz.exe";
-    $basename    = "fz";
+    $filename    = "test.exe";
+    $basename    = "test";
     $description = "Gecode systematic tests";
   } elsif ($file =~ /examples\/(.+)\.exe/) {
     $filename    = "$1.exe";

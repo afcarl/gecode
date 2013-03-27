@@ -9,7 +9,7 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-07-14 04:01:39 +1000 (Thu, 14 Jul 2011) $ by $Author: schulte $
+ *     $Date: 2011-07-13 20:01:39 +0200 (Wed, 13 Jul 2011) $ by $Author: schulte $
  *     $Revision: 12197 $
  *
  *  This file is part of Gecode, the generic constraint

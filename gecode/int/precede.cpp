@@ -11,8 +11,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-07-01 00:20:54 +1000 (Fri, 01 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12138 $
+ *     $Date: 2012-11-21 13:28:07 +0100 (Wed, 21 Nov 2012) $ by $Author: schulte $
+ *     $Revision: 13181 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -57,6 +57,8 @@ namespace Gecode {
   void
   precede(Home home, const IntVarArgs& x, const IntArgs& c, IntConLevel) {
     using namespace Int;
+    if (c.size() < 2)
+      return;
     for (int i=c.size(); i--; )
       Limits::check(c[i],"Int::precede");
     if (home.failed()) return;

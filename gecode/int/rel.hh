@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2003
  *
  *  Last modified:
- *     $Date: 2011-07-07 05:56:28 +1000 (Thu, 07 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12151 $
+ *     $Date: 2011-11-18 16:02:48 +0100 (Fri, 18 Nov 2011) $ by $Author: schulte $
+ *     $Revision: 12472 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -314,7 +314,7 @@ namespace Gecode { namespace Int { namespace Rel {
    * Requires \code #include <gecode/int/rel.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   class ReEqDom : public ReBinaryPropagator<View,PC_INT_DOM,CtrlView> {
   protected:
     using ReBinaryPropagator<View,PC_INT_DOM,CtrlView>::x0;
@@ -340,7 +340,7 @@ namespace Gecode { namespace Int { namespace Rel {
    * Requires \code #include <gecode/int/rel.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   class ReEqBnd : public ReBinaryPropagator<View,PC_INT_BND,CtrlView> {
   protected:
     using ReBinaryPropagator<View,PC_INT_BND,CtrlView>::x0;
@@ -366,7 +366,7 @@ namespace Gecode { namespace Int { namespace Rel {
    * Requires \code #include <gecode/int/rel.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   class ReEqDomInt : public ReUnaryPropagator<View,PC_INT_DOM,CtrlView> {
   protected:
     using ReUnaryPropagator<View,PC_INT_DOM,CtrlView>::x0;
@@ -393,7 +393,7 @@ namespace Gecode { namespace Int { namespace Rel {
    * Requires \code #include <gecode/int/rel.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   class ReEqBndInt : public ReUnaryPropagator<View,PC_INT_BND,CtrlView> {
   protected:
     using ReUnaryPropagator<View,PC_INT_BND,CtrlView>::x0;
@@ -518,7 +518,7 @@ namespace Gecode { namespace Int { namespace Rel {
    * \ingroup FuncIntProp
    */
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   class ReLq : public ReBinaryPropagator<View,PC_INT_BND,CtrlView> {
   protected:
     using ReBinaryPropagator<View,PC_INT_BND,CtrlView>::x0;
@@ -545,7 +545,7 @@ namespace Gecode { namespace Int { namespace Rel {
    * \ingroup FuncIntProp
    */
 
-  template<class View, class CtrlView>
+  template<class View, class CtrlView, ReifyMode rm>
   class ReLqInt : public ReUnaryPropagator<View,PC_INT_BND,CtrlView> {
   protected:
     using ReUnaryPropagator<View,PC_INT_BND,CtrlView>::x0;

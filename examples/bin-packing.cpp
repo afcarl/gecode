@@ -7,8 +7,8 @@
  *     Christian Schulte, 2010
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-02-25 21:43:24 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13406 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -239,10 +239,10 @@ public:
     home.notice(*this,AP_DISPOSE);
   }
   /// Brancher post function
-  static void post(Home home, ViewArray<Int::IntView>& l, 
-                              ViewArray<Int::IntView>& b,
-                              IntSharedArray& s) {
-    (void) new (home) CDBF(home, l, b, s);
+  static BrancherHandle post(Home home, ViewArray<Int::IntView>& l, 
+                             ViewArray<Int::IntView>& b,
+                             IntSharedArray& s) {
+    return *new (home) CDBF(home, l, b, s);
   }
   /// Copy constructor
   CDBF(Space& home, bool share, CDBF& cdbf) 
@@ -354,14 +354,14 @@ public:
 };
 
 /// Post branching (assumes that \a s is sorted)
-void cdbf(Home home, const IntVarArgs& l, const IntVarArgs& b,
-                     const IntArgs& s) {
+BrancherHandle cdbf(Home home, const IntVarArgs& l, const IntVarArgs& b,
+                    const IntArgs& s) {
   if (b.size() != s.size())
     throw Int::ArgumentSizeMismatch("cdbf");      
   ViewArray<Int::IntView> load(home, l);
   ViewArray<Int::IntView> bin(home, b);
   IntSharedArray size(s);
-  CDBF::post(home, load, bin, size);
+  return CDBF::post(home, load, bin, size);
 }
 
 
@@ -457,10 +457,10 @@ public:
     for (int j=spec.lower()+1; j <= spec.upper(); j++)
       rel(*this, (bins < j) == (load[j-1] == 0));
 
-    branch(*this, bins, INT_VAL_MIN);
+    branch(*this, bins, INT_VAL_MIN());
     switch (opt.branching()) {
     case BRANCH_NAIVE:
-      branch(*this, bin, INT_VAR_NONE, INT_VAL_MIN);
+      branch(*this, bin, INT_VAR_NONE(), INT_VAL_MIN());
       break;
     case BRANCH_CDBF:
       cdbf(*this, load, bin, sizes);

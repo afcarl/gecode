@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2009-03-02 20:08:11 +1100 (Mon, 02 Mar 2009) $ by $Author: schulte $
- *     $Revision: 8320 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -115,6 +115,13 @@ namespace Gecode { namespace Int {
     UnknownBranching(const char* l);
   };
 
+  /// %Exception: Unknown reification mode passed as argument
+  class GECODE_VTABLE_EXPORT UnknownReifyMode : public Exception {
+  public:
+    /// Initialize with location \a l
+    UnknownReifyMode(const char* l);
+  };
+
   /// %Exception: Attempt to access value of unassigned variable
   class GECODE_VTABLE_EXPORT ValOfUnassignedVar : public Exception {
   public:
@@ -127,6 +134,20 @@ namespace Gecode { namespace Int {
   public:
     /// Initialize with location \a l
     NotYetFinalized(const char* l);
+  };
+
+  /// %Exception: Variable in symmetry not branched on
+  class GECODE_VTABLE_EXPORT LDSBUnbranchedVariable : public Exception {
+  public:
+    /// Initialize with location \a l
+    LDSBUnbranchedVariable(const char* l);
+  };
+
+  /// %Exception: Value selection incompatible with LDSB
+  class GECODE_VTABLE_EXPORT LDSBBadValueSelection : public Exception {
+  public:
+    /// Initialize with location \a l
+    LDSBBadValueSelection(const char* l);
   };
 
   //@}
@@ -183,12 +204,24 @@ namespace Gecode { namespace Int {
     : Exception(l,"Unknown branching type") {}
 
   inline
+  UnknownReifyMode::UnknownReifyMode(const char* l)
+    : Exception(l,"Unknown reification mode") {}
+
+  inline
   ValOfUnassignedVar::ValOfUnassignedVar(const char* l)
     : Exception(l,"Attempt to access value of unassigned variable") {}
 
   inline
   NotYetFinalized::NotYetFinalized(const char* l)
     : Exception(l,"Tuple set not yet finalized") {}
+
+  inline
+  LDSBUnbranchedVariable::LDSBUnbranchedVariable(const char* l)
+    : Exception(l,"Variable in symmetry not branched on") {}
+
+  inline
+  LDSBBadValueSelection::LDSBBadValueSelection(const char* l)
+    : Exception(l,"Value selection incomatible with LDSB") {}
 
 }}
 

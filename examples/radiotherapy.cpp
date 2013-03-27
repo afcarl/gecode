@@ -11,8 +11,8 @@
  *     Mikael Lagerkvist, 2009
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-02-25 21:43:24 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13406 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -156,8 +156,8 @@ public:
 
     // First branch over beamtime and N
     IntVarArgs ba(1); ba[0] = beamtime;
-    branch(*this, ba, INT_VAR_NONE, INT_VAL_MIN);
-    branch(*this, N, INT_VAR_NONE, INT_VAL_SPLIT_MIN);
+    branch(*this, ba, INT_VAR_NONE(), INT_VAL_MIN());
+    branch(*this, N, INT_VAR_NONE(), INT_VAL_SPLIT_MIN());
 
     // Then perform a nested search over q
     NestedSearch::post(*this);
@@ -289,9 +289,9 @@ public:
 
         // Branch over row i
         branch(*row, getRow(row, index[i].idx), 
-               INT_VAR_NONE, INT_VAL_SPLIT_MIN);
+               INT_VAR_NONE(), INT_VAL_SPLIT_MIN());
         Search::Options o; o.clone = false;
-        if ( Radiotherapy* newSol = dfs(row, o) ) {
+        if (Radiotherapy* newSol = dfs(row, o) ) {
           // Found a solution for row i, so try to find one for i+1
           delete newSol;
           std::cerr << index[i].idx;
@@ -319,8 +319,8 @@ public:
       return new (home) NestedSearch(home, share, *this);
     }
     /// Post brancher
-    static void post(Home home) {
-      (void) new (home) NestedSearch(home);
+    static BrancherHandle post(Home home) {
+      return *new (home) NestedSearch(home);
     }
     /// Dispose member function
     size_t dispose(Space& home) {

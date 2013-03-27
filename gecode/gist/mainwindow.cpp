@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 23:30:33 +1000 (Thu, 12 Aug 2010) $ by $Author: tack $
- *     $Revision: 11351 $
+ *     $Date: 2012-05-01 01:25:23 +0200 (Tue, 01 May 2012) $ by $Author: tack $
+ *     $Revision: 12803 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -296,6 +296,7 @@ namespace Gecode { namespace Gist {
       c->setRefresh(pd.refresh);
       c->setRefreshPause(pd.refreshPause);
       c->setSmoothScrollAndZoom(pd.smoothScrollAndZoom);
+      c->setMoveDuringSearch(pd.moveDuringSearch);
       c->setRecompDistances(pd.c_d,pd.a_d);
       opt.c_d = pd.c_d;
       opt.a_d = pd.a_d;

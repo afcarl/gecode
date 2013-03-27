@@ -6,8 +6,8 @@
 %     Guido Tack, 2007
 %
 %  Last modified:
-%     $Date: 2009-11-10 08:08:26 +1100 (Tue, 10 Nov 2009) $ by $Author: tack $
-%     $Revision: 10067 $
+%     $Date: 2012-04-06 08:43:44 +0200 (Fri, 06 Apr 2012) $ by $Author: tack $
+%     $Revision: 12706 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -60,3 +60,16 @@ predicate bool_sum_ge(array[int] of var bool: x, var int: c) =
     bool_lin_ge([1 | i in index_set(x)],x,c);
 predicate bool_sum_gt(array[int] of var bool: x, var int: c) =
     bool_lin_gt([1 | i in index_set(x)],x,c);
+
+predicate float_sinh(var float: a, var float: b) =
+    b == (exp(a)-exp(-a))/2.0;
+
+predicate float_cosh(var float: a, var float: b) =
+    b == (exp(a)+exp(-a))/2.0;
+
+predicate float_tanh(var float: a, var float: b) =
+    let { var float: e2a = exp(2.0*a) } in
+    b == (e2a-1.0)/(e2a+1.0);
+
+predicate float_ne_reif(var float: a, var float: b, var bool: c) =
+    not c <-> a==b;

@@ -11,7 +11,7 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-07-01 00:20:54 +1000 (Fri, 01 Jul 2011) $ by $Author: schulte $
+ *     $Date: 2011-06-30 16:20:54 +0200 (Thu, 30 Jun 2011) $ by $Author: schulte $
  *     $Revision: 12138 $
  *
  *  This file is part of Gecode, the generic constraint

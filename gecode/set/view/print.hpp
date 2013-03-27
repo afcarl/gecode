@@ -9,8 +9,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2010-07-29 01:35:33 +1000 (Thu, 29 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11294 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

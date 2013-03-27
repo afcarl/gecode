@@ -9,8 +9,8 @@
  *     Mikael Lagerkvist, 2006
  *
  *  Last modified:
- *     $Date: 2010-06-03 21:11:11 +1000 (Thu, 03 Jun 2010) $ by $Author: tack $
- *     $Revision: 11013 $
+ *     $Date: 2013-02-06 15:10:02 +0100 (Wed, 06 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13270 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -156,22 +156,28 @@ namespace Test {
       Gecode::IntSet d;
       /// Variables to be tested
       Gecode::IntVarArray x;
-      /// Control variable for reified propagators
-      Gecode::BoolVar b;
-      /// Whether the test is for a reified propagator
-      bool reified;
+      /// Reification information
+      Gecode::Reify r;
       /// The test currently run
       Test* test;
+      /// Whether the test is for a reified propagator
+      bool reified;
 
       /**
-       * \brief Create test space
+       * \brief Create test space without reification
        *
-       * Creates \a n variables with domain \a d0 and stores whether
-       * the test is for a reified propagator (\a r), and the test itself
-       * (\a t).
+       * Creates \a n variables with domain \a d for test \a t.
        *
        */
-      TestSpace(int n, Gecode::IntSet& d0, bool r, Test* t, bool log=true);
+      TestSpace(int n, Gecode::IntSet& d, Test* t); 
+      /**
+       * \brief Create test space with reification
+       *
+       * Creates \a n variables with domain \a d for test \a t and stores
+       * the reification mode \a rm.
+       *
+       */
+      TestSpace(int n, Gecode::IntSet& d, Test* t, Gecode::ReifyMode rm);
       /// Constructor for cloning \a s
       TestSpace(bool share, TestSpace& s);
       /// Copy space during cloning
@@ -214,6 +220,8 @@ namespace Test {
       Gecode::IntSet dom;
       /// Does the constraint also exist as reified constraint
       bool reified;
+      /// Which reification modes are supported
+      int rms;
       /// Consistency level
       Gecode::IntConLevel icl;
       /// Whether to test for certain consistency
@@ -222,27 +230,59 @@ namespace Test {
       bool testsearch;
       /// Whether to perform fixpoint test
       bool testfix;
-
+      /// \name Test for reification modes
+      //@{
+      /// Test whether equivalence as reification mode is supported
+      bool eqv(void) const;
+      /// Test whether implication as reification mode is supported
+      bool imp(void) const;
+      /// Test whether reverse implication as reification mode is supported
+      bool pmi(void) const;
+      //@}
     public:
       /**
        * \brief Constructor
        *
-       * Constructs a test with name \a s and arity \a a and variable
-       * domain \a d. Also tests for a reified constraint,
-       * if \a r is true. The consistency level is
+       * Constructs a test with prefix \a p, name \a s, arity \a a,
+       * and variable domain \a d. Also tests for a reified
+       * constraint, if \a r is true. The consistency level is
        * maintained for convenience.
        */
-      Test(const std::string& s, int a, const Gecode::IntSet& d, bool r=false,
+      Test(const std::string& p, const std::string& s,
+           int a, const Gecode::IntSet& d, bool r=false,
            Gecode::IntConLevel i=Gecode::ICL_DEF);
       /**
        * \brief Constructor
        *
-       * Constructs a test with name \a s and arity \a a and variable
+       * Constructs a test with name \a s, arity \a a, and variable
+       * domain \a d. Also tests for a reified constraint,
+       * if \a r is true. The consistency level is
+       * maintained for convenience.
+       */
+      Test(const std::string& s,
+           int a, const Gecode::IntSet& d, bool r=false,
+           Gecode::IntConLevel i=Gecode::ICL_DEF);
+      /**
+       * \brief Constructor
+       *
+       * Constructs a test with prefix \a p, name \a s, arity \a a,
+       * and variable domain \a min ... \a max. Also tests for
+       * a reified constraint, if \a r is true. The consistency
+       * level is maintained for convenience.
+       */
+      Test(const std::string& p, const std::string& s, 
+           int a, int min, int max, bool r=false,
+           Gecode::IntConLevel i=Gecode::ICL_DEF);
+      /**
+       * \brief Constructor
+       *
+       * Constructs a test with name \a s, arity \a a, variable
        * domain \a min ... \a max. Also tests for a reified constraint,
        * if \a r is true. The consistency level is
        * maintained for convenience.
        */
-      Test(const std::string& s, int a, int min, int max, bool r=false,
+      Test(const std::string& s, 
+           int a, int min, int max, bool r=false,
            Gecode::IntConLevel i=Gecode::ICL_DEF);
       /// Create assignment
       virtual Assignment* assignment(void) const;
@@ -254,7 +294,7 @@ namespace Test {
       virtual void post(Gecode::Space& home, Gecode::IntVarArray& x) = 0;
       /// Post reified constraint
       virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                        Gecode::BoolVar b);
+                        Gecode::Reify r);
       /// Perform test
       virtual bool run(void);
       /// \name Mapping scalar values to strings

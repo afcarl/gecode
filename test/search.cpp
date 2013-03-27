@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2010-10-09 22:58:12 +1100 (Sat, 09 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11498 $
+ *     $Date: 2013-03-07 22:14:40 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13467 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -136,13 +136,13 @@ namespace Test {
         case HTB_NONE:
           break;
         case HTB_UNARY:
-          assign(*this, x, INT_ASSIGN_MIN);
+          assign(*this, x, INT_ASSIGN_MIN());
           break;
         case HTB_BINARY:
-          Gecode::branch(*this, x, INT_VAR_NONE, INT_VAL_MIN);
+          Gecode::branch(*this, x, INT_VAR_NONE(), INT_VAL_MIN());
           break;
         case HTB_NARY:
-          Gecode::branch(*this, x, INT_VAR_NONE, INT_VALUES_MIN);
+          Gecode::branch(*this, x, INT_VAR_NONE(), INT_VALUES_MIN());
           break;
         }
       }
@@ -243,6 +243,16 @@ namespace Test {
       /// Return name
       static std::string name(void) {
         return "Sol";
+      }
+      /// Rule out that solution is found more than once during restarts
+      virtual void master(unsigned long int i, const Space* _s) {
+        const HasSolutions* s = static_cast<const HasSolutions*>(_s);
+        if (s != NULL) {
+          BoolVarArgs b;
+          for (int i=0; i<x.size(); i++)
+            b << expr(*this, x[i] == s->x[i]);
+          rel(*this, BOT_AND, b, 0);
+        }
       }
     };
 
@@ -381,6 +391,41 @@ namespace Test {
       }
     };
 
+    /// %Test for restart-based search
+    template<class Model, template<class> class Engine>
+    class RBS : public Test {
+    private:
+      /// Number of threads
+      unsigned int t;
+    public:
+      /// Initialize test
+      RBS(const std::string& e, unsigned int t0)
+        : Test("RBS::"+e+"::"+Model::name()+"::"+str(t0),
+               HTB_BINARY,HTB_BINARY,HTB_BINARY), t(t0) {}
+      /// Run test
+      virtual bool run(void) {
+        Model* m = new Model(htb1,htb2,htb3);
+        Gecode::Search::FailStop f(2);
+        Gecode::Search::Options o;
+        o.threads = t;
+        o.stop = &f;
+        o.cutoff = Gecode::Search::Cutoff::geometric(1,2);
+        Gecode::RBS<Engine,Model> rbs(m,o);
+        int n = m->solutions();
+        delete m;
+        while (true) {
+          Model* s = rbs.next();
+          if (s != NULL) {
+            n--; delete s;
+          }
+          if ((s == NULL) && !rbs.stopped())
+            break;
+          f.limit(f.limit()+2);
+        }
+        return n == 0;
+      }
+    };
+
     /// Iterator for branching types
     class BranchTypes {
     private:
@@ -466,16 +511,17 @@ namespace Test {
                       (void) new Best<HasSolutions,BAB>
                         ("BAB",htc.htc(),htb1.htb(),htb2.htb(),htb3.htb(),
                          c_d,a_d,t);
-                      (void) new Best<HasSolutions,Restart>
-                        ("Restart",htc.htc(),htb1.htb(),htb2.htb(),htb3.htb(),
-                         c_d,a_d,t);
                   }
               (void) new Best<FailImmediate,BAB>
                 ("BAB",HTC_NONE,HTB_NONE,HTB_NONE,HTB_NONE,c_d,a_d,t);
               (void) new Best<HasSolutions,BAB>
                 ("BAB",HTC_NONE,HTB_NONE,HTB_NONE,HTB_NONE,c_d,a_d,t);
             }
-        
+        // Restart-based search
+        for (unsigned int t = 1; t<=4; t++) {
+          (void) new RBS<HasSolutions,Gecode::DFS>("DFS",t);
+          (void) new RBS<HasSolutions,Gecode::BAB>("BAB",t);
+        }
       }
     };
 

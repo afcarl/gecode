@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-11 20:41:24 +1000 (Wed, 11 Aug 2010) $ by $Author: tack $
- *     $Revision: 11340 $
+ *     $Date: 2012-12-21 01:48:30 +0100 (Fri, 21 Dec 2012) $ by $Author: tack $
+ *     $Revision: 13214 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,6 +41,9 @@
 #include <gecode/gist/visualnode.hh>
 
 #include <QtGui>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#endif
 
 namespace Gecode { namespace Gist {
 

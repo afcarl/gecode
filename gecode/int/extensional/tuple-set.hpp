@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2007
  *
  *  Last modified:
- *     $Date: 2009-09-30 21:59:39 +1000 (Wed, 30 Sep 2009) $ by $Author: tack $
- *     $Revision: 9784 $
+ *     $Date: 2012-04-11 02:34:42 +0200 (Wed, 11 Apr 2012) $ by $Author: tack $
+ *     $Revision: 12728 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -110,7 +110,14 @@ namespace Gecode {
   forceinline void
   TupleSet::finalize(void) {
     TupleSetI* imp = static_cast<TupleSetI*>(object());
-    assert(imp);
+    if (imp == NULL) {
+      imp = new TupleSetI;
+      imp->arity = 0;
+      imp->excess = -1;
+      imp->domsize = 1;
+      imp->size = 1;
+      object(imp);
+    }
     if (!imp->finalized()) {
       imp->finalize();
     }

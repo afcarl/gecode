@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2011-10-10 00:06:06 +1100 (Mon, 10 Oct 2011) $ by $Author: schulte $
- *     $Revision: 12431 $
+ *     $Date: 2012-10-08 03:57:23 +0200 (Mon, 08 Oct 2012) $ by $Author: tack $
+ *     $Revision: 13143 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -370,6 +370,8 @@ namespace Gecode { namespace Int { namespace Distinct {
     ExecStatus es = prop_bnd<View>(home,x,min_x,max_x);
 
     GECODE_ES_CHECK(es);
+    if (es == ES_NOFIX && View::me(modeventdelta()) ==  ME_INT_VAL)
+      return es;
 
     const int n = x.size();
 

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-23 05:43:31 +1000 (Tue, 23 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12335 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,29 +39,31 @@
 
 namespace Gecode { namespace Int { namespace Member {
 
-  template<class View>
+  template<class View, ReifyMode rm>
   forceinline
-  ReProp<View>::ReProp(Home home, ValSet& vs, ViewArray<View>& x, View y, 
-                       BoolView b0)
+  ReProp<View,rm>::ReProp(Home home, ValSet& vs, ViewArray<View>& x, View y, 
+                          BoolView b0)
     : Prop<View>(home,vs,x,y), b(b0) {
     b.subscribe(home,*this,PC_BOOL_VAL);
   }
 
-  template<class View>
+  template<class View, ReifyMode rm>
   inline ExecStatus
-  ReProp<View>::post(Home home, ViewArray<View>& x, View y, BoolView b) {
+  ReProp<View,rm>::post(Home home, ViewArray<View>& x, View y, BoolView b) {
     if (x.size() == 0) {
-      GECODE_ME_CHECK(b.zero(home));
+      if (rm != RM_PMI)
+        GECODE_ME_CHECK(b.zero(home));
       return ES_OK;
     }
 
     x.unique(home);
 
     if (x.size() == 1)
-      return Rel::ReEqDom<View,BoolView>::post(home,x[0],y,b);
+      return Rel::ReEqDom<View,BoolView,rm>::post(home,x[0],y,b);
 
     if (x.same(home,y)) {
-      GECODE_ME_CHECK(b.one(home));
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(b.one(home));
       return ES_OK;
     }
     
@@ -71,11 +73,13 @@ namespace Gecode { namespace Int { namespace Member {
 
     switch (vs.compare(y)) {
     case Iter::Ranges::CS_SUBSET:
-      GECODE_ME_CHECK(b.one(home));
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(b.one(home));
       return ES_OK;
     case Iter::Ranges::CS_DISJOINT:
       if (x.size() == 0) {
-        GECODE_ME_CHECK(b.zero(home));
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero(home));
         return ES_OK;
       }
       break;
@@ -85,49 +89,53 @@ namespace Gecode { namespace Int { namespace Member {
       GECODE_NEVER;
     }
 
-    (void) new (home) ReProp<View>(home, vs, x, y, b);
+    (void) new (home) ReProp<View,rm>(home, vs, x, y, b);
     return ES_OK;
   }
     
-  template<class View>
+  template<class View, ReifyMode rm>
   forceinline
-  ReProp<View>::ReProp(Space& home, bool share, ReProp<View>& p)
+  ReProp<View,rm>::ReProp(Space& home, bool share, ReProp<View,rm>& p)
     : Prop<View>(home, share, p) {
     b.update(home, share, p.b);
   }
 
-  template<class View>
+  template<class View, ReifyMode rm>
   Propagator*
-  ReProp<View>::copy(Space& home, bool share) {
-    return new (home) ReProp<View>(home, share, *this);
+  ReProp<View,rm>::copy(Space& home, bool share) {
+    return new (home) ReProp<View,rm>(home, share, *this);
   }
 
-  template<class View>
+  template<class View, ReifyMode rm>
   forceinline size_t
-  ReProp<View>::dispose(Space& home) {
+  ReProp<View,rm>::dispose(Space& home) {
     b.cancel(home, *this, PC_BOOL_VAL);
     (void) Prop<View>::dispose(home);
     return sizeof(*this);
   }
 
-  template<class View>
+  template<class View, ReifyMode rm>
   ExecStatus
-  ReProp<View>::propagate(Space& home, const ModEventDelta& med) {
+  ReProp<View,rm>::propagate(Space& home, const ModEventDelta& med) {
     // Add assigned views to value set
     if (View::me(med) == ME_INT_VAL)
       add(home,vs,x);
 
     if (b.one()) {
+      if (rm == RM_PMI)
+        return home.ES_SUBSUMED(*this);
       ValSet vsc(vs);
       vs.flush();
       GECODE_REWRITE(*this,Prop<View>::post(home,vsc,x,y));
     }
 
     if (b.zero()) {
-      ValSet::Ranges vsr(vs);
-      GECODE_ME_CHECK(y.minus_r(home,vsr,false));
-      for (int i=x.size(); i--; )
-        GECODE_ES_CHECK(Rel::Nq<View>::post(home,x[i],y));
+      if (rm != RM_IMP) {
+        ValSet::Ranges vsr(vs);
+        GECODE_ME_CHECK(y.minus_r(home,vsr,false));
+        for (int i=x.size(); i--; )
+          GECODE_ES_CHECK(Rel::Nq<View>::post(home,x[i],y));
+      }
       return home.ES_SUBSUMED(*this);
     }
 
@@ -136,11 +144,13 @@ namespace Gecode { namespace Int { namespace Member {
     
     switch (vs.compare(y)) {
     case Iter::Ranges::CS_SUBSET:
-      GECODE_ME_CHECK(b.one(home));
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(b.one(home));
       return home.ES_SUBSUMED(*this);
     case Iter::Ranges::CS_DISJOINT:
       if (x.size() == 0) {
-        GECODE_ME_CHECK(b.zero(home));
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero(home));
         return home.ES_SUBSUMED(*this);
       }
       break;
@@ -165,7 +175,8 @@ namespace Gecode { namespace Int { namespace Member {
       ViewRanges<View> yr(y);
       
       if (Iter::Ranges::disjoint(u,yr)) {
-        GECODE_ME_CHECK(b.zero(home));
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero(home));
         return home.ES_SUBSUMED(*this);
       }
     }

@@ -13,8 +13,8 @@
  *     Guido Tack, 2009
  *
  *  Last modified:
- *     $Date: 2010-07-15 01:46:18 +1000 (Thu, 15 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11192 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

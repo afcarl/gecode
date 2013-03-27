@@ -3,12 +3,15 @@
  *  Main authors:
  *     Christian Schulte <schulte@gecode.org>
  *
+ *  Bugfixes provided by:
+ *     Zandra Norman
+ *
  *  Copyright:
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2009-04-16 00:00:39 +1000 (Thu, 16 Apr 2009) $ by $Author: schulte $
- *     $Revision: 8706 $
+ *     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13347 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -50,7 +53,7 @@ namespace Gecode {
     /**
      * \brief Minimal size of a heap chunk requested from the OS
      */
-    const size_t hcsz_min =  2 * 1024;
+    const size_t hcsz_min =  1024;
     /**
      * \brief Maximal size of a heap chunk requested from the OS
      *
@@ -58,7 +61,7 @@ namespace Gecode {
      * requested that exceeds \a hcsz_max, a chunk will be allocated
      * that fits that request.
      */
-    const size_t hcsz_max = 64 * 1024;
+    const size_t hcsz_max = 32 * 1024;
     /**
      * \brief Increment ratio for chunk size
      *
@@ -75,7 +78,7 @@ namespace Gecode {
      * heap chunks of the current chunk size, the current chunk size
      * for the clone is halfed.
      */
-    const int hcsz_dec_ratio = 2;
+    const int hcsz_dec_ratio = 8;
 
     /**
      * \brief Unit size for free lists
@@ -151,4 +154,4 @@ namespace Gecode {
   }
 }
 
-// STATISTICS: kernel-core
+// STATISTICS: kernel-memory

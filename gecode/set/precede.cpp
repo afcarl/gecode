@@ -13,8 +13,8 @@
  *     Guido Tack, 2011
  *
  *  Last modified:
- *     $Date: 2011-07-12 20:49:06 +1000 (Tue, 12 Jul 2011) $ by $Author: tack $
- *     $Revision: 12172 $
+ *     $Date: 2012-11-21 13:28:07 +0100 (Wed, 21 Nov 2012) $ by $Author: schulte $
+ *     $Revision: 13181 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -59,6 +59,8 @@ namespace Gecode {
   void
   precede(Home home, const SetVarArgs& x, const IntArgs& c) {
     using namespace Set;
+    if (c.size() < 2)
+      return;
     for (int i=c.size(); i--; )
       Limits::check(c[i],"Set::precede");
     if (home.failed()) return;

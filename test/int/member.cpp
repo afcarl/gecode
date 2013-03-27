@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-23 00:03:51 +1000 (Tue, 23 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12331 $
+ *     $Date: 2011-11-29 17:20:37 +0100 (Tue, 29 Nov 2011) $ by $Author: schulte $
+ *     $Revision: 12486 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -70,15 +70,15 @@ namespace Test { namespace Int {
            y[i] = x[i];
          member(home, y, x[n]);
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          using namespace Gecode;
          int n = x.size() - 1;
          IntVarArgs y(n);
          for (int i=n; i--; )
            y[i] = x[i];
-         member(home, y, x[n], b);
+         member(home, y, x[n], r);
        }
      };
 
@@ -104,15 +104,15 @@ namespace Test { namespace Int {
            y[i] = channel(home,x[i]);
          member(home, y, channel(home,x[n]));
        }
-       /// Post reified constraint on \a x for \a b
+       /// Post reified constraint on \a x for \a r
        virtual void post(Gecode::Space& home, Gecode::IntVarArray& x,
-                         Gecode::BoolVar b) {
+                         Gecode::Reify r) {
          using namespace Gecode;
          int n = x.size() - 1;
          BoolVarArgs y(n);
          for (int i=n; i--; )
            y[i] = channel(home,x[i]);
-         member(home, y, channel(home,x[n]), b);
+         member(home, y, channel(home,x[n]), r);
        }
      };
 

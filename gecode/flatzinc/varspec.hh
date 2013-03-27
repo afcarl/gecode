@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2010-04-08 19:25:15 +1000 (Thu, 08 Apr 2010) $ by $Author: tack $
- *     $Revision: 10682 $
+ *     $Date: 2012-03-30 05:58:02 +0200 (Fri, 30 Mar 2012) $ by $Author: tack $
+ *     $Revision: 12665 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -55,8 +55,6 @@ namespace Gecode { namespace FlatZinc {
   /// Base class for variable specifications
   class VarSpec {
   public:
-    /// Whether the variable was introduced in the mzn2fzn translation
-    bool introduced;
     /// Destructor
     virtual ~VarSpec(void) {}
     /// Variable index
@@ -65,24 +63,32 @@ namespace Gecode { namespace FlatZinc {
     bool alias;
     /// Whether the variable is assigned
     bool assigned;
+    /// Whether the variable was introduced in the mzn2fzn translation
+    bool introduced;
+    /// Whether the variable functionally depends on another variable
+    bool funcDep;
     /// Constructor
-    VarSpec(bool introduced0) : introduced(introduced0) {}
+    VarSpec(bool introduced0, bool funcDep0)
+    : introduced(introduced0), funcDep(funcDep0) {}
   };
 
   /// Specification for integer variables
   class IntVarSpec : public VarSpec {
   public:
     Option<AST::SetLit* > domain;
-    IntVarSpec(const Option<AST::SetLit* >& d, bool introduced)
-    : VarSpec(introduced) {
+    IntVarSpec(const Option<AST::SetLit* >& d,
+               bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = false;
       assigned = false;
       domain = d;
     }
-    IntVarSpec(int i0, bool introduced) : VarSpec(introduced) {
+    IntVarSpec(int i0, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = false; assigned = true; i = i0;
     }
-    IntVarSpec(const Alias& eq, bool introduced) : VarSpec(introduced) {
+    IntVarSpec(const Alias& eq, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = true; i = eq.v;
     }
     ~IntVarSpec(void) {
@@ -95,14 +101,16 @@ namespace Gecode { namespace FlatZinc {
   class BoolVarSpec : public VarSpec {
   public:
     Option<AST::SetLit* > domain;
-    BoolVarSpec(Option<AST::SetLit* >& d, bool introduced)
-    : VarSpec(introduced) {
+    BoolVarSpec(Option<AST::SetLit* >& d, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = false; assigned = false; domain = d;
     }
-    BoolVarSpec(bool b, bool introduced) : VarSpec(introduced) {
+    BoolVarSpec(bool b, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = false; assigned = true; i = b;
     }
-    BoolVarSpec(const Alias& eq, bool introduced) : VarSpec(introduced) {
+    BoolVarSpec(const Alias& eq, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = true; i = eq.v;
     }
     ~BoolVarSpec(void) {
@@ -114,20 +122,20 @@ namespace Gecode { namespace FlatZinc {
   /// Specification for floating point variables
   class FloatVarSpec : public VarSpec {
   public:
-    Option<std::vector<double>* > domain;
-    FloatVarSpec(Option<std::vector<double>* >& d, bool introduced)
-    : VarSpec(introduced) {
-      alias = false; assigned = false; domain = d;
+    Option<std::pair<double,double> > domain;
+    FloatVarSpec(Option<std::pair<double,double> >& d,
+                 bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep), domain(d) {
+      alias = false; assigned = false;
     }
-    FloatVarSpec(bool b, bool introduced) : VarSpec(introduced) {
-      alias = false; assigned = true; i = b;
+    FloatVarSpec(double d, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
+      alias = false; assigned = true;
+      domain = Option<std::pair<double,double> >::some(std::pair<double,double>(d,d));
     }
-    FloatVarSpec(const Alias& eq, bool introduced) : VarSpec(introduced) {
+    FloatVarSpec(const Alias& eq, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = true; i = eq.v;
-    }
-    ~FloatVarSpec(void) {
-      if (!alias && !assigned && domain())
-        delete domain.some();
     }
   };
 
@@ -135,19 +143,21 @@ namespace Gecode { namespace FlatZinc {
   class SetVarSpec : public VarSpec {
   public:
     Option<AST::SetLit*> upperBound;
-    SetVarSpec(bool introduced) : VarSpec(introduced) {
+    SetVarSpec(bool introduced, bool funcDep) : VarSpec(introduced,funcDep) {
       alias = false; assigned = false;
       upperBound = Option<AST::SetLit* >::none();
     }
-    SetVarSpec(const Option<AST::SetLit* >& v, bool introduced)
-    : VarSpec(introduced) {
+    SetVarSpec(const Option<AST::SetLit* >& v, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = false; assigned = false; upperBound = v;
     }
-    SetVarSpec(AST::SetLit* v, bool introduced) : VarSpec(introduced) {
+    SetVarSpec(AST::SetLit* v, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = false; assigned = true;
       upperBound = Option<AST::SetLit*>::some(v);
     }
-    SetVarSpec(const Alias& eq, bool introduced) : VarSpec(introduced) {
+    SetVarSpec(const Alias& eq, bool introduced, bool funcDep)
+    : VarSpec(introduced,funcDep) {
       alias = true; i = eq.v;
     }
     ~SetVarSpec(void) {

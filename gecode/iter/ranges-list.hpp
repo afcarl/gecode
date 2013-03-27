@@ -7,8 +7,8 @@
  *     Christian Schulte, 2010
  *
  *  Last modified:
- *     $Date: 2012-03-23 02:42:16 +1100 (Fri, 23 Mar 2012) $ by $Author: schulte $
- *     $Revision: 12623 $
+ *     $Date: 2011-08-08 18:04:53 +0200 (Mon, 08 Aug 2011) $ by $Author: schulte $
+ *     $Revision: 12253 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -152,7 +152,7 @@ namespace Gecode { namespace Iter { namespace Ranges {
   forceinline RangeListIter&
   RangeListIter::operator =(const RangeListIter& i) {
     if (&i != this) {
-      if ((rlio != NULL) && (--rlio->use_cnt == 0)) {
+      if (--rlio->use_cnt == 0) {
         Region& r = rlio->allocator();
         rlio->~RLIO();
         r.rfree(rlio,sizeof(RLIO));
@@ -166,7 +166,7 @@ namespace Gecode { namespace Iter { namespace Ranges {
 
   forceinline
   RangeListIter::~RangeListIter(void) {
-    if ((rlio != NULL) && (--rlio->use_cnt == 0)) {
+    if (--rlio->use_cnt == 0) {
       Region& r = rlio->allocator();
       rlio->~RLIO();
       r.rfree(rlio,sizeof(RLIO));

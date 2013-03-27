@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-03-05 15:37:20 +0100 (Tue, 05 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13437 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -59,6 +59,8 @@ namespace Gecode {
     return 0;
   }
 
+  Actor* Actor::sentinel;
+
 #ifdef __GNUC__
   /// To avoid warnings from GCC
   Actor::~Actor(void) {}
@@ -82,8 +84,6 @@ namespace Gecode {
    * Space: Misc
    *
    */
-  unsigned long int Space::unused_uli;
-  bool Space::unused_b;
   StatusStatistics Space::unused_status;
   CloneStatistics Space::unused_clone;
   CommitStatistics Space::unused_commit;
@@ -93,7 +93,7 @@ namespace Gecode {
 #endif
 
   Space::Space(void)
-    : sm(new SharedMemory), mm(sm), n_wmp(0) {
+    : sm(new SharedMemory), mm(sm), _wmp_afc(0U) {
 #ifdef GECODE_HAS_VAR_DISPOSE
     for (int i=0; i<AllVarConf::idx_d; i++)
       _vars_d[i] = NULL;
@@ -109,7 +109,7 @@ namespace Gecode {
     // Initialize propagator queues
     for (int i=0; i<=PropCost::AC_MAX; i++)
       pc.p.queue[i].init();
-    pc.p.branch_id = 0;
+    pc.p.branch_id = reserved_branch_id+1;
     pc.p.n_sub = 0;
   }
 
@@ -150,9 +150,6 @@ namespace Gecode {
   Space::flush(void) {
     // Flush malloc cache
     sm->flush();
-    // Flush AFC information
-    for (Propagators p(*this); p(); ++p)
-      p.propagator().pi.init();
   }
 
   Space::~Space(void) {
@@ -211,7 +208,8 @@ namespace Gecode {
       switch (p->propagate(*this,med_o)) {
       case ES_FAILED:
         // Count failure
-        p->pi.fail(gpi);
+        if (afc_enabled())
+          gafc.fail(p->gafc);
         // Mark as failed
         fail(); s = SS_FAILED; goto exit;
       case ES_NOFIX:
@@ -295,8 +293,9 @@ namespace Gecode {
     // No brancher with alternatives left, space is solved
     s = SS_SOLVED;
   exit:
-    stat.wmp = (n_wmp > 0);
-    if (n_wmp == 1) n_wmp = 0;
+    stat.wmp = (wmp() > 0U);
+    if (wmp() == 1U) 
+      wmp(0U);
     return s;
   }
 
@@ -343,7 +342,7 @@ namespace Gecode {
         return b_cur->choice(*this,e);
       b_cur = Brancher::cast(b_cur->next());
     }
-    throw SpaceNoBrancher();
+    throw SpaceNoBrancher("Space::choice");
   }
 
   void
@@ -352,43 +351,34 @@ namespace Gecode {
       throw SpaceIllegalAlternative();
     if (failed())
       return;
-    /*
-     * Due to weakly monotonic propagators the following scenario might
-     * occur: a brancher has been committed with all its available
-     * choices. Then, propagation determines less information
-     * than before and the brancher now will create new choices.
-     * Later, during recomputation, all of these choices
-     * can be used together, possibly interleaved with 
-     * choices for other branchers. That means all branchers
-     * must be scanned to find the matching brancher for the choice.
-     *
-     * b_commit tries to optimize scanning as it is most likely that
-     * recomputation does not generate new choices during recomputation
-     * and hence b_commit is moved from newer to older branchers.
-     */
-    Brancher* b_old = b_commit;
-    // Try whether we are lucky
-    while (b_commit != Brancher::cast(&bl))
-      if (c._id != b_commit->id())
-        b_commit = Brancher::cast(b_commit->next());
-      else
-        goto found;
-    if (b_commit == Brancher::cast(&bl)) {
-      // We did not find the brancher, start at the beginning
-      b_commit = Brancher::cast(bl.next());
-      while (b_commit != b_old)
-        if (c._id != b_commit->id())
-          b_commit = Brancher::cast(b_commit->next());
-        else
-          goto found;
+    if (Brancher* b = brancher(c._id)) {
+      // There is a matching brancher
+      if (b->commit(*this,c,a) == ES_FAILED)
+        fail();
+    } else {
+      // There is no matching brancher!
+      throw SpaceNoBrancher("Space::commit");
     }
-    // There is no matching brancher!
-    throw SpaceNoBrancher();
-  found:
-    // There is a matching brancher
-    if (b_commit->commit(*this,c,a) == ES_FAILED)
-      fail();
   }
+
+  void
+  Space::kill_brancher(unsigned int id) {
+    if (failed())
+      return;
+    for (Brancher* b = Brancher::cast(bl.next()); 
+         b != Brancher::cast(&bl); b = Brancher::cast(b->next()))
+      if (b->id() == id) {
+        // Make sure that neither b_status nor b_commit does not point to b
+        if (b_commit == b)
+          b_commit = Brancher::cast(b->next());
+        if (b_status == b)
+          b_status = Brancher::cast(b->next());
+        b->unlink();
+        rfree(b,b->dispose(*this));
+        return;
+      }
+  }
+
 
 
 
@@ -406,8 +396,9 @@ namespace Gecode {
   Space::Space(bool share, Space& s)
     : sm(s.sm->copy(share)), 
       mm(sm,s.mm,s.pc.p.n_sub*sizeof(Propagator**)),
-      gpi(s.gpi),
-      n_wmp(s.n_wmp) {
+      gafc(s.gafc),
+      d_fst(&Actor::sentinel),
+      _wmp_afc(s._wmp_afc) {
 #ifdef GECODE_HAS_VAR_DISPOSE
     for (int i=0; i<AllVarConf::idx_d; i++)
       _vars_d[i] = NULL;
@@ -468,6 +459,9 @@ namespace Gecode {
     // Copy all data structures (which in turn will invoke the constructor)
     Space* c = copy(share);
 
+    if (c->d_fst != &Actor::sentinel)
+      throw SpaceNotCloned("Space::clone");
+
     // Setup array for actor disposal in c
     {
       unsigned int n = static_cast<unsigned int>(d_cur - d_fst);
@@ -492,6 +486,8 @@ namespace Gecode {
     while (x != NULL) {
       VarImp<NoIdxVarImpConf>* n = x->next();
       x->b.base = NULL; x->u.idx[0] = 0;
+      if (sizeof(ActorLink**) > sizeof(unsigned int))
+        *(1+&x->u.idx[0]) = 0;
       x = n;
     }
     // Update variables with indexing structure
@@ -543,7 +539,14 @@ namespace Gecode {
 
   void
   Space::constrain(const Space&) {
-    throw SpaceConstrainUndefined();
+  }
+
+  void
+  Space::master(unsigned long int, const Space*) {
+  }
+
+  void
+  Space::slave(unsigned long int, const Space*) {
   }
 
   void
@@ -557,6 +560,17 @@ namespace Gecode {
   Choice::archive(Archive& e) const {
     e << id();
   }
+
+  void
+  Space::afc_decay(double d) {
+    afc_enable();
+    // Commit outstanding decay operations
+    if (gafc.decay() != 1.0)
+      for (Propagators p(*this); p(); ++p)
+        (void) gafc.afc(p.propagator().gafc);
+    gafc.decay(d);
+  }
+
 
 }
 

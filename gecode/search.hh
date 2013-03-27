@@ -9,8 +9,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2010-10-09 22:58:12 +1100 (Sat, 09 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11498 $
+ *     $Date: 2013-03-08 11:11:37 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13482 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -72,57 +72,94 @@
 #endif
 
 
-namespace Gecode {
+namespace Gecode { namespace Search {
 
-  /// %Search engines
-  namespace Search {
+  /// %Sequential search engine implementations
+  namespace Sequential {}
+  
+  /// %Parallel search engine implementations
+  namespace Parallel {}
 
-    /**
-     * \brief %Search configuration
-     *
-     * \ingroup TaskModelSearch
-     */
-    namespace Config {
-      /// Whether engines create a clone when being initialized
-      const bool clone = true;
-      /// Number of threads to use
-      const double threads = 1.0;
-      /// Create a clone after every \a c_d commits (commit distance)
-      const unsigned int c_d = 8;
-      /// Create a clone during recomputation if distance is greater than \a a_d (adaptive distance)
-      const unsigned int a_d = 2;
+  /// %Meta search engine implementations
+  namespace Meta {}
 
-      /// Minimal number of open nodes for stealing
-      const unsigned int steal_limit = 3;
-      /// Initial delay in milliseconds for all but first worker thread
-      const unsigned int initial_delay = 5;
-    }
+  /**
+   * \brief %Search configuration
+   *
+   * \ingroup TaskModelSearch
+   */
+  namespace Config {
+    /// Whether engines create a clone when being initialized
+    const bool clone = true;
+    /// Number of threads to use
+    const double threads = 1.0;
+    /// Create a clone after every \a c_d commits (commit distance)
+    const unsigned int c_d = 8;
+    /// Create a clone during recomputation if distance is greater than \a a_d (adaptive distance)
+    const unsigned int a_d = 2;
+    
+    /// Minimal number of open nodes for stealing
+    const unsigned int steal_limit = 3;
+    /// Initial delay in milliseconds for all but first worker thread
+    const unsigned int initial_delay = 5;
+  }
 
-    /**
-     * \brief %Search engine statistics
-     * \ingroup TaskModelSearch
-     */
-    class Statistics : public StatusStatistics {
-    public:
-      /// Number of failed nodes in search tree
-      unsigned long int fail;
-      /// Number of nodes expanded
-      unsigned long int node;
-      /// Maximum depth of search stack
-      unsigned long int depth;
-      /// Peak memory allocated
-      size_t memory;
-      /// Initialize
-      Statistics(void);
-      /// Reset
-      void reset(void);
-      /// Return sum with \a s
-      Statistics operator +(const Statistics& s);
-      /// Increment by statistics \a s
-      Statistics& operator +=(const Statistics& s);
-    };
+}}
+
+namespace Gecode { namespace Search {
+
+  /**
+   * \defgroup FuncThrowSearch %Search exceptions
+   * \ingroup FuncThrow
+   */
+  //@{
+  /// %Exception: Uninitialized cutoff for restart-based search
+  class GECODE_VTABLE_EXPORT UninitializedCutoff : public Exception {
+  public:
+    /// Initialize with location \a l
+    UninitializedCutoff(const char* l);
+  };
+  //@}
+}}
+
+#include <gecode/search/exception.hpp>
+
+namespace Gecode { namespace Search {
+
+  /**
+   * \brief %Search engine statistics
+   * \ingroup TaskModelSearch
+   */
+  class Statistics : public StatusStatistics {
+  public:
+    /// Number of failed nodes in search tree
+    unsigned long int fail;
+    /// Number of nodes expanded
+    unsigned long int node;
+    /// Maximum depth of search stack
+    unsigned long int depth;
+    /// Peak memory allocated
+    size_t memory;
+    /// Number of restarts
+    unsigned long int restart;
+    /// Initialize
+    Statistics(void);
+    /// Reset
+    void reset(void);
+    /// Return sum with \a s
+    Statistics operator +(const Statistics& s);
+    /// Increment by statistics \a s
+    Statistics& operator +=(const Statistics& s);
+  };
+
+}}
+
+#include <gecode/search/statistics.hpp>
+
+namespace Gecode { namespace Search {
 
     class Stop;
+    class Cutoff;
 
     /**
      * \brief %Search engine options
@@ -173,6 +210,8 @@ namespace Gecode {
       unsigned int a_d;
       /// Stop object for stopping search
       Stop* stop;
+      /// Cutoff for restart-based search
+      Cutoff* cutoff;
       /// Default options
       GECODE_SEARCH_EXPORT static const Options def;
       /// Initialize with default values
@@ -182,150 +221,270 @@ namespace Gecode {
       expand(void) const;
     };
 
-    /**
-     * \defgroup TaskModelSearchStop Stop-objects for stopping search
-     * \ingroup TaskModelSearch
-     *
-     * Allows to specify various criteria when a search engine should
-     * stop exploration. Only exploration but neither recomputation
-     * nor propagation will be interrupted.
-     *
-     */
+}}
 
-    /**
-     * \brief Base-class for %Stop-object
-     * \ingroup TaskModelSearchStop
-     */
-    class GECODE_SEARCH_EXPORT Stop {
-    public:
-      /// Default constructor
-      Stop(void);
-      /// Stop search, if returns true
-      virtual bool stop(const Statistics& s, const Options& o) = 0;
-      /// Destructor
-      virtual ~Stop(void);
-    };
-
-    /**
-     * \brief %Stop-object based on memory consumption
-     *
-     * \ingroup TaskModelSearchStop
-     */
-    class GECODE_SEARCH_EXPORT MemoryStop : public Stop {
-    protected:
-      /// Size limit
-      size_t l;
-    public:
-      /// Stop if memory limit \a l (in bytes) is exceeded
-      MemoryStop(size_t l);
-      /// Return current limit
-      size_t limit(void) const;
-      /// Set current limit to \a l (in bytes)
-      void limit(size_t l);
-      /// Return true if memory limit is exceeded
-      virtual bool stop(const Statistics& s, const Options& o);
-    };
-
-    /**
-     * \brief %Stop-object based on number of nodes
-     *
-     * The number of nodes reported (by the statistics) is the
-     * number since the engine started exploration. It is not the
-     * number since the last stop!
-     * \ingroup TaskModelSearchStop
-     */
-    class GECODE_SEARCH_EXPORT NodeStop : public Stop {
-    protected:
-      /// Node limit
-      unsigned long int l;
-    public:
-      /// Stop if node limit \a l is exceeded
-      NodeStop(unsigned long int l);
-      /// Return current limit
-      unsigned long int limit(void) const;
-      /// Set current limit to \a l nodes
-      void limit(unsigned long int l);
-      /// Return true if node limit is exceeded
-      virtual bool stop(const Statistics& s, const Options& o);
-    };
-
-    /**
-     * \brief %Stop-object based on number of failures
-     *
-     * The number of failures reported (by the statistics) is the
-     * number since the engine started exploration. It is not the
-     * number since the last stop!
-     * \ingroup TaskModelSearchStop
-     */
-    class GECODE_SEARCH_EXPORT FailStop : public Stop {
-    protected:
-      /// Failure limit
-      unsigned long int l;
-    public:
-      /// Stop if failure limit \a l is exceeded
-      FailStop(unsigned long int l);
-      /// Return current limit
-      unsigned long int limit(void) const;
-      /// Set current limit to \a l failures
-      void limit(unsigned long int l);
-      /// Return true if failure limit is exceeded
-      virtual bool stop(const Statistics& s, const Options& o);
-    };
-
-    /**
-     * \brief %Stop-object based on time
-     * \ingroup TaskModelSearchStop
-     */
-    class GECODE_SEARCH_EXPORT TimeStop : public Stop {
-    protected:
-      /// Time when execution should stop
-      Support::Timer t;
-      /// Current limit in milliseconds
-      unsigned long int l;
-    public:
-      /// Stop if search exceeds \a l milliseconds (from creation of this object)
-      TimeStop(unsigned long int l);
-      /// Return current limit in milliseconds
-      unsigned long int limit(void) const;
-      /// Set current limit to \a l milliseconds
-      void limit(unsigned long int l);
-      /// Reset time to zero
-      void reset(void);
-      /// Return true if time limit is exceeded
-      virtual bool stop(const Statistics& s, const Options& o);
-    };
-
-
-    /**
-     * \brief %Search engine interface
-     */
-    class Engine {
-    public:
-      /// Return next solution (NULL, if none exists or search has been stopped)
-      virtual Space* next(void) = 0;
-      /// Return statistics
-      virtual Search::Statistics statistics(void) const = 0;
-      /// Check whether engine has been stopped
-      virtual bool stopped(void) const = 0;
-      /// Destructor
-      virtual ~Engine(void) {}
-    };
-
-    /// %Sequential search engine implementations
-    namespace Sequential {}
-
-    /// %Parallel search engine implementations
-    namespace Parallel {}
-
-  }
-
-}
-
-#include <gecode/search/statistics.hpp>
-#include <gecode/search/stop.hpp>
 #include <gecode/search/options.hpp>
 
 namespace Gecode {
+
+  template<template<class> class E, class T>
+  class RBS;
+
+}
+
+namespace Gecode { namespace Search { namespace Meta {
+
+  class RBS;
+
+}}}
+
+namespace Gecode { namespace Search {
+
+  /**
+   * \defgroup TaskModelSearchStop Stop-objects for stopping search
+   * \ingroup TaskModelSearch
+   *
+   * Allows to specify various criteria when a search engine should
+   * stop exploration. Only exploration but neither recomputation
+   * nor propagation will be interrupted.
+   *
+   */
+
+  /**
+   * \brief Base-class for %Stop-object
+   * \ingroup TaskModelSearchStop
+   */
+  class GECODE_SEARCH_EXPORT Stop {
+  public:
+    /// Default constructor
+    Stop(void);
+    /// Stop search, if returns true
+    virtual bool stop(const Statistics& s, const Options& o) = 0;
+    /// Destructor
+    virtual ~Stop(void);
+    /// Allocate memory from heap
+    static void* operator new(size_t s);
+    /// Free memory allocated from heap
+    static void  operator delete(void* p);
+  };
+  
+  /**
+   * \brief %Stop-object based on memory consumption
+   *
+   * \ingroup TaskModelSearchStop
+   */
+  class GECODE_SEARCH_EXPORT MemoryStop : public Stop {
+  protected:
+    /// Size limit
+    size_t l;
+  public:
+    /// Stop if memory limit \a l (in bytes) is exceeded
+    MemoryStop(size_t l);
+    /// Return current limit
+    size_t limit(void) const;
+    /// Set current limit to \a l (in bytes)
+    void limit(size_t l);
+    /// Return true if memory limit is exceeded
+    virtual bool stop(const Statistics& s, const Options& o);
+  };
+  
+  /**
+   * \brief %Stop-object based on number of nodes
+   *
+   * The number of nodes reported (by the statistics) is the
+   * number since the engine started exploration. It is not the
+   * number since the last stop!
+   * \ingroup TaskModelSearchStop
+   */
+  class GECODE_SEARCH_EXPORT NodeStop : public Stop {
+  protected:
+    /// Node limit
+    unsigned long int l;
+  public:
+    /// Stop if node limit \a l is exceeded
+    NodeStop(unsigned long int l);
+    /// Return current limit
+    unsigned long int limit(void) const;
+    /// Set current limit to \a l nodes
+    void limit(unsigned long int l);
+    /// Return true if node limit is exceeded
+    virtual bool stop(const Statistics& s, const Options& o);
+  };
+
+  /**
+   * \brief %Stop-object based on number of failures
+   *
+   * The number of failures reported (by the statistics) is the
+   * number since the engine started exploration. It is not the
+   * number since the last stop!
+   * \ingroup TaskModelSearchStop
+   */
+  class GECODE_SEARCH_EXPORT FailStop : public Stop {
+  protected:
+    /// Failure limit
+    unsigned long int l;
+  public:
+    /// Stop if failure limit \a l is exceeded
+    FailStop(unsigned long int l);
+    /// Return current limit
+    unsigned long int limit(void) const;
+    /// Set current limit to \a l failures
+    void limit(unsigned long int l);
+    /// Return true if failure limit is exceeded
+    virtual bool stop(const Statistics& s, const Options& o);
+  };
+  
+  /**
+   * \brief %Stop-object based on time
+   * \ingroup TaskModelSearchStop
+   */
+  class GECODE_SEARCH_EXPORT TimeStop : public Stop {
+  protected:
+    /// Time when execution should stop
+    Support::Timer t;
+    /// Current limit in milliseconds
+    unsigned long int l;
+  public:
+    /// Stop if search exceeds \a l milliseconds (from creation of this object)
+    TimeStop(unsigned long int l);
+    /// Return current limit in milliseconds
+    unsigned long int limit(void) const;
+    /// Set current limit to \a l milliseconds
+    void limit(unsigned long int l);
+    /// Reset time to zero
+    void reset(void);
+    /// Return true if time limit is exceeded
+    virtual bool stop(const Statistics& s, const Options& o);
+  };
+
+  /**
+   * \brief %Stop-object for meta engine
+   * \ingroup TaskModelSearchStop
+   */
+  class GECODE_SEARCH_EXPORT MetaStop : public Stop {
+    template<template<class>class,class> friend class ::Gecode::RBS;
+    friend class ::Gecode::Search::Meta::RBS;
+  private:
+    /// The failure stop object for the engine
+    FailStop* e_stop;
+    /// The stop object for the meta engine
+    Stop* m_stop;
+    /// Whether the engine was stopped
+    bool e_stopped;
+    /// Accumulated statistics for the meta engine
+    Statistics m_stat;
+  public:
+    /// Stop the meta engine if indicated by the stop object \a s
+    MetaStop(Stop* s);
+    /// Return true if meta engine must be stopped
+    virtual bool stop(const Statistics& s, const Options& o);
+    /// Set current limit for the engine to \a l fails
+    void limit(const Search::Statistics& s, unsigned long int l);
+    /// Return the stop object to control the engine
+    Stop* enginestop(void) const;
+    /// Return whether the engine has been stopped
+    bool enginestopped(void) const;
+    /// Return statistics for the meta engine
+    Statistics metastatistics(void) const;
+    /// Delete object
+    ~MetaStop(void);
+  };
+
+}}
+
+#include <gecode/search/stop.hpp>
+
+namespace Gecode { namespace Search {
+
+  /**
+   * \brief Base class for cutoff generators for restart-based meta engine
+   */
+  class GECODE_SEARCH_EXPORT Cutoff {
+  public:
+    /// Default constructor
+    Cutoff(void);
+    /// Return next cutoff value
+    virtual unsigned long int operator ()(void) = 0;
+      /// Destructor
+    virtual ~Cutoff(void);
+    /// Create generator for constant sequence with constant \a s
+    static Cutoff*
+    constant(unsigned long int scale=1U);
+    /// Create generator for linear sequence scaled by \a scale
+    static Cutoff*
+    linear(unsigned long int scale=1U);
+    /** Create generator for geometric sequence scaled by
+     *  \a scale using base \a base
+     */
+    static Cutoff*
+    geometric(unsigned long int scale=1U, double base=1.5);
+    /// Create generator for luby sequence with scale-factor \a scale
+    static Cutoff*
+    luby(unsigned long int scale=1U);
+    /** Create generator for random sequence with seed \a seed that
+     *  generates values between \a min and \a max with \a n steps
+     *  between the extreme values (use 0 for \a n to get step size 1).
+     */
+    static Cutoff*
+    rnd(unsigned int seed, 
+        unsigned long int min, unsigned long int max, 
+        unsigned long int n);
+    /// Append cutoff values from \a c2 after \a n values from \a c1
+    static Cutoff*
+    append(Cutoff* c1, unsigned long int n, Cutoff* c2);
+    /// Allocate memory from heap
+    static void* operator new(size_t s);
+    /// Free memory allocated from heap
+    static void  operator delete(void* p);
+  };
+    
+}}
+
+#include <gecode/search/cutoff.hpp>
+
+namespace Gecode { namespace Search {
+
+  /**
+   * \brief %Search engine implementation interface
+   */
+  class Engine {
+  public:
+    /// Return next solution (NULL, if none exists or search has been stopped)
+    virtual Space* next(void) = 0;
+    /// Return statistics
+    virtual Statistics statistics(void) const = 0;
+    /// Check whether engine has been stopped
+    virtual bool stopped(void) const = 0;
+    /// Reset engine to restart at space \a s
+    virtual void reset(Space* s) = 0;
+    /// Destructor
+    virtual ~Engine(void) {}
+  };
+
+}}
+
+namespace Gecode {
+
+  /**
+   *  \brief Base-class for search engines
+   */
+  class EngineBase {
+    template<template<class>class,class> friend class ::Gecode::RBS;
+  protected:
+    /// The actual search engine
+    Search::Engine* e;
+    /// Destructor
+    ~EngineBase(void);
+    /// Constructor
+    EngineBase(Search::Engine* e = NULL);
+  };
+
+}
+
+#include <gecode/search/engine-base.hpp>
+
+namespace Gecode {
+
 
   /**
    * \brief Depth-first search engine
@@ -335,10 +494,7 @@ namespace Gecode {
    * \ingroup TaskModelSearch
    */
   template<class T>
-  class DFS {
-  private:
-    /// The actual search engine
-    Search::Engine* e;
+  class DFS : public EngineBase {
   public:
     /// Initialize search engine for space \a s with options \a o
     DFS(T* s, const Search::Options& o=Search::Options::def);
@@ -348,15 +504,17 @@ namespace Gecode {
     Search::Statistics statistics(void) const;
     /// Check whether engine has been stopped
     bool stopped(void) const;
-    /// Destructor
-    ~DFS(void);
   };
 
   /// Invoke depth-first search engine for subclass \a T of space \a s with options \a o
   template<class T>
   T* dfs(T* s, const Search::Options& o=Search::Options::def);
 
+}
 
+#include <gecode/search/dfs.hpp>
+
+namespace Gecode {
 
   /**
    * \brief Depth-first branch-and-bound search engine
@@ -370,10 +528,7 @@ namespace Gecode {
    * \ingroup TaskModelSearch
    */
   template<class T>
-  class BAB {
-  private:
-    /// The actual search engine
-    Search::Engine* e;
+  class BAB : public EngineBase {
   public:
     /// Initialize engine for space \a s and options \a o
     BAB(T* s, const Search::Options& o=Search::Options::def);
@@ -383,8 +538,6 @@ namespace Gecode {
     Search::Statistics statistics(void) const;
     /// Check whether engine has been stopped
     bool stopped(void) const;
-    /// Destructor
-    ~BAB(void);
   };
 
   /**
@@ -402,56 +555,67 @@ namespace Gecode {
   template<class T>
   T* bab(T* s, const Search::Options& o=Search::Options::def);
 
+}
 
+#include <gecode/search/bab.hpp>
+
+namespace Gecode {
 
   /**
-   * \brief Depth-first restart best solution search engine
+   * \brief Meta-engine performing restart-based search
    *
-   * Additionally, \a s must implement a member function
-   * \code virtual void constrain(T& t) \endcode
-   * Whenever exploration requires to add a constraint
-   * to the space \a c currently being explored, the engine
-   * executes \c c.constrain(t) where \a t is the so-far
-   * best solution.
+   * The engine uses the Cutoff sequence supplied in the options \a o to
+   * periodically restart the search of engine \a E.
+   *
+   * The class \a T can implement member functions
+   * \code virtual void master(unsigned long int i, const Space* s) \endcode
+   * and
+   * \code virtual void slave(unsigned long int i, const Space* s) \endcode
+   *
+   * Whenever exploration restarts or a solution is found, the
+   * engine executes the functions on the master and slave
+   * space. For more details, consult "Modeling and Programming
+   * with Gecode".
+   *
    * \ingroup TaskModelSearch
    */
-  template<class T>
-  class Restart {
-  private:
-    /// The actual search engine
-    Search::Engine* e;
+  template<template<class> class E, class T>
+  class RBS : public EngineBase {
   public:
     /// Initialize engine for space \a s and options \a o
-    Restart(T* s, const Search::Options& o=Search::Options::def);
-    /// Return next better solution (NULL, if none exists or search has been stopped)
+    RBS(T* s, const Search::Options& o);
+    /// Return next solution (NULL, if non exists or search has been stopped)
     T* next(void);
     /// Return statistics
     Search::Statistics statistics(void) const;
     /// Check whether engine has been stopped
     bool stopped(void) const;
-    /// Destructor
-    ~Restart(void);
   };
 
   /**
-   * \brief Perform depth-first restart best solution search for subclass \a T of space \a s and options \a o
+   * \brief Perform restart-based search
    *
-   * Additionally, \a s must implement a member function
-   * \code virtual void constrain(T& t) \endcode
-   * Whenever exploration requires to add a constraint
-   * to the space \a c currently being explored, the engine
-   * executes \c c.constrain(t) where \a t is the so-far
-   * best solution.
+   * The engine uses the Cutoff sequence supplied in the options \a o to
+   * periodically restart the search of an engine of type \a E.
+   *
+   * The class \a T can implement member functions
+   * \code virtual void master(unsigned long int i, const Space* s) \endcode
+   * and
+   * \code virtual void slave(unsigned long int i, const Space* s) \endcode
+   *
+   * Whenever exploration restarts or a solution is found, the
+   * engine executes the functions on the master and slave
+   * space. For more details, consult "Modeling and Programming
+   * with Gecode".
+   *
    * \ingroup TaskModelSearch
    */
-  template<class T>
-  T* restart(T* s, const Search::Options& o=Search::Options::def);
+  template<template<class> class E, class T>
+  T* rbs(T* s, const Search::Options& o);
 
 }
 
-#include <gecode/search/dfs.hpp>
-#include <gecode/search/bab.hpp>
-#include <gecode/search/restart.hpp>
+#include <gecode/search/rbs.hpp>
 
 #endif
 

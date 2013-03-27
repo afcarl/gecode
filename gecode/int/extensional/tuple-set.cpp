@@ -7,7 +7,7 @@
  *     Mikael Lagerkvist, 2007
  *
  *  Last modified:
- *     $Date: 2010-07-15 01:46:18 +1000 (Thu, 15 Jul 2010) $ by $Author: schulte $
+ *     $Date: 2010-07-14 17:46:18 +0200 (Wed, 14 Jul 2010) $ by $Author: schulte $
  *     $Revision: 11192 $
  *
  *  This file is part of Gecode, the generic constraint

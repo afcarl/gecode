@@ -7,8 +7,8 @@
  *     Patrick Pekczynski, 2004
  *
  *  Last modified:
- *     $Date: 2009-09-09 05:10:29 +1000 (Wed, 09 Sep 2009) $ by $Author: schulte $
- *     $Revision: 9692 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

@@ -7,8 +7,8 @@
 #     Guido Tack, 2006
 #
 #  Last modified:
-#     $Date: 2009-10-27 07:16:18 +1100 (Tue, 27 Oct 2009) $ by $Author: schulte $
-#     $Revision: 9990 $
+#     $Date: 2013-02-20 18:34:47 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+#     $Revision: 13348 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -38,15 +38,15 @@
 set -e
 
 # List of file extensions for which properties should be set
-KEYWORDEXTS="cpp hpp hh sh perl ac in vsl vis mzn m4"
+KEYWORDEXTS="cpp hpp hh sh perl ac in vsl vis mzn m4 txt"
 
 for ext in ${KEYWORDEXTS}; do
-    find . -name "*.$ext" ! -path './contribs/*' -prune \
+    find . -name "*.$ext" ! \( -path './contribs/*' -o -path './gecode/third-party/*' \) -prune \
     -exec svn propset svn:keywords 'Author Date Id Revision' "{}" ";"
 done
 
 # List of normal directories to set ignore properties on
-GECODEDIRS="int iter kernel minimodel search set support gist driver graph scheduling flatzinc"
+GECODEDIRS="int iter kernel minimodel search set support gist driver graph scheduling flatzinc float"
 TOOLSDIRS="flatzinc"
 
 for dir in ${GECODEDIRS}; do

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2011-08-09 02:04:53 +1000 (Tue, 09 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12253 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -96,7 +96,7 @@ namespace Gecode { namespace Int {
     return x.in(-n);
   }
   forceinline bool
-  MinusView::in(double n) const {
+  MinusView::in(long long int n) const {
     return x.in(-n);
   }
 
@@ -110,47 +110,52 @@ namespace Gecode { namespace Int {
     return x.gq(home,-n);
   }
   forceinline ModEvent
-  MinusView::lq(Space& home, double n) {
+  MinusView::lq(Space& home, long long int n) {
     return x.gq(home,-n);
   }
+
   forceinline ModEvent
   MinusView::le(Space& home, int n) {
     return x.gr(home,-n);
   }
   forceinline ModEvent
-  MinusView::le(Space& home, double n) {
+  MinusView::le(Space& home, long long int n) {
     return x.gr(home,-n);
   }
+
   forceinline ModEvent
   MinusView::gq(Space& home, int n) {
     return x.lq(home,-n);
   }
   forceinline ModEvent
-  MinusView::gq(Space& home, double n) {
+  MinusView::gq(Space& home, long long int n) {
     return x.lq(home,-n);
   }
+
   forceinline ModEvent
   MinusView::gr(Space& home, int n) {
     return x.le(home,-n);
   }
   forceinline ModEvent
-  MinusView::gr(Space& home, double n) {
+  MinusView::gr(Space& home, long long int n) {
     return x.le(home,-n);
   }
+
   forceinline ModEvent
   MinusView::nq(Space& home, int n) {
     return x.nq(home,-n);
   }
   forceinline ModEvent
-  MinusView::nq(Space& home, double n) {
+  MinusView::nq(Space& home, long long int n) {
     return x.nq(home,-n);
   }
+
   forceinline ModEvent
   MinusView::eq(Space& home, int n) {
     return x.eq(home,-n);
   }
   forceinline ModEvent
-  MinusView::eq(Space& home, double n) {
+  MinusView::eq(Space& home, long long int n) {
     return x.eq(home,-n);
   }
 

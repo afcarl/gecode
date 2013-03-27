@@ -11,8 +11,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2010-07-15 01:46:18 +1000 (Thu, 15 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11192 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -327,7 +327,8 @@ namespace Gecode { namespace Int { namespace Extensional {
       SupportEntry*  o = p.support_data[i];
       while (o != NULL) {
         // Allocate new support entry
-        SupportEntry* s = new (home) SupportEntry(o->t);
+        SupportEntry* s =
+          new (home) SupportEntry(ts()->data+(o->t-p.ts()->data));
         // Link in support entry
         (*n) = s; n = s->nextRef();
         // move to next one

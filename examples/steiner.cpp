@@ -7,8 +7,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2011-02-22 20:26:48 +1100 (Tue, 22 Feb 2011) $ by $Author: tack $
- *     $Revision: 11761 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -128,7 +128,7 @@ public:
       }
     }
 
-    branch(*this, triples, SET_VAR_NONE, SET_VAL_MIN_INC);
+    branch(*this, triples, SET_VAR_NONE(), SET_VAL_MIN_INC());
   }
   /// Print solution
   virtual void

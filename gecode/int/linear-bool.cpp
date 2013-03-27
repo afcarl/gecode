@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2010-03-04 03:40:32 +1100 (Thu, 04 Mar 2010) $ by $Author: schulte $
- *     $Revision: 10365 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -42,7 +42,7 @@ namespace Gecode {
   using namespace Int;
 
   void
-  linear(Home home, const BoolVarArgs& x, IntRelType r, int c,
+  linear(Home home, const BoolVarArgs& x, IntRelType irt, int c,
          IntConLevel icl) {
     if (home.failed()) return;
 
@@ -53,11 +53,11 @@ namespace Gecode {
       t[i].a=1; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,c,icl);
+    Linear::post(home,t,n,irt,c,icl);
   }
 
   void
-  linear(Home home, const BoolVarArgs& x, IntRelType r, IntVar y,
+  linear(Home home, const BoolVarArgs& x, IntRelType irt, IntVar y,
          IntConLevel icl) {
     if (home.failed()) return;
 
@@ -68,12 +68,12 @@ namespace Gecode {
       t[i].a=1; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,y,0,icl);
+    Linear::post(home,t,n,irt,y,0,icl);
   }
 
   void
   linear(Home home,
-         const IntArgs& a, const BoolVarArgs& x, IntRelType r, int c,
+         const IntArgs& a, const BoolVarArgs& x, IntRelType irt, int c,
          IntConLevel icl) {
     if (a.size() != x.size())
       throw ArgumentSizeMismatch("Int::linear");
@@ -87,12 +87,12 @@ namespace Gecode {
       t[i].a=a[i]; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,c,icl);
+    Linear::post(home,t,n,irt,c,icl);
   }
 
   void
   linear(Home home,
-         const IntArgs& a, const BoolVarArgs& x, IntRelType r, IntVar y,
+         const IntArgs& a, const BoolVarArgs& x, IntRelType irt, IntVar y,
          IntConLevel icl) {
     if (a.size() != x.size())
       throw ArgumentSizeMismatch("Int::linear");
@@ -109,7 +109,7 @@ namespace Gecode {
     int min, max;
     estimate(t,n,0,min,max);
     IntView v(y);
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       GECODE_ME_FAIL(v.gq(home,min)); GECODE_ME_FAIL(v.lq(home,max));
       break;
@@ -122,12 +122,12 @@ namespace Gecode {
     default: ;
     }
     if (home.failed()) return;
-    Linear::post(home,t,n,r,y,0,icl);
+    Linear::post(home,t,n,irt,y,0,icl);
   }
 
   void
-  linear(Home home, const BoolVarArgs& x, IntRelType r, int c,
-         BoolVar b, IntConLevel icl) {
+  linear(Home home, const BoolVarArgs& x, IntRelType irt, int c,
+         Reify r, IntConLevel icl) {
     if (home.failed()) return;
 
     int n=x.size();
@@ -137,12 +137,12 @@ namespace Gecode {
       t[i].a=1; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,c,b,icl);
+    Linear::post(home,t,n,irt,c,r,icl);
   }
 
   void
-  linear(Home home, const BoolVarArgs& x, IntRelType r, IntVar y,
-         BoolVar b, IntConLevel icl) {
+  linear(Home home, const BoolVarArgs& x, IntRelType irt, IntVar y,
+         Reify r, IntConLevel icl) {
     if (home.failed()) return;
 
     int n=x.size();
@@ -152,13 +152,13 @@ namespace Gecode {
       t[i].a=1; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,y,b,icl);
+    Linear::post(home,t,n,irt,y,r,icl);
   }
 
   void
   linear(Home home,
-         const IntArgs& a, const BoolVarArgs& x, IntRelType r, int c,
-         BoolVar b, IntConLevel icl) {
+         const IntArgs& a, const BoolVarArgs& x, IntRelType irt, int c,
+         Reify r, IntConLevel icl) {
     if (a.size() != x.size())
       throw ArgumentSizeMismatch("Int::linear");
     if (home.failed()) return;
@@ -170,13 +170,13 @@ namespace Gecode {
       t[i].a=a[i]; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,c,b,icl);
+    Linear::post(home,t,n,irt,c,r,icl);
   }
 
   void
   linear(Home home,
-         const IntArgs& a, const BoolVarArgs& x, IntRelType r, IntVar y,
-         BoolVar b, IntConLevel icl) {
+         const IntArgs& a, const BoolVarArgs& x, IntRelType irt, IntVar y,
+         Reify r, IntConLevel icl) {
     if (a.size() != x.size())
       throw ArgumentSizeMismatch("Int::linear");
     if (home.failed()) return;
@@ -188,7 +188,7 @@ namespace Gecode {
       t[i].a=a[i]; t[i].x=x[i];
     }
 
-    Linear::post(home,t,n,r,y,b,icl);
+    Linear::post(home,t,n,irt,y,r,icl);
   }
 
 }

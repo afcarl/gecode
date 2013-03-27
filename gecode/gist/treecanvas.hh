@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 18:29:27 +1000 (Thu, 12 Aug 2010) $ by $Author: tack $
- *     $Revision: 11346 $
+ *     $Date: 2012-12-21 01:48:30 +0100 (Fri, 21 Dec 2012) $ by $Author: tack $
+ *     $Revision: 13214 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,6 +39,9 @@
 #define GECODE_GIST_TREECANVAS_HH
 
 #include <QtGui>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#endif
 
 #include <gecode/kernel.hh>
 #include <gecode/gist.hh>
@@ -79,6 +82,7 @@ namespace Gecode {  namespace Gist {
     void scaleChanged(int);
     void solution(const Space*);
     void searchFinished(void);
+    void moveToNode(VisualNode* n,bool);
   protected:
     void run(void);
   };
@@ -210,6 +214,10 @@ namespace Gecode {  namespace Gist {
     bool getSmoothScrollAndZoom(void);
     /// Set preference whether to use smooth scrolling and zooming
     void setSmoothScrollAndZoom(bool b);
+    /// Return preference whether to move cursor during search
+    bool getMoveDuringSearch(void);
+    /// Set preference whether to move cursor during search
+    void setMoveDuringSearch(bool b);
     /// Resize to the outer widget size if auto zoom is enabled
     void resizeToOuter(void);
 
@@ -294,7 +302,9 @@ namespace Gecode {  namespace Gist {
     int refreshPause;
     /// Whether to use smooth scrolling and zooming
     bool smoothScrollAndZoom;
-
+    /// Whether to move cursor during search
+    bool moveDuringSearch;
+    
     /// The recomputation distance
     int c_d;
     /// The adaptive recomputation distance
@@ -316,8 +326,6 @@ namespace Gecode {  namespace Gist {
     void resizeEvent(QResizeEvent* event);
     /// Handle mouse wheel events
     void wheelEvent(QWheelEvent* event);
-    /// Set the selected node to \a n
-    void setCurrentNode(VisualNode* n, bool update=true);
 
     /// Timer for smooth zooming
     QTimeLine zoomTimeLine;
@@ -351,6 +359,8 @@ namespace Gecode {  namespace Gist {
     void scroll(void);
     /// Layout done
     void layoutDone(int w, int h, int scale0);
+    /// Set the selected node to \a n
+    void setCurrentNode(VisualNode* n, bool finished=true, bool update=true);
   private Q_SLOTS:
     /// Search has finished
     void statusChanged(bool);

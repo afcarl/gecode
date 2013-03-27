@@ -7,8 +7,8 @@
  *     Christian Schulte, 2010
  *
  *  Last modified:
- *     $Date: 2011-06-08 06:37:43 +1000 (Wed, 08 Jun 2011) $ by $Author: schulte $
- *     $Revision: 12049 $
+ *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13068 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -356,6 +356,13 @@ namespace Gecode { namespace Int { namespace BinPacking {
 
   ExecStatus
   Pack::post(Home home, ViewArray<OffsetView>& l, ViewArray<Item>& bs) {
+    // Eliminate zero sized items (which are at the end as the size are sorted)
+    {
+      int n = bs.size();
+      while (bs[n-1].size() == 0)
+        n--;
+      bs.size(n);
+    }
     if (bs.size() == 0) {
       // No items to be packed
       for (int i=l.size(); i--; )

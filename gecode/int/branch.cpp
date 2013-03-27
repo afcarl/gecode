@@ -4,11 +4,11 @@
  *     Christian Schulte <schulte@gecode.org>
  *
  *  Copyright:
- *     Christian Schulte, 2002
+ *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2010-03-12 08:16:29 +1100 (Fri, 12 Mar 2010) $ by $Author: schulte $
- *     $Revision: 10418 $
+ *     $Date: 2013-03-05 20:51:24 +0100 (Tue, 05 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13438 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,112 +39,211 @@
 
 namespace Gecode {
 
-  void
-  assign(Home home, const IntVarArgs& x, IntAssign vals,
-         const ValBranchOptions& o_vals) {
+  BrancherHandle
+  branch(Home home, const IntVarArgs& x,
+         IntVarBranch vars, IntValBranch vals, IntBranchFilter bf) {
     using namespace Int;
-    if (home.failed()) return;
+    if (home.failed()) return BrancherHandle();
+    vars.expand(home,x);
     ViewArray<IntView> xv(home,x);
-    ViewSelNone<IntView> v(home,VarBranchOptions::def);
-    switch (vals) {
-    case INT_ASSIGN_MIN:
-      {
-        Branch::AssignValMin<IntView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<IntView>,Branch::AssignValMin<IntView> >
-          ::post(home,xv,v,a);
-      }
+    ViewSel<IntView>* vs[1] = { 
+      Branch::viewselint(home,vars) 
+    };
+    switch (vals.select()) {
+    case IntValBranch::SEL_VALUES_MIN:
+      return Branch::ViewValuesBrancher<1,true>::post(home,xv,vs,bf);
       break;
-    case INT_ASSIGN_MED:
-      {
-        Branch::AssignValMed<IntView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<IntView>,Branch::AssignValMed<IntView> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case INT_ASSIGN_MAX:
-      {
-        Branch::AssignValMin<MinusView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<IntView>,Branch::AssignValMin<MinusView> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case INT_ASSIGN_RND:
-      {
-        Branch::AssignValRnd<IntView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<IntView>,Branch::AssignValRnd<IntView> >
-          ::post(home,xv,v,a);
-      }
+    case IntValBranch::SEL_VALUES_MAX:
+      return Branch::ViewValuesBrancher<1,false>::post(home,xv,vs,bf);
       break;
     default:
-      throw UnknownBranching("Int::assign");
+      return ViewValBrancher<IntView,1,int,2>::post
+        (home,xv,vs,Branch::valselcommitint(home,x.size(),vals),bf);
     }
   }
 
-  void
-  assign(Home home, const BoolVarArgs& x, IntAssign vals,
-         const ValBranchOptions& o_vals) {
+  BrancherHandle
+  branch(Home home, const IntVarArgs& x,
+         TieBreak<IntVarBranch> vars, IntValBranch vals, IntBranchFilter bf) {
     using namespace Int;
-    if (home.failed()) return;
-    ViewArray<BoolView> xv(home,x);
-    ViewSelNone<BoolView> v(home,VarBranchOptions::def);
-    switch (vals) {
-    case INT_ASSIGN_MIN:
-    case INT_ASSIGN_MED: {
-        Branch::AssignValZero<BoolView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<BoolView>,Branch::AssignValZero<BoolView> >
-          ::post(home,xv,v,a);
+    if (home.failed()) return BrancherHandle();
+    vars.a.expand(home,x);
+    if ((vars.a.select() == IntVarBranch::SEL_NONE) ||
+        (vars.a.select() == IntVarBranch::SEL_RND))
+      vars.b = INT_VAR_NONE();
+    vars.b.expand(home,x);
+    if ((vars.b.select() == IntVarBranch::SEL_NONE) ||
+        (vars.b.select() == IntVarBranch::SEL_RND))
+      vars.c = INT_VAR_NONE();
+    vars.c.expand(home,x);
+    if ((vars.c.select() == IntVarBranch::SEL_NONE) ||
+        (vars.c.select() == IntVarBranch::SEL_RND))
+      vars.d = INT_VAR_NONE();
+    vars.d.expand(home,x);
+    if (vars.b.select() == IntVarBranch::SEL_NONE) {
+      return branch(home,x,vars.a,vals,bf);
+    } else {
+      ViewArray<IntView> xv(home,x);
+      if (vars.c.select() == IntVarBranch::SEL_NONE) {
+        ViewSel<IntView>* vs[2] = { 
+          Branch::viewselint(home,vars.a),Branch::viewselint(home,vars.b)
+        };
+        switch (vals.select()) {
+        case IntValBranch::SEL_VALUES_MIN:
+          return Branch::ViewValuesBrancher<2,true>::post(home,xv,vs,bf);
+          break;
+        case IntValBranch::SEL_VALUES_MAX:
+          return Branch::ViewValuesBrancher<2,false>::post(home,xv,vs,bf);
+          break;
+        default:
+          return ViewValBrancher<IntView,2,int,2>
+            ::post(home,xv,vs,Branch::valselcommitint(home,x.size(),vals),bf);
+        }
+      } else if (vars.d.select() == IntVarBranch::SEL_NONE) {
+        ViewSel<IntView>* vs[3] = { 
+          Branch::viewselint(home,vars.a),Branch::viewselint(home,vars.b),
+          Branch::viewselint(home,vars.c)
+        };
+        switch (vals.select()) {
+        case IntValBranch::SEL_VALUES_MIN:
+          return Branch::ViewValuesBrancher<3,true>::post(home,xv,vs,bf);
+          break;
+        case IntValBranch::SEL_VALUES_MAX:
+          return Branch::ViewValuesBrancher<3,false>::post(home,xv,vs,bf);
+          break;
+        default:
+          return ViewValBrancher<IntView,3,int,2>
+            ::post(home,xv,vs,Branch::valselcommitint(home,x.size(),vals),bf);
+        }
+      } else {
+        ViewSel<IntView>* vs[4] = { 
+          Branch::viewselint(home,vars.a),Branch::viewselint(home,vars.b),
+          Branch::viewselint(home,vars.c),Branch::viewselint(home,vars.d)
+        };
+        switch (vals.select()) {
+        case IntValBranch::SEL_VALUES_MIN:
+          return Branch::ViewValuesBrancher<4,true>::post(home,xv,vs,bf);
+          break;
+        case IntValBranch::SEL_VALUES_MAX:
+          return Branch::ViewValuesBrancher<4,false>::post(home,xv,vs,bf);
+          break;
+        default:
+          return ViewValBrancher<IntView,4,int,2>
+            ::post(home,xv,vs,Branch::valselcommitint(home,x.size(),vals),bf);
+        }
       }
-      break;
-    case INT_ASSIGN_MAX: {
-        Branch::AssignValZero<NegBoolView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<BoolView>,Branch::AssignValZero<NegBoolView> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case INT_ASSIGN_RND: {
-        Branch::AssignValRnd<BoolView> a(home,o_vals);
-        ViewValBrancher
-          <ViewSelNone<BoolView>,Branch::AssignValRnd<BoolView> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    default:
-      throw UnknownBranching("Int::assign");
     }
   }
 
-  void
-  branch(Home home, IntVar x, IntValBranch vals,
-         const ValBranchOptions& o_vals) {
+  BrancherHandle
+  branch(Home home, IntVar x, IntValBranch vals) {
     IntVarArgs xv(1); xv[0]=x;
-    branch(home, xv, INT_VAR_NONE, vals, VarBranchOptions::def, o_vals);
+    return branch(home, xv, INT_VAR_NONE(), vals);
   }
   
-  void
-  branch(Home home, BoolVar x, IntValBranch vals,
-         const ValBranchOptions& o_vals) {
-    BoolVarArgs xv(1); xv[0]=x;
-    branch(home, xv, INT_VAR_NONE, vals, VarBranchOptions::def, o_vals);
+  BrancherHandle
+  assign(Home home, const IntVarArgs& x, IntAssign ia,
+         IntBranchFilter bf) {
+    using namespace Int;
+    if (home.failed()) return BrancherHandle();
+    ViewArray<IntView> xv(home,x);
+    ViewSel<IntView>* vs[1] = { 
+      new (home) ViewSelNone<IntView>(home,INT_VAR_NONE())
+    };
+    return ViewValBrancher<IntView,1,int,1>::post
+      (home,xv,vs,Branch::valselcommitint(home,ia),bf);
   }
-  
-  void
-  assign(Home home, IntVar x, IntAssign vals,
-         const ValBranchOptions& o_vals) {
+
+  BrancherHandle
+  assign(Home home, IntVar x, IntAssign ia) {
     IntVarArgs xv(1); xv[0]=x;
-    assign(home, xv, vals, o_vals);
+    return assign(home, xv, ia);
   }
   
-  void
-  assign(Home home, BoolVar x, IntAssign vals,
-         const ValBranchOptions& o_vals) {
+
+  BrancherHandle
+  branch(Home home, const BoolVarArgs& x,
+         IntVarBranch vars, IntValBranch vals, BoolBranchFilter bf) {
+    using namespace Int;
+    if (home.failed()) return BrancherHandle();
+    vars.expand(home,x);
+    ViewArray<BoolView> xv(home,x);
+    ViewSel<BoolView>* vs[1] = { 
+      Branch::viewselbool(home,vars) 
+    };
+    return ViewValBrancher<BoolView,1,int,2>::post
+      (home,xv,vs,Branch::valselcommitbool(home,x.size(),vals),bf);
+  }
+
+  BrancherHandle
+  branch(Home home, const BoolVarArgs& x,
+         TieBreak<IntVarBranch> vars, IntValBranch vals, 
+         BoolBranchFilter bf) {
+    using namespace Int;
+    if (home.failed()) return BrancherHandle();
+    vars.a.expand(home,x);
+    if ((vars.a.select() == IntVarBranch::SEL_NONE) ||
+        (vars.a.select() == IntVarBranch::SEL_RND))
+      vars.b = INT_VAR_NONE();
+    vars.b.expand(home,x);
+    if ((vars.b.select() == IntVarBranch::SEL_NONE) ||
+        (vars.b.select() == IntVarBranch::SEL_RND))
+      vars.c = INT_VAR_NONE();
+    vars.c.expand(home,x);
+    if ((vars.c.select() == IntVarBranch::SEL_NONE) ||
+        (vars.c.select() == IntVarBranch::SEL_RND))
+      vars.d = INT_VAR_NONE();
+    vars.d.expand(home,x);
+    if (vars.b.select() == IntVarBranch::SEL_NONE) {
+      return branch(home,x,vars.a,vals,bf);
+    } else {
+      ViewArray<BoolView> xv(home,x);
+      ValSelCommitBase<BoolView,int>* 
+        vsc = Branch::valselcommitbool(home,x.size(),vals); 
+      if (vars.c.select() == IntVarBranch::SEL_NONE) {
+        ViewSel<BoolView>* vs[2] = { 
+          Branch::viewselbool(home,vars.a),Branch::viewselbool(home,vars.b)
+        };
+        return ViewValBrancher<BoolView,2,int,2>::post(home,xv,vs,vsc,bf);
+      } else if (vars.d.select() == IntVarBranch::SEL_NONE) {
+        ViewSel<BoolView>* vs[3] = { 
+          Branch::viewselbool(home,vars.a),Branch::viewselbool(home,vars.b),
+          Branch::viewselbool(home,vars.c)
+        };
+        return ViewValBrancher<BoolView,3,int,2>::post(home,xv,vs,vsc,bf);
+      } else {
+        ViewSel<BoolView>* vs[4] = { 
+          Branch::viewselbool(home,vars.a),Branch::viewselbool(home,vars.b),
+          Branch::viewselbool(home,vars.c),Branch::viewselbool(home,vars.d)
+        };
+        return ViewValBrancher<BoolView,4,int,2>::post(home,xv,vs,vsc,bf);
+      }
+    }
+  }
+
+  BrancherHandle
+  branch(Home home, BoolVar x, IntValBranch vals) {
     BoolVarArgs xv(1); xv[0]=x;
-    assign(home, xv, vals, o_vals);
+    return branch(home, xv, INT_VAR_NONE(), vals);
+  }
+  
+  BrancherHandle
+  assign(Home home, const BoolVarArgs& x, IntAssign ia,
+         BoolBranchFilter bf) {
+    using namespace Int;
+    if (home.failed()) return BrancherHandle();
+    ViewArray<BoolView> xv(home,x);
+    ViewSel<BoolView>* vs[1] = { 
+      new (home) ViewSelNone<BoolView>(home,INT_VAR_NONE())
+    };
+    return ViewValBrancher<BoolView,1,int,1>::post
+      (home,xv,vs,Branch::valselcommitbool(home,ia),bf);
+  }
+
+  BrancherHandle
+  assign(Home home, BoolVar x, IntAssign ia) {
+    BoolVarArgs xv(1); xv[0]=x;
+    return assign(home, xv, ia);
   }
   
 }

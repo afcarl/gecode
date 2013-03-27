@@ -11,8 +11,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2010-07-15 01:46:18 +1000 (Thu, 15 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11192 $
+ *     $Date: 2012-07-19 08:53:57 +0200 (Thu, 19 Jul 2012) $ by $Author: tack $
+ *     $Revision: 12963 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,7 +54,7 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     assert(ts()->finalized());
 
-    init_last(home, ts()->last);
+    init_last(home, ts()->last, ts()->tuple_data);
 
     home.notice(*this,AP_DISPOSE);
   }
@@ -66,17 +66,17 @@ namespace Gecode { namespace Int { namespace Extensional {
     x.update(home, share, p.x);
     tupleSet.update(home, share, p.tupleSet);
 
-    init_last(home, p.last_data);
+    init_last(home, p.last_data, p.ts()->tuple_data);
   }
 
   template<class View, bool subscribe>
   forceinline void
-  Base<View,subscribe>::init_last(Space& home, Tuple** source) {
+  Base<View,subscribe>::init_last(Space& home, Tuple** source, Tuple* base) {
     if (last_data == NULL) {
       int literals = static_cast<int>(ts()->domsize*x.size());
       last_data = home.alloc<Tuple*>(literals);
       for (int i = literals; i--; )
-        last_data[i] = source[i];
+        last_data[i] = ts()->tuple_data+(source[i]-base);
     }
   }
 

@@ -9,8 +9,8 @@
  *     Mikael Lagerkvist, 2005
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,10 +56,10 @@ namespace Gecode { namespace Support {
     /// Generate next number in series
     unsigned int next(void);
   public:
-    /// Set the current seed
-    void seed(unsigned int _s);
-    /// Construct the generator instance.
-    LinearCongruentialGenerator(unsigned int _s = 1);
+    /// Set the current seed to \a s
+    void seed(unsigned int s);
+    /// Construct the generator instance with seed \a s
+    LinearCongruentialGenerator(unsigned int s = 1);
     /// Return current seed
     unsigned int seed(void) const;
     /// Returns a random integer from the interval [0..n)

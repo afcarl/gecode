@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2011-09-02 19:00:55 +1000 (Fri, 02 Sep 2011) $ by $Author: tack $
- *     $Revision: 12387 $
+ *     $Date: 2013-03-07 20:56:21 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13463 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -71,6 +71,8 @@ namespace Gecode { namespace Search { namespace Sequential {
     Space* next(void);
     /// Return statistics
     Statistics statistics(void) const;
+    /// Reset engine to restart at space \a s
+    void reset(Space* s);
     /// Destructor
     ~BAB(void);
   };
@@ -161,6 +163,22 @@ namespace Gecode { namespace Search { namespace Sequential {
     Statistics s = *this;
     s.memory += path.size();
     return s;
+  }
+
+  forceinline void
+  BAB::reset(Space* s) { 
+    delete best;
+    best = NULL;
+    path.reset();
+    d = mark = 0;
+    delete cur;
+    if (s->status(*this) == SS_FAILED) {
+      cur = NULL;
+      Worker::reset();
+    } else {
+      cur = s;
+      Worker::reset(cur);
+    }
   }
 
   forceinline 

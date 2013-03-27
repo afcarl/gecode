@@ -11,8 +11,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2010-03-04 03:40:32 +1100 (Thu, 04 Mar 2010) $ by $Author: schulte $
- *     $Revision: 10365 $
+ *     $Date: 2013-02-27 16:45:34 +0100 (Wed, 27 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13424 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -52,6 +52,18 @@ namespace Gecode {
     Set::SetView _x(x);
     GECODE_ME_FAIL(_x.cardMin(home, i));
     GECODE_ME_FAIL(_x.cardMax(home, j));
+  }
+
+  void
+  cardinality(Home home, const SetVarArgs& x, unsigned int i, unsigned int j) {
+    Set::Limits::check(i, "Set::cardinality");
+    Set::Limits::check(j, "Set::cardinality");
+    if (home.failed()) return;
+    for (int k=x.size(); k--; ) {
+      Set::SetView _x(x[k]);
+      GECODE_ME_FAIL(_x.cardMin(home, i));
+      GECODE_ME_FAIL(_x.cardMax(home, j));
+    }
   }
 
   void

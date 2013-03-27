@@ -9,8 +9,8 @@
 #     Guido Tack, 2005
 #
 #  Last modified:
-#     $Date: 2010-05-31 21:53:25 +1000 (Mon, 31 May 2010) $ by $Author: tack $
-#     $Revision: 10995 $
+#     $Date: 2012-04-06 14:37:14 +0200 (Fri, 06 Apr 2012) $ by $Author: schulte $
+#     $Revision: 12717 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -510,6 +510,7 @@ EXCLUDE_PATTERNS       = \
 	*moc_* \
 	*contribs/* \
 	*gecode/gist/standalone-example/* \
+	*gecode/third-party/* \
 	*gecode/flatzinc/exampleplugin/* \
 	*gecode/flatzinc/parser.tab.* *gecode/flatzinc/lexer.*
 
@@ -1016,6 +1017,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = "GECODE_SET_EXPORT=" \
                          "GECODE_INT_EXPORT=" \
+                         "GECODE_FLOAT_EXPORT=" \
                          "GECODE_KERNEL_EXPORT=" \
                          "GECODE_SEARCH_EXPORT=" \
                          "GECODE_MINIMODEL_EXPORT=" \
@@ -1027,8 +1029,10 @@ PREDEFINED             = "GECODE_SET_EXPORT=" \
                          "GECODE_MSC_VIRTUAL=" \
                          "GECODE_HAS_INT_VARS=1" \
                          "GECODE_HAS_SET_VARS=1" \
+                         "GECODE_HAS_FLOAT_VARS=1" \
                          "GECODE_THREADS_PTHREADS=1" \
                          "GECODE_HAS_THREADS=1" \
+                         "GECODE_HAS_MPFR=1" \
                          "forceinline=inline"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 

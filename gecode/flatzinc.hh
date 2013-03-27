@@ -3,12 +3,16 @@
  *  Main authors:
  *     Guido Tack <tack@gecode.org>
  *
+ *  Contributing authors:
+ *     Gabriel Hjort Blindell <gabriel.hjort.blindell@gmail.com>
+ *
  *  Copyright:
- *     Guido Tack, 2007
+ *     Guido Tack, 2007-2012
+ *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2012-03-21 16:25:08 +1100 (Wed, 21 Mar 2012) $ by $Author: tack $
- *     $Revision: 12605 $
+ *     $Date: 2013-03-07 20:21:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13460 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -45,7 +49,9 @@
 #ifdef GECODE_HAS_SET_VARS
 #include <gecode/set.hh>
 #endif
-
+#ifdef GECODE_HAS_FLOAT_VARS
+#include <gecode/float.hh>
+#endif
 #include <map>
 
 /*
@@ -113,7 +119,28 @@ namespace Gecode { namespace FlatZinc {
                    ,
                    const Gecode::SetVarArray& sv
 #endif
+#ifdef GECODE_HAS_FLOAT_VARS
+                  ,
+                  const Gecode::FloatVarArray& fv
+#endif
                    ) const;
+    void printElemDiff(std::ostream& out,
+                       AST::Node* ai,
+                       const Gecode::IntVarArray& iv1,
+                       const Gecode::IntVarArray& iv2,
+                       const Gecode::BoolVarArray& bv1,
+                       const Gecode::BoolVarArray& bv2
+#ifdef GECODE_HAS_SET_VARS
+                       ,
+                       const Gecode::SetVarArray& sv1,
+                       const Gecode::SetVarArray& sv2
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+                       ,
+                       const Gecode::FloatVarArray& fv1,
+                       const Gecode::FloatVarArray& fv2
+#endif
+                       ) const;
   public:
     Printer(void) : _output(NULL) {}
     void init(AST::Array* output);
@@ -125,13 +152,32 @@ namespace Gecode { namespace FlatZinc {
                ,
                const Gecode::SetVarArray& sv
 #endif
+#ifdef GECODE_HAS_FLOAT_VARS
+               ,
+               const Gecode::FloatVarArray& fv
+#endif
                ) const;
+
+    void printDiff(std::ostream& out,
+               const Gecode::IntVarArray& iv1, const Gecode::IntVarArray& iv2,
+               const Gecode::BoolVarArray& bv1, const Gecode::BoolVarArray& bv2
+#ifdef GECODE_HAS_SET_VARS
+               ,
+               const Gecode::SetVarArray& sv1, const Gecode::SetVarArray& sv2
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+               ,
+               const Gecode::FloatVarArray& fv1,
+               const Gecode::FloatVarArray& fv2
+#endif
+               ) const;
+
   
     ~Printer(void);
     
     void shrinkElement(AST::Node* node,
                        std::map<int,int>& iv, std::map<int,int>& bv, 
-                       std::map<int,int>& sv);
+                       std::map<int,int>& sv, std::map<int,int>& fv);
 
     void shrinkArrays(Space& home,
                       int& optVar,
@@ -140,6 +186,10 @@ namespace Gecode { namespace FlatZinc {
 #ifdef GECODE_HAS_SET_VARS
                       ,
                       Gecode::SetVarArray& sv
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+                      ,
+                      Gecode::FloatVarArray& fv
 #endif
                      );
     
@@ -160,13 +210,17 @@ namespace Gecode { namespace FlatZinc {
       Gecode::Driver::BoolOption        _allSolutions; ///< Return all solutions
       Gecode::Driver::DoubleOption      _threads;   ///< How many threads to use
       Gecode::Driver::BoolOption        _free; ///< Use free search
-      Gecode::Driver::StringOption      _search; ///< Search engine variant
+      Gecode::Driver::DoubleOption      _decay;       ///< Decay option
       Gecode::Driver::UnsignedIntOption _c_d;       ///< Copy recomputation distance
       Gecode::Driver::UnsignedIntOption _a_d;       ///< Adaptive recomputation distance
       Gecode::Driver::UnsignedIntOption _node;      ///< Cutoff for number of nodes
       Gecode::Driver::UnsignedIntOption _fail;      ///< Cutoff for number of failures
       Gecode::Driver::UnsignedIntOption _time;      ///< Cutoff for time
       Gecode::Driver::IntOption         _seed;      ///< Random seed
+      Gecode::Driver::StringOption      _restart;   ///< Restart method option
+      Gecode::Driver::DoubleOption      _r_base;    ///< Restart base
+      Gecode::Driver::UnsignedIntOption _r_scale;   ///< Restart scale factor
+      Gecode::Driver::BoolOption        _interrupt; ///< Whether to catch SIGINT
       //@}
     
       /// \name Execution options
@@ -176,10 +230,6 @@ namespace Gecode { namespace FlatZinc {
       Gecode::Driver::StringValueOption _output;     ///< Output file
       //@}
   public:
-    enum SearchOptions {
-      FZ_SEARCH_BAB,    //< Branch-and-bound search
-      FZ_SEARCH_RESTART //< Restart search
-    };
     /// Constructor
     FlatZincOptions(const char* s)
     : Gecode::BaseOptions(s),
@@ -188,28 +238,38 @@ namespace Gecode { namespace FlatZinc {
       _threads("-p","number of threads (0 = #processing units)",
                Gecode::Search::Config::threads),
       _free("--free", "no need to follow search-specification"),
-      _search("-search","search engine variant", FZ_SEARCH_BAB),
+      _decay("-decay","decay factor",1.0),
       _c_d("-c-d","recomputation commit distance",Gecode::Search::Config::c_d),
       _a_d("-a-d","recomputation adaption distance",Gecode::Search::Config::a_d),
       _node("-node","node cutoff (0 = none, solution mode)"),
       _fail("-fail","failure cutoff (0 = none, solution mode)"),
       _time("-time","time (in ms) cutoff (0 = none, solution mode)"),
       _seed("-r","random seed",0),
+      _restart("-restart","restart sequence type",RM_NONE),
+      _r_base("-restart-base","base for geometric restart sequence",1.5),
+      _r_scale("-restart-scale","scale factor for restart sequence",250),
+      _interrupt("-interrupt","whether to catch Ctrl-C (true) or not (false)",
+                 true),
       _mode("-mode","how to execute script",Gecode::SM_SOLUTION),
       _stat("-s","emit statistics"),
       _output("-o","file to send output to") {
 
-      _search.add(FZ_SEARCH_BAB, "bab");
-      _search.add(FZ_SEARCH_RESTART, "restart");
       _mode.add(Gecode::SM_SOLUTION, "solution");
       _mode.add(Gecode::SM_STAT, "stat");
       _mode.add(Gecode::SM_GIST, "gist");
+      _restart.add(RM_NONE,"none");
+      _restart.add(RM_CONSTANT,"constant");
+      _restart.add(RM_LINEAR,"linear");
+      _restart.add(RM_LUBY,"luby");
+      _restart.add(RM_GEOMETRIC,"geometric");
+
       add(_solutions); add(_threads); add(_c_d); add(_a_d);
       add(_allSolutions);
       add(_free);
-      add(_search);
-      add(_node); add(_fail); add(_time);
+      add(_decay);
+      add(_node); add(_fail); add(_time); add(_interrupt);
       add(_seed);
+      add(_restart); add(_r_base); add(_r_scale);
       add(_mode); add(_stat);
       add(_output);
     }
@@ -234,9 +294,6 @@ namespace Gecode { namespace FlatZinc {
     bool allSolutions(void) const { return _allSolutions.value(); }
     double threads(void) const { return _threads.value(); }
     bool free(void) const { return _free.value(); }
-    SearchOptions search(void) const {
-      return static_cast<SearchOptions>(_search.value());
-    }
     unsigned int c_d(void) const { return _c_d.value(); }
     unsigned int a_d(void) const { return _a_d.value(); }
     unsigned int node(void) const { return _node.value(); }
@@ -247,6 +304,15 @@ namespace Gecode { namespace FlatZinc {
     Gecode::ScriptMode mode(void) const {
       return static_cast<Gecode::ScriptMode>(_mode.value());
     }
+
+    double decay(void) const { return _decay.value(); }
+    RestartMode restart(void) const {
+      return static_cast<RestartMode>(_restart.value());
+    }
+    double restart_base(void) const { return _r_base.value(); }
+    unsigned int restart_scale(void) const { return _r_scale.value(); }
+    bool interrupt(void) const { return _interrupt.value(); }
+
   };
 
   /**
@@ -265,6 +331,8 @@ namespace Gecode { namespace FlatZinc {
     int intVarCount;
     /// Number of Boolean variables
     int boolVarCount;
+    /// Number of float variables
+    int floatVarCount;
     /// Number of set variables
     int setVarCount;
 
@@ -285,25 +353,47 @@ namespace Gecode { namespace FlatZinc {
     void
     runEngine(std::ostream& out, const Printer& p, 
               const FlatZincOptions& opt, Gecode::Support::Timer& t_total);
+    /// Run the meta search engine
+    template<template<class> class Engine,
+             template<template<class> class,class> class Meta>
+    void
+    runMeta(std::ostream& out, const Printer& p, 
+            const FlatZincOptions& opt, Gecode::Support::Timer& t_total);
     void
     branchWithPlugin(AST::Node* ann);
   public:
     /// The integer variables
     Gecode::IntVarArray iv;
+    /// The introduced integer variables
+    Gecode::IntVarArray iv_aux;
     /// Indicates whether an integer variable is introduced by mzn2fzn
     std::vector<bool> iv_introduced;
     /// Indicates whether an integer variable aliases a Boolean variable
     int* iv_boolalias;
     /// The Boolean variables
     Gecode::BoolVarArray bv;
+    /// The introduced Boolean variables
+    Gecode::BoolVarArray bv_aux;
     /// Indicates whether a Boolean variable is introduced by mzn2fzn
     std::vector<bool> bv_introduced;
 #ifdef GECODE_HAS_SET_VARS
     /// The set variables
     Gecode::SetVarArray sv;
+    /// The introduced set variables
+    Gecode::SetVarArray sv_aux;
     /// Indicates whether a set variable is introduced by mzn2fzn
     std::vector<bool> sv_introduced;
 #endif
+#ifdef GECODE_HAS_FLOAT_VARS
+    /// The float variables
+    Gecode::FloatVarArray fv;
+    /// The introduced float variables
+    Gecode::FloatVarArray fv_aux;
+    /// Indicates whether a float variable is introduced by mzn2fzn
+    std::vector<bool> fv_introduced;
+#endif
+    /// Whether the introduced variables still need to be copied
+    bool needAuxVars;
     /// Construct empty space
     FlatZincSpace(void);
   
@@ -311,7 +401,7 @@ namespace Gecode { namespace FlatZinc {
     ~FlatZincSpace(void);
   
     /// Initialize space with given number of variables
-    void init(int intVars, int boolVars, int setVars);
+    void init(int intVars, int boolVars, int setVars, int floatVars);
 
     /// Create new integer variable from specification
     void newIntVar(IntVarSpec* vs);
@@ -323,6 +413,8 @@ namespace Gecode { namespace FlatZinc {
     void newBoolVar(BoolVarSpec* vs);
     /// Create new set variable from specification
     void newSetVar(SetVarSpec* vs);
+    /// Create new float variable from specification
+    void newFloatVar(FloatVarSpec* vs);
   
     /// Post a constraint specified by \a ce
     void postConstraint(const ConExpr& ce, AST::Node* annotation);
@@ -340,6 +432,14 @@ namespace Gecode { namespace FlatZinc {
   
     /// Produce output on \a out using \a p
     void print(std::ostream& out, const Printer& p) const;
+
+    /// Compare this space with space \a s and print the differences on 
+    /// \a out
+    void compare(const Space& s, std::ostream& out) const;
+    /// Compare this space with space \a s and print the differences on 
+    /// \a out using \a p
+    void compare(const FlatZincSpace& s, std::ostream& out,
+                 const Printer& p) const;
 
     /**
      * \brief Remove all variables not needed for output
@@ -367,7 +467,7 @@ namespace Gecode { namespace FlatZinc {
      *
      */
     void createBranchers(AST::Node* ann,
-                         int seed,
+                         int seed, double decay,
                          bool ignoreUnknown,
                          std::ostream& err = std::cerr);
 
@@ -378,6 +478,46 @@ namespace Gecode { namespace FlatZinc {
     virtual void constrain(const Space& s);
     /// Copy function
     virtual Gecode::Space* copy(bool share);
+    
+    
+    /// \name AST to variable and value conversion
+    //@{
+    /// Convert \a arg (array of integers) to IntArgs
+    IntArgs arg2intargs(AST::Node* arg, int offset = 0);
+    /// Convert \a arg (array of Booleans) to IntArgs
+    IntArgs arg2boolargs(AST::Node* arg, int offset = 0);
+    /// Convert \a n to IntSet
+    IntSet arg2intset(AST::Node* n);
+    /// Convert \a arg to IntSetArgs
+    IntSetArgs arg2intsetargs(AST::Node* arg, int offset = 0);
+    /// Convert \a arg to IntVarArgs
+    IntVarArgs arg2intvarargs(AST::Node* arg, int offset = 0);
+    /// Convert \a arg to BoolVarArgs
+    BoolVarArgs arg2boolvarargs(AST::Node* arg, int offset = 0, int siv=-1);
+    /// Convert \a n to BoolVar
+    BoolVar arg2BoolVar(AST::Node* n);
+    /// Convert \a n to IntVar
+    IntVar arg2IntVar(AST::Node* n);
+    /// Check if \a b is array of Booleans (or has a single integer)
+    bool isBoolArray(AST::Node* b, int& singleInt);
+#ifdef GECODE_HAS_SET_VARS
+    /// Convert \a n to SetVar
+    SetVar arg2SetVar(AST::Node* n);
+    /// Convert \a n to SetVarArgs
+    SetVarArgs arg2setvarargs(AST::Node* arg, int offset = 0, int doffset = 0,
+                              const IntSet& od=IntSet::empty);
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+    /// Convert \a n to FloatValArgs
+    FloatValArgs arg2floatargs(AST::Node* arg, int offset = 0);
+    /// Convert \a n to FloatVar
+    FloatVar arg2FloatVar(AST::Node* n);
+    /// Convert \a n to FloatVarArgs
+    FloatVarArgs arg2floatvarargs(AST::Node* arg, int offset = 0);
+#endif
+    /// Convert \a ann to IntConLevel
+    IntConLevel ann2icl(AST::Node* ann);
+    //@}
   };
 
   /// %Exception class for %FlatZinc errors

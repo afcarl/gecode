@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2010-10-07 07:44:30 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11465 $
+ *     $Date: 2013-02-26 14:40:29 +0100 (Tue, 26 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13419 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -102,6 +102,18 @@ namespace Gecode {
     SM_GIST      ///< Run script in Gist
   };
 
+  /**
+   * \brief Different modes for restart-based search
+   * \ingroup TaskDriverCmd
+   */
+  enum RestartMode {
+    RM_NONE,     ///< No restarts
+    RM_CONSTANT, ///< Restart with constant sequence
+    RM_LINEAR,   ///< Restart with linear sequence
+    RM_LUBY,     ///< Restart with Luby sequence
+    RM_GEOMETRIC ///< Restart with geometric sequence
+  };
+
   class BaseOptions;
 
   namespace Driver {
@@ -115,11 +127,13 @@ namespace Gecode {
       const char* opt;  ///< String for option (including hyphen)
       const char* exp;  ///< Short explanation
       BaseOption* next; ///< Next option
+      /// Check for option and return its argument
+      char* argument(int argc, char* argv[]) const;
     public:
       /// Initialize for option \a o and explanation \a e
       BaseOption(const char* o, const char* e);
-      /// Parse option at first position and possibly delete
-      virtual bool parse(int& argc, char* argv[]) = 0;
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]) = 0;
       /// Print help text
       virtual void help(void) = 0;
       /// Destructor
@@ -144,8 +158,8 @@ namespace Gecode {
       void value(const char* v);
       /// Return current option value
       const char* value(void) const;
-      /// Parse option at first position
-      virtual bool parse(int& argc, char* argv[]);
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]);
       /// Print help text
       virtual void help(void);
       /// Destructor
@@ -179,8 +193,8 @@ namespace Gecode {
       int value(void) const;
       /// Add option value for value \a v, string \a o, and help text \a h
       void add(int v, const char* o, const char* h = NULL);
-      /// Parse option at first position
-      virtual bool parse(int& argc, char* argv[]);
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]);
       /// Print help text
       virtual void help(void);
       /// Destructor
@@ -202,8 +216,8 @@ namespace Gecode {
       void value(int v);
       /// Return current option value
       int value(void) const;
-      /// Parse option at first position
-      virtual bool parse(int& argc, char* argv[]);
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]);
       /// Print help text
       virtual void help(void);
     };
@@ -222,8 +236,8 @@ namespace Gecode {
       void value(unsigned int v);
       /// Return current option value
       unsigned int value(void) const;
-      /// Parse option at first position
-      virtual bool parse(int& argc, char* argv[]);
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]);
       /// Print help text
       virtual void help(void);
     };
@@ -237,13 +251,13 @@ namespace Gecode {
       double cur; ///< Current value
     public:
       /// Initialize for option \a o and explanation \a e and default value \a v
-      DoubleOption(const char* o, const char* e, unsigned int v=0);
+      DoubleOption(const char* o, const char* e, double v=0);
       /// Set default value to \a v
       void value(double v);
       /// Return current option value
       double value(void) const;
-      /// Parse option at first position
-      virtual bool parse(int& argc, char* argv[]);
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]);
       /// Print help text
       virtual void help(void);
     };
@@ -256,14 +270,14 @@ namespace Gecode {
     protected:
       bool cur; ///< Current value
     public:
-      /// Initialize for option \a o and explanation \a e and default false
-      BoolOption(const char* o, const char* e);
+      /// Initialize for option \a o and explanation \a e and default value \a v
+      BoolOption(const char* o, const char* e, bool v=false);
       /// Set default value to \a v
       void value(bool v);
       /// Return current option value
       bool value(void) const;
-      /// Parse option at first position
-      virtual bool parse(int& argc, char* argv[]);
+      /// Parse option at first position and return number of parsed arguments
+      virtual int parse(int argc, char* argv[]);
       /// Print help text
       virtual void help(void);
     };
@@ -287,7 +301,13 @@ namespace Gecode {
 
     /// Add new option \a o
     void add(Driver::BaseOption& o);
-    /// Parse options from arguments \a argv (number is \a argc)
+    /**
+     * \brief Parse options from arguments \a argv (number is \a argc)
+     *
+     * The options are parsed from position one onwards until no more options
+     * are detected. After parsing, the parsed arguments have been removed.
+     *
+     */
     void parse(int& argc, char* argv[]);
     
     /// Return name of script
@@ -312,6 +332,7 @@ namespace Gecode {
     Driver::StringOption _propagation; ///< Propagation options
     Driver::StringOption _icl;         ///< Integer consistency level
     Driver::StringOption _branching;   ///< Branching options
+    Driver::DoubleOption _decay;       ///< Decay option
     //@}
     
     /// \name Search options
@@ -324,7 +345,10 @@ namespace Gecode {
     Driver::UnsignedIntOption _node;      ///< Cutoff for number of nodes
     Driver::UnsignedIntOption _fail;      ///< Cutoff for number of failures
     Driver::UnsignedIntOption _time;      ///< Cutoff for time
-    Driver::StringOption      _interrupt; ///< Whether to catch SIGINT
+    Driver::StringOption      _restart;   ///< Restart method option
+    Driver::DoubleOption      _r_base;    ///< Restart base
+    Driver::UnsignedIntOption _r_scale;   ///< Restart scale factor
+    Driver::BoolOption        _interrupt; ///< Whether to catch SIGINT
     //@}
     
     /// \name Execution options
@@ -332,6 +356,9 @@ namespace Gecode {
     Driver::StringOption      _mode;       ///< Script mode to run
     Driver::UnsignedIntOption _samples;    ///< How many samples
     Driver::UnsignedIntOption _iterations; ///< How many iterations per sample
+    Driver::BoolOption        _print_last; ///< Print only last solution found
+    Driver::StringValueOption _out_file;   ///< Where to print solutions
+    Driver::StringValueOption _log_file;   ///< Where to print statistics
     //@}
 
   public:
@@ -372,6 +399,11 @@ namespace Gecode {
     void branching(int v, const char* o, const char* h = NULL);
     /// Return branching value
     int branching(void) const;
+
+    /// Set default decay factor
+    void decay(double d);
+    /// Return decay factor
+    double decay(void) const;
     //@}
     
     /// \name Search options
@@ -418,6 +450,21 @@ namespace Gecode {
     /// Return time cutoff
     unsigned int time(void) const;
     
+    /// Set default restart mode
+    void restart(RestartMode r);
+    /// Return restart mode
+    RestartMode restart(void) const;
+    
+    /// Set default restart base
+    void restart_base(double base);
+    /// Return restart base
+    double restart_base(void) const;
+    
+    /// Set default restart scale factor
+    void restart_scale(unsigned int scale);
+    /// Return restart scale factor
+    unsigned int restart_scale(void) const;
+    
     /// Set default interrupt behavior
     void interrupt(bool b);
     /// Return interrupt behavior
@@ -431,15 +478,30 @@ namespace Gecode {
     /// Return mode
     ScriptMode mode(void) const;
     
+    /// Set default number of samples
+    void samples(unsigned int s);
+    /// Return number of samples
+    unsigned int samples(void) const;
+
     /// Set default number of iterations
     void iterations(unsigned int i);
     /// Return number of iterations
     unsigned int iterations(void) const;
     
-    /// Set default number of samples
-    void samples(unsigned int s);
-    /// Return number of samples
-    unsigned int samples(void) const;
+    /// Set whether to print only last solution found
+    void print_last(bool p);
+    /// Return whether to print only last solution found
+    bool print_last(void) const;
+
+    /// Set default output file name for solutions
+    void out_file(const char* f);
+    /// Get file name for solutions
+    const char* out_file(void) const;
+
+    /// Set default output file name for Gecode stats
+    void log_file(const char* f);
+    /// Get file name for Gecode stats
+    const char* log_file(void) const;
     //@}
 
 #ifdef GECODE_HAS_GIST
@@ -557,16 +619,23 @@ namespace Gecode {
       virtual void compare(const Space&, std::ostream& os) const {
         (void) os;
       }
+      /// Choose output stream according to \a name
+      static std::ostream& select_ostream(const char* name, std::ofstream& ofs);
       /** Run script with search engine \a Engine and options \a opt
        *
        * In the solution and stat modes, search can be aborted by sending
        * SIGINT to the process (i.e., pressing Ctrl-C on the command
        * line).
        *
+       * In case \a s is different from NULL, the search engine uses
+       * \a s as root of the search tree.
        */
       template<class Script, template<class> class Engine, class Options>
-      static void run(const Options& opt);
+      static void run(const Options& opt, Script* s=NULL);
     private:
+      template<class Script, template<class> class Engine, class Options,
+               template<template<class> class,class> class Meta>
+      static void runMeta(const Options& opt, Script* s);
       /// Catch wrong definitions of copy constructor
       explicit ScriptBase(ScriptBase& e);
     };

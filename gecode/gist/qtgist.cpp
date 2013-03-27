@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-05-31 19:01:28 +1000 (Tue, 31 May 2011) $ by $Author: tack $
- *     $Revision: 12032 $
+ *     $Date: 2012-05-01 01:25:23 +0200 (Tue, 01 May 2012) $ by $Author: tack $
+ *     $Revision: 12803 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -774,6 +774,14 @@ namespace Gecode { namespace Gist {
   void
   Gist::setSmoothScrollAndZoom(bool b) {
     canvas->setSmoothScrollAndZoom(b);
+  }
+  bool
+  Gist::getMoveDuringSearch(void) {
+    return canvas->getMoveDuringSearch();
+  }
+  void
+  Gist::setMoveDuringSearch(bool b) {
+    canvas->setMoveDuringSearch(b);
   }
   void
   Gist::setRecompDistances(int c_d, int a_d) {

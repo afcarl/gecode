@@ -9,8 +9,8 @@
  *     Gabor Szokoli, 2003
  *
  *  Last modified:
- *     $Date: 2011-08-18 06:25:49 +1000 (Thu, 18 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12308 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -71,10 +71,10 @@ namespace Gecode {
     if (home.failed()) return;
     ViewArray<OffsetView> cx(home,x.size());
     for (int i = c.size(); i--; ) {
-      double cx_min = (static_cast<double>(c[i]) +
-                       static_cast<double>(x[i].min()));
-      double cx_max = (static_cast<double>(c[i]) +
-                       static_cast<double>(x[i].max()));
+      long long int cx_min = (static_cast<long long int>(c[i]) +
+                              static_cast<long long int>(x[i].min()));
+      long long int cx_max = (static_cast<long long int>(c[i]) +
+                              static_cast<long long int>(x[i].max()));
       Limits::check(c[i],"Int::distinct");
       Limits::check(cx_min,"Int::distinct");
       Limits::check(cx_max,"Int::distinct");

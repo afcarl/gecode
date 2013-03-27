@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-07-13 20:11:00 +1000 (Wed, 13 Jul 2011) $ by $Author: tack $
- *     $Revision: 12181 $
+ *     $Date: 2013-03-11 06:26:07 +0100 (Mon, 11 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13487 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -58,6 +58,18 @@
 
 namespace Gecode { namespace Int { namespace Cumulative {
 
+  /// Throw exception if multiplication of \a x and \a y overflows
+  void mul_check(long long int x, long long int y);
+
+  /// Throw exception if multiplication of \a x, \a y, and \a z overflows
+  void mul_check(long long int x, long long int y, long long int z);
+
+}}}
+
+#include <gecode/int/cumulative/limits.hpp>
+
+namespace Gecode { namespace Int { namespace Cumulative {
+  
   /// Cumulative (mandatory) task with fixed processing time
   class ManFixPTask : public Unary::ManFixPTask {
   protected:
@@ -81,7 +93,7 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Return required capacity
     int c(void) const;
     /// Return required energy
-    double e(void) const;
+    long long int e(void) const;
     //@}
 
     /// \name Cloning
@@ -135,7 +147,7 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Return required capacity
     int c(void) const;
     /// Return required energy
-    double e(void) const;
+    long long int e(void) const;
     //@}
 
     /// \name Cloning
@@ -177,7 +189,7 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Return required capacity
     int c(void) const;
     /// Return required energy
-    double e(void) const;
+    long long int e(void) const;
     //@}
 
     /// \name Cloning
@@ -539,9 +551,9 @@ namespace Gecode { namespace Int { namespace Cumulative {
   class OmegaNode {
   public:
     /// Energy for subtree
-    double e;
+    long long int e;
     /// Energy envelope for subtree
-    double env;
+    long long int env;
     /// Initialize node from left child \a l and right child \a r
     void init(const OmegaNode& l, const OmegaNode& r);
     /// Update node from left child \a l and right child \a r
@@ -567,14 +579,14 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Remove task with index \a i
     void remove(int i);
     /// Return energy envelope of all tasks
-    double env(void) const;
+    long long int env(void) const;
   };
 
   /// Node for an extended omega tree
   class ExtOmegaNode : public OmegaNode {
   public:
     /// Energy envelope for subtree
-    double cenv;
+    long long int cenv;
     /// Initialize node from left child \a l and right child \a r
     void init(const ExtOmegaNode& l, const ExtOmegaNode& r);
     /// Update node from left child \a l and right child \a r
@@ -609,7 +621,7 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Initialize tasks for current capacity \a ci
     void init(int ci);
     /// Compute update for task with index \a i
-    double env(int i);
+    long long int env(int i);
   };
 
 
@@ -619,9 +631,9 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Undefined task
     static const int undef = -1;
     /// Energy for subtree
-    double le;
+    long long int le;
     /// Energy envelope for subtree
-    double lenv;
+    long long int lenv;
     /// Node which is responsible for le
     int resLe;
     /// Node which is responsible for lenv
@@ -655,9 +667,9 @@ namespace Gecode { namespace Int { namespace Cumulative {
     /// Return responsible task
     int responsible(void) const;
     /// Return energy envelope of all tasks
-    double env(void) const;
+    long long int env(void) const;
     /// Return energy envelope of all tasks excluding lambda tasks
-    double lenv(void) const;
+    long long int lenv(void) const;
   };
 
 }}}

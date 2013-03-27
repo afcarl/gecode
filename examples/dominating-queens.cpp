@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-18 06:25:49 +1000 (Thu, 18 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12308 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -106,9 +106,9 @@ public:
     if (n <= 120)
       dom(*this, q, (n+1)/2, (n+1)/2 + 1);
 
-    branch(*this, b, INT_VAR_SIZE_MIN, INT_VAL_MIN);
+    branch(*this, b, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
     // Try the easier solution first
-    branch(*this, q, INT_VAL_MAX);
+    branch(*this, q, INT_VAL_MAX());
   }
 
   /// Return cost

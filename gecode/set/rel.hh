@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2011-08-25 00:34:16 +1000 (Thu, 25 Aug 2011) $ by $Author: tack $
- *     $Revision: 12346 $
+ *     $Date: 2012-10-22 01:13:28 +0200 (Mon, 22 Oct 2012) $ by $Author: tack $
+ *     $Revision: 13161 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -111,7 +111,7 @@ namespace Gecode { namespace Set { namespace Rel {
    * Requires \code #include <gecode/set/rel.hh> \endcode
    * \ingroup FuncSetProp
    */
-  template<class View0, class View1>
+  template<class View0, class View1, ReifyMode rm>
   class ReSubset : public Propagator {
   protected:
     View0 x0;
@@ -166,17 +166,17 @@ namespace Gecode { namespace Set { namespace Rel {
    * Requires \code #include <gecode/set/rel.hh> \endcode
    * \ingroup FuncSetProp
    */
-  template<class View0, class View1>
+  template<class View0, class View1, class CtrlView, ReifyMode rm>
   class ReEq : public Propagator {
   protected:
     View0 x0;
     View1 x1;
-    Gecode::Int::BoolView b;
+    CtrlView b;
 
     /// Constructor for cloning \a p
     ReEq(Space& home, bool share,ReEq&);
     /// Constructor for posting
-    ReEq(Home home,View0, View1, Gecode::Int::BoolView);
+    ReEq(Home home,View0, View1, CtrlView);
   public:
     /// Copy propagator during cloning
     virtual Actor*      copy(Space& home,bool);
@@ -188,7 +188,7 @@ namespace Gecode { namespace Set { namespace Rel {
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
     /// Post propagator for \f$ (x=y) \Leftrightarrow b\f$
     static ExecStatus post(Home home,View0 x, View1 y,
-                           Gecode::Int::BoolView b);
+                           CtrlView b);
   };
 
   /**
@@ -225,7 +225,7 @@ namespace Gecode { namespace Set { namespace Rel {
    * Requires \code #include <gecode/set/rel.hh> \endcode
    * \ingroup FuncSetProp
    */
-  template<class View0, class View1, bool strict=false>
+  template<class View0, class View1, ReifyMode rm, bool strict=false>
   class ReLq : public Propagator {
   protected:
     View0 x0;

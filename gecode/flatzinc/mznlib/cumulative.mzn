@@ -8,7 +8,7 @@
 %     Mikael Lagerkvist, 2009
 %
 %  Last modified:
-%     $Date: 2011-03-08 19:54:48 +1100 (Tue, 08 Mar 2011) $ by $Author: tack $
+%     $Date: 2011-03-08 09:54:48 +0100 (Tue, 08 Mar 2011) $ by $Author: tack $
 %     $Revision: 11787 $
 %
 %  This file is part of Gecode, the generic constraint

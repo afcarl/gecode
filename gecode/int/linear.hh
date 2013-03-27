@@ -11,8 +11,8 @@
  *     Tias Guns, 2009
  *
  *  Last modified:
- *     $Date: 2009-12-04 23:57:33 +1100 (Fri, 04 Dec 2009) $ by $Author: schulte $
- *     $Revision: 10188 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -59,7 +59,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief Base-class for binary linear propagators
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -90,7 +90,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief Base-class for reified binary linear propagators
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -121,7 +121,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent binary linear equality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -155,7 +155,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for reified bounds consistent binary linear equality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -164,7 +164,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * Requires \code #include <gecode/int/linear.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class Val, class A, class B, class Ctrl>
+  template<class Val, class A, class B, class Ctrl, ReifyMode rm>
   class ReEqBin : public ReLinBin<Val,A,B,PC_INT_BND,Ctrl> {
   protected:
     using ReLinBin<Val,A,B,PC_INT_BND,Ctrl>::x0;
@@ -181,14 +181,14 @@ namespace Gecode { namespace Int { namespace Linear {
     virtual Actor* copy(Space& home, bool share);
     /// Perform propagation
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
-    /// Post propagator for \f$(x_0+x_1 = c)\Leftrightarrow b\f$
+    /// Post propagator for \f$(x_0+x_1 = c)\equiv \operatorname{rm}(b)\f$
     static ExecStatus post(Home home, A x0, B x1, Val c, Ctrl b);
   };
 
   /**
    * \brief %Propagator for bounds consistent binary linear disequality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -224,7 +224,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent binary linear less or equal
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -258,7 +258,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent binary linear greater or equal
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -292,7 +292,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for reified bounds consistent binary linear less or equal
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A and \a B
    * give the types of the views.
    *
@@ -301,7 +301,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * Requires \code #include <gecode/int/linear.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class Val, class A, class B>
+  template<class Val, class A, class B, ReifyMode rm>
   class ReLqBin : public ReLinBin<Val,A,B,PC_INT_BND,BoolView> {
   protected:
     using ReLinBin<Val,A,B,PC_INT_BND,BoolView>::x0;
@@ -318,7 +318,7 @@ namespace Gecode { namespace Int { namespace Linear {
     virtual Actor* copy(Space& home, bool share);
     /// Perform propagation
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
-    /// Post propagator for \f$(x_0+x_1 \leq c)\Leftrightarrow b\f$
+    /// Post propagator for \f$(x_0+x_1 \leq c)\equiv \operatorname{rm}(b)\f$
     static ExecStatus post(Home home, A x0, B x1, Val c, BoolView b);
   };
 
@@ -336,7 +336,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief Base-class for ternary linear propagators
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A, \a B,
    * and \a C give the types of the views.
    *
@@ -369,7 +369,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent ternary linear equality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A, \a B,
    * and \a C give the types of the views.
    *
@@ -404,7 +404,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent ternary linear disquality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A, \a B,
    * and \a C give the types of the views.
    *
@@ -439,7 +439,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent ternary linear less or equal
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a A, \a B,
    * and \a C give the types of the views.
    *
@@ -485,7 +485,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief Base-class for n-ary linear propagators
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. Positive views are of
    * type \a P whereas negative views are of type \a N.
    *
@@ -515,7 +515,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief Base-class for reified n-ary linear propagators
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. Positive views are of
    * type \a P whereas negative views are of type \a N.
    *
@@ -556,7 +556,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent n-ary linear equality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a P and \a N
    * give the types of the views.
    *
@@ -589,7 +589,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for domain consistent n-ary linear equality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a View
    * give the type of the view.
    *
@@ -628,7 +628,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for reified bounds consistent n-ary linear equality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a P and \a N
    * give the types of the views.
    *
@@ -637,7 +637,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * Requires \code #include <gecode/int/linear.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class Val, class P, class N, class Ctrl>
+  template<class Val, class P, class N, class Ctrl, ReifyMode rm>
   class ReEq : public ReLin<Val,P,N,PC_INT_BND,Ctrl> {
   protected:
     using ReLin<Val,P,N,PC_INT_BND,Ctrl>::x;
@@ -654,7 +654,7 @@ namespace Gecode { namespace Int { namespace Linear {
     virtual Actor* copy(Space& home, bool share);
     /// Perform propagation
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
-    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i-\sum_{i=0}^{|y|-1}y_i=c\right)\Leftrightarrow b\f$
+    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i-\sum_{i=0}^{|y|-1}y_i=c\right)\equiv \operatorname{rm}(b)\f$
     static ExecStatus
     post(Home home, ViewArray<P>& x, ViewArray<N>& y, Val c, Ctrl b);
   };
@@ -662,7 +662,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent n-ary linear disequality
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a P and \a N
    * give the types of the views.
    *
@@ -695,7 +695,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for bounds consistent n-ary linear less or equal
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a P and \a N
    * give the types of the views.
    *
@@ -728,7 +728,7 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for reified bounds consistent n-ary linear less or equal
    *
-   * The type \a Val can be either \c double or \c int, defining the
+   * The type \a Val can be either \c long long int or \c int, defining the
    * numerical precision during propagation. The types \a P and \a N
    * give the types of the views.
    *
@@ -737,7 +737,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * Requires \code #include <gecode/int/linear.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class Val, class P, class N>
+  template<class Val, class P, class N, ReifyMode rm>
   class ReLq : public ReLin<Val,P,N,PC_INT_BND,BoolView> {
   protected:
     using ReLin<Val,P,N,PC_INT_BND,BoolView>::x;
@@ -754,7 +754,7 @@ namespace Gecode { namespace Int { namespace Linear {
     virtual Actor* copy(Space& home, bool share);
     /// Perform propagation
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
-    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i-\sum_{i=0}^{|y|-1}y_i\leq c\right)\Leftrightarrow b\f$
+    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i-\sum_{i=0}^{|y|-1}y_i\leq c\right)\equiv \operatorname{rm}(b)\f$
     static ExecStatus
     post(Home home, ViewArray<P>& x, ViewArray<N>& y, Val c, BoolView b);
   };
@@ -934,10 +934,10 @@ namespace Gecode { namespace Int { namespace Linear {
   /**
    * \brief %Propagator for reified integer less or equal to Boolean sum (cardinality)
    *
-   * Requires \code #include "gecode/int/linear.hh" \endcode
+   * Requires \code #include <gecode/int/linear.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   class ReGqBoolInt : public ReLinBoolInt<VX,VB> {
   protected:
     using ReLinBoolInt<VX,VB>::co;
@@ -957,7 +957,7 @@ namespace Gecode { namespace Int { namespace Linear {
     virtual ExecStatus advise(Space& home, Advisor& a, const Delta& d);
     /// Perform propagation
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
-    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i \geq\right) c \Leftrightarrow b\f$
+    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i \geq\right) c \equiv \operatorname{rm}(b)\f$
     static ExecStatus post(Home home, ViewArray<VX>& x, int c, VB b);
   };
 
@@ -967,7 +967,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * Requires \code #include <gecode/int/linear.hh> \endcode
    * \ingroup FuncIntProp
    */
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   class ReEqBoolInt : public ReLinBoolInt<VX,VB> {
   protected:
     using ReLinBoolInt<VX,VB>::co;
@@ -987,7 +987,7 @@ namespace Gecode { namespace Int { namespace Linear {
     virtual ExecStatus advise(Space& home, Advisor& a, const Delta& d);
     /// Perform propagation
     virtual ExecStatus propagate(Space& home, const ModEventDelta& med);
-    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i = c\right)\Leftrightarrow b\f$
+    /// Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i = c\right)\equiv \operatorname{rm}(b)\f$
     static ExecStatus post(Home home, ViewArray<VX>& x, int c, VB b);
   };
 
@@ -1333,39 +1333,12 @@ namespace Gecode { namespace Int { namespace Linear {
   void estimate(Term<View>* t, int n, int c,
                 int& l, int& u);
 
-  /** \brief Normalize linear integer constraints
-   *
-   * \param t array of linear terms
-   * \param n size of array
-   * \param t_p array of linear terms over integers with positive coefficients
-   * \param n_p number of postive terms
-   * \param t_n array of linear terms over integers with negative coefficients
-   * \param n_n number of negative terms
-   *
-   * Replaces all negative coefficients by positive coefficients.
-   *
-   *  - Variables occuring multiply in the term array are replaced
-   *    by a single occurence: for example, \f$ax+bx\f$ becomes
-   *    \f$(a+b)x\f$.
-   *  - If in the above simplification the value for \f$(a+b)\f$ (or for
-   *    \f$a\f$ and \f$b\f$) exceeds the limits for integers as
-   *    defined in Limits::Int, an exception of type
-   *    Int::NumericalOverflow is thrown.
-   *
-   * Returns true, if all coefficients are unit coefficients
-   */
-  template<class View>
-  bool normalize(Term<View>* t, int &n,
-                 Term<View>* &t_p, int &n_p,
-                 Term<View>* &t_n, int &n_n);
-
-
   /**
    * \brief Post propagator for linear constraint over integers
    * \param home current space
    * \param t array of linear terms over integers
    * \param n size of array
-   * \param r type of relation
+   * \param irt type of relation
    * \param c result of linear constraint
    *
    * All variants for linear constraints share the following properties:
@@ -1377,9 +1350,9 @@ namespace Gecode { namespace Int { namespace Linear {
    *    defined in Limits::Int, an exception of type
    *    Int::NumericalOverflow is thrown.
    *  - Assume linear terms for the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
-   *    for doubles as defined in Limits::Int, an exception of
+   *    for long long ints as defined in Limits::Int, an exception of
    *    type Int::NumericalOverflow is thrown.
    *  - In all other cases, the created propagators are accurate (that
    *    is, they will not silently overflow during propagation).
@@ -1388,7 +1361,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \ingroup FuncIntProp
    */
   GECODE_INT_EXPORT void
-  post(Home home, Term<IntView>* t, int n, IntRelType r, int c,
+  post(Home home, Term<IntView>* t, int n, IntRelType irt, int c,
        IntConLevel=ICL_DEF);
 
   /**
@@ -1396,9 +1369,9 @@ namespace Gecode { namespace Int { namespace Linear {
    * \param home current space
    * \param t array of linear terms
    * \param n size of array
-   * \param r type of relation
+   * \param irt type of relation
    * \param c result of linear constraint
-   * \param b Boolean control view
+   * \param r reification specification
    *
    * All variants for linear constraints share the following properties:
    *  - Only bounds consistency is supported.
@@ -1410,9 +1383,9 @@ namespace Gecode { namespace Int { namespace Linear {
    *    defined in Limits::Int, an exception of type
    *    Int::NumericalOverflow is thrown.
    *  - Assume linear terms for the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
-   *    for doubles as defined in Limits::Int, an exception of
+   *    for long long ints as defined in Limits::Int, an exception of
    *    type Int::NumericalOverflow is thrown.
    *  - In all other cases, the created propagators are accurate (that
    *    is, they will not silently overflow during propagation).
@@ -1421,7 +1394,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \ingroup FuncIntProp
    */
   GECODE_INT_EXPORT void
-  post(Home home, Term<IntView>* t, int n, IntRelType r, int c, BoolView b,
+  post(Home home, Term<IntView>* t, int n, IntRelType irt, int c, Reify r,
        IntConLevel=ICL_DEF);
 
   /**
@@ -1429,7 +1402,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \param home current space
    * \param t array of linear terms over Booleans
    * \param n size of array
-   * \param r type of relation
+   * \param irt type of relation
    * \param c result of linear constraint
    *
    * All variants for linear constraints share the following properties:
@@ -1441,7 +1414,7 @@ namespace Gecode { namespace Int { namespace Linear {
    *    defined in Limits::Int, an exception of type
    *    Int::NumericalOverflow is thrown.
    *  - Assume linear terms for the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
    *    for integers as defined in Limits::Int, an exception of
    *    type Int::NumericalOverflow is thrown.
@@ -1452,7 +1425,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \ingroup FuncIntProp
    */
   GECODE_INT_EXPORT void
-  post(Home home, Term<BoolView>* t, int n, IntRelType r, int c,
+  post(Home home, Term<BoolView>* t, int n, IntRelType irt, int c,
        IntConLevel=ICL_DEF);
 
   /**
@@ -1460,9 +1433,9 @@ namespace Gecode { namespace Int { namespace Linear {
    * \param home current space
    * \param t array of linear terms over Booleans
    * \param n size of array
-   * \param r type of relation
+   * \param irt type of relation
    * \param c result of linear constraint
-   * \param b Boolean control varaible
+   * \param r reification specification
    *
    * All variants for linear constraints share the following properties:
    *  - Variables occuring multiply in the term array are replaced
@@ -1473,7 +1446,7 @@ namespace Gecode { namespace Int { namespace Linear {
    *    defined in Limits::Int, an exception of type
    *    Int::NumericalOverflow is thrown.
    *  - Assume linear terms for the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
    *    for integers as defined in Limits::Int, an exception of
    *    type Int::NumericalOverflow is thrown.
@@ -1484,7 +1457,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \ingroup FuncIntProp
    */
   GECODE_INT_EXPORT void
-  post(Home home, Term<BoolView>* t, int n, IntRelType r, int c, BoolView b,
+  post(Home home, Term<BoolView>* t, int n, IntRelType irt, int c, Reify r,
        IntConLevel=ICL_DEF);
 
   /**
@@ -1492,7 +1465,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \param home current space
    * \param t array of linear terms over Booleans
    * \param n size of array
-   * \param r type of relation
+   * \param irt type of relation
    * \param y variable right hand side of linear constraint
    * \param c constant right hand side of linear constraint
    *
@@ -1505,7 +1478,7 @@ namespace Gecode { namespace Int { namespace Linear {
    *    defined in Limits::Int, an exception of type
    *    Int::NumericalOverflow is thrown.
    *  - Assume linear terms for the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
    *    for integers as defined in Limits::Int, an exception of
    *    type Int::NumericalOverflow is thrown.
@@ -1516,7 +1489,7 @@ namespace Gecode { namespace Int { namespace Linear {
    * \ingroup FuncIntProp
    */
   GECODE_INT_EXPORT void
-  post(Home home, Term<BoolView>* t, int n, IntRelType r, IntView y, int c=0,
+  post(Home home, Term<BoolView>* t, int n, IntRelType irt, IntView y, int c=0,
        IntConLevel=ICL_DEF);
 
   /**
@@ -1524,9 +1497,9 @@ namespace Gecode { namespace Int { namespace Linear {
    * \param home current space
    * \param t array of linear terms over Booleans
    * \param n size of array
-   * \param r type of relation
+   * \param irt type of relation
    * \param y variable right hand side of linear constraint
-   * \param b Boolean control variable
+   * \param r reification specification
    *
    * All variants for linear constraints share the following properties:
    *  - Variables occuring multiply in the term array are replaced
@@ -1537,7 +1510,7 @@ namespace Gecode { namespace Int { namespace Linear {
    *    defined in Limits::Int, an exception of type
    *    Int::NumericalOverflow is thrown.
    *  - Assume linear terms for the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
    *    for integers as defined in Limits::Int, an exception of
    *    type Int::NumericalOverflow is thrown.
@@ -1548,8 +1521,8 @@ namespace Gecode { namespace Int { namespace Linear {
    * \ingroup FuncIntProp
    */
   GECODE_INT_EXPORT void
-  post(Home home, Term<BoolView>* t, int n, IntRelType r, IntView y,
-       BoolView b, IntConLevel=ICL_DEF);
+  post(Home home, Term<BoolView>* t, int n, IntRelType irt, IntView y,
+       Reify r, IntConLevel=ICL_DEF);
 
 }}}
 

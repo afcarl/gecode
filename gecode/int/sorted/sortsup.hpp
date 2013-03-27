@@ -7,7 +7,7 @@
  *     Patrick Pekczynski, 2004
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
+ *     $Date: 2010-04-08 12:35:31 +0200 (Thu, 08 Apr 2010) $ by $Author: schulte $
  *     $Revision: 10684 $
  *
  *  This file is part of Gecode, the generic constraint

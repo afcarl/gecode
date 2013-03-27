@@ -9,8 +9,8 @@
  *     Tias Guns, 2009
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $ by $Author: schulte $
- *     $Revision: 10684 $
+ *     $Date: 2012-10-18 16:02:42 +0200 (Thu, 18 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13154 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -552,26 +552,26 @@ namespace Gecode { namespace Int { namespace Linear {
    * Reified greater or equal propagator (integer rhs)
    * 
    */
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   forceinline
-  ReGqBoolInt<VX,VB>::ReGqBoolInt(Home home, ViewArray<VX>& x, int c, VB b)
+  ReGqBoolInt<VX,VB,rm>::ReGqBoolInt(Home home, ViewArray<VX>& x, int c, VB b)
     : ReLinBoolInt<VX,VB>(home,x,c,b) {}
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   forceinline
-  ReGqBoolInt<VX,VB>::ReGqBoolInt(Space& home, bool share, 
-                                  ReGqBoolInt<VX,VB>& p)
+  ReGqBoolInt<VX,VB,rm>::ReGqBoolInt(Space& home, bool share, 
+                                     ReGqBoolInt<VX,VB,rm>& p)
     : ReLinBoolInt<VX,VB>(home,share,p) {}
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   Actor*
-  ReGqBoolInt<VX,VB>::copy(Space& home, bool share) {
-    return new (home) ReGqBoolInt<VX,VB>(home,share,*this);
+  ReGqBoolInt<VX,VB,rm>::copy(Space& home, bool share) {
+    return new (home) ReGqBoolInt<VX,VB,rm>(home,share,*this);
   }
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   ExecStatus
-  ReGqBoolInt<VX,VB>::advise(Space&, Advisor&, const Delta& d) {
+  ReGqBoolInt<VX,VB,rm>::advise(Space&, Advisor&, const Delta& d) {
     if (VX::one(d))
       c--;
     n_s--;
@@ -581,33 +581,38 @@ namespace Gecode { namespace Int { namespace Linear {
       return ES_FIX;
   }
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   ExecStatus
-  ReGqBoolInt<VX,VB>::propagate(Space& home, const ModEventDelta&) {
+  ReGqBoolInt<VX,VB,rm>::propagate(Space& home, const ModEventDelta&) {
     if (b.none()) {
       if (c <= 0) {
-        GECODE_ME_CHECK(b.one_none(home));
+        if (rm != RM_IMP)
+          GECODE_ME_CHECK(b.one_none(home));
       } else {
-        GECODE_ME_CHECK(b.zero_none(home));
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero_none(home));
       }
     } else {
       normalize();
       if (b.one()) {
-        GECODE_REWRITE(*this,(GqBoolInt<VX>::post(home(*this),x,c)));
+        if (rm != RM_PMI)
+          GECODE_REWRITE(*this,(GqBoolInt<VX>::post(home(*this),x,c)));
       } else {
-        ViewArray<typename BoolNegTraits<VX>::NegView> nx(home,x.size());
-        for (int i=x.size(); i--; )
-          nx[i]=BoolNegTraits<VX>::neg(x[i]);
-        GECODE_REWRITE(*this,GqBoolInt<typename BoolNegTraits<VX>::NegView>
-                       ::post(home(*this),nx,x.size()-c+1));
+        if (rm != RM_IMP) {
+          ViewArray<typename BoolNegTraits<VX>::NegView> nx(home,x.size());
+          for (int i=x.size(); i--; )
+            nx[i]=BoolNegTraits<VX>::neg(x[i]);
+          GECODE_REWRITE(*this,GqBoolInt<typename BoolNegTraits<VX>::NegView>
+                         ::post(home(*this),nx,x.size()-c+1));
+        }
       }
     }
     return home.ES_SUBSUMED(*this);
   }
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   ExecStatus
-  ReGqBoolInt<VX,VB>::post(Home home, ViewArray<VX>& x, int c, VB b) {
+  ReGqBoolInt<VX,VB,rm>::post(Home home, ViewArray<VX>& x, int c, VB b) {
     assert(!b.assigned()); // checked before posting
 
     // Eliminate assigned views
@@ -621,14 +626,16 @@ namespace Gecode { namespace Int { namespace Linear {
     x.size(n_x);
     if (n_x < c) {
       // RHS too large
-      GECODE_ME_CHECK(b.zero_none(home));
+      if (rm != RM_PMI)
+        GECODE_ME_CHECK(b.zero_none(home));
     } else if (c <= 0) {
       // Whatever the x[i] take for values, the inequality is subsumed
-      GECODE_ME_CHECK(b.one_none(home));
-    } else if (c == 1) {
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(b.one_none(home));
+    } else if ((c == 1) && (rm == RM_EQV)) {
       // Equivalent to Boolean disjunction
       return Bool::NaryOr<VX,VB>::post(home,x,b);
-    } else if (c == n_x) {
+    } else if ((c == n_x) && (rm == RM_EQV)) {
       // Equivalent to Boolean conjunction, transform to Boolean disjunction
       ViewArray<typename BoolNegTraits<VX>::NegView> nx(home,n_x);
       for (int i=n_x; i--; )
@@ -638,7 +645,7 @@ namespace Gecode { namespace Int { namespace Linear {
          typename BoolNegTraits<VB>::NegView>
         ::post(home,nx,BoolNegTraits<VB>::neg(b));
     } else {
-      (void) new (home) ReGqBoolInt<VX,VB>(home,x,c,b);
+      (void) new (home) ReGqBoolInt<VX,VB,rm>(home,x,c,b);
     }
     return ES_OK;
   }
@@ -647,26 +654,26 @@ namespace Gecode { namespace Int { namespace Linear {
    * Reified equal propagator (integer rhs)
    * 
    */
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   forceinline
-  ReEqBoolInt<VX,VB>::ReEqBoolInt(Home home, ViewArray<VX>& x, int c, VB b)
+  ReEqBoolInt<VX,VB,rm>::ReEqBoolInt(Home home, ViewArray<VX>& x, int c, VB b)
     : ReLinBoolInt<VX,VB>(home,x,c,b) {}
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   forceinline
-  ReEqBoolInt<VX,VB>::ReEqBoolInt(Space& home, bool share, 
-                                  ReEqBoolInt<VX,VB>& p)
+  ReEqBoolInt<VX,VB,rm>::ReEqBoolInt(Space& home, bool share, 
+                                     ReEqBoolInt<VX,VB,rm>& p)
     : ReLinBoolInt<VX,VB>(home,share,p) {}
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   Actor*
-  ReEqBoolInt<VX,VB>::copy(Space& home, bool share) {
-    return new (home) ReEqBoolInt<VX,VB>(home,share,*this);
+  ReEqBoolInt<VX,VB,rm>::copy(Space& home, bool share) {
+    return new (home) ReEqBoolInt<VX,VB,rm>(home,share,*this);
   }
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   ExecStatus
-  ReEqBoolInt<VX,VB>::advise(Space&, Advisor&, const Delta& d) {
+  ReEqBoolInt<VX,VB,rm>::advise(Space&, Advisor&, const Delta& d) {
     if (VX::one(d))
       c--;
     n_s--;
@@ -677,29 +684,33 @@ namespace Gecode { namespace Int { namespace Linear {
       return ES_FIX;
   }
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   ExecStatus
-  ReEqBoolInt<VX,VB>::propagate(Space& home, const ModEventDelta&) {
+  ReEqBoolInt<VX,VB,rm>::propagate(Space& home, const ModEventDelta&) {
     if (b.none()) {
       if ((c == 0) && (n_s == 0)) {
-        GECODE_ME_CHECK(b.one_none(home));
+        if (rm != RM_IMP)
+          GECODE_ME_CHECK(b.one_none(home));
       } else {
-        GECODE_ME_CHECK(b.zero_none(home));
+        if (rm != RM_PMI)
+          GECODE_ME_CHECK(b.zero_none(home));
       }
     } else {
       normalize();
       if (b.one()) {
-        GECODE_REWRITE(*this,(EqBoolInt<VX>::post(home(*this),x,c)));
+        if (rm != RM_PMI)
+          GECODE_REWRITE(*this,(EqBoolInt<VX>::post(home(*this),x,c)));
       } else {
-        GECODE_REWRITE(*this,(NqBoolInt<VX>::post(home(*this),x,c)));
+        if (rm != RM_IMP)
+          GECODE_REWRITE(*this,(NqBoolInt<VX>::post(home(*this),x,c)));
       }
     }
     return home.ES_SUBSUMED(*this);
   }
 
-  template<class VX, class VB>
+  template<class VX, class VB, ReifyMode rm>
   ExecStatus
-  ReEqBoolInt<VX,VB>::post(Home home, ViewArray<VX>& x, int c, VB b) {
+  ReEqBoolInt<VX,VB,rm>::post(Home home, ViewArray<VX>& x, int c, VB b) {
     assert(!b.assigned()); // checked before posting
 
     // Eliminate assigned views
@@ -713,15 +724,17 @@ namespace Gecode { namespace Int { namespace Linear {
     x.size(n_x);
     if ((n_x < c) || (c < 0)) {
       // RHS too large
-      GECODE_ME_CHECK(b.zero_none(home));
+      if (rm != RM_PMI)
+        GECODE_ME_CHECK(b.zero_none(home));
     } else if ((c == 0) && (n_x == 0)) {
       // all variables set, and c == 0: equality
-      GECODE_ME_CHECK(b.one_none(home));
-    } else if (c == 0) {
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(b.one_none(home));
+    } else if ((c == 0) && (rm == RM_EQV)) {
       // Equivalent to Boolean disjunction
       return Bool::NaryOr<VX,typename BoolNegTraits<VB>::NegView>
         ::post(home,x,BoolNegTraits<VB>::neg(b));
-    } else if (c == n_x) {
+    } else if ((c == n_x) && (rm == RM_EQV)) {
       // Equivalent to Boolean conjunction, transform to Boolean disjunction
       ViewArray<typename BoolNegTraits<VX>::NegView> nx(home,n_x);
       for (int i=n_x; i--; )
@@ -731,7 +744,7 @@ namespace Gecode { namespace Int { namespace Linear {
          typename BoolNegTraits<VB>::NegView>
         ::post(home,nx,BoolNegTraits<VB>::neg(b));
     } else {
-      (void) new (home) ReEqBoolInt<VX,VB>(home,x,c,b);
+      (void) new (home) ReEqBoolInt<VX,VB,rm>(home,x,c,b);
     }
     return ES_OK;
   }

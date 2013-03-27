@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 18:29:27 +1000 (Thu, 12 Aug 2010) $ by $Author: tack $
- *     $Revision: 11346 $
+ *     $Date: 2012-05-01 01:25:23 +0200 (Tue, 01 May 2012) $ by $Author: tack $
+ *     $Revision: 12803 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -228,6 +228,10 @@ namespace Gecode {  namespace Gist {
     bool getSmoothScrollAndZoom(void);
     /// Set preference whether to use smooth scrolling and zooming
     void setSmoothScrollAndZoom(bool b);
+    /// Return preference whether to move cursor during search
+    bool getMoveDuringSearch(void);
+    /// Set preference whether to move cursor during search
+    void setMoveDuringSearch(bool b);
 
     /// Set recomputation parameters \a c_d and \a a_d
     void setRecompDistances(int c_d, int a_d);

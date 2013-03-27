@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2011-05-04 19:27:49 +1000 (Wed, 04 May 2011) $ by $Author: tack $
- *     $Revision: 11992 $
+ *     $Date: 2013-03-07 20:56:21 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13463 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,9 +56,6 @@ namespace Gecode { namespace Search { namespace Sequential {
     Space* cur;
     /// Distance until next clone
     unsigned int d;
-  protected:
-    /// Reset engine to restart at space \a s and return new root
-    Space* reset(Space* s);
   public:
     /// Initialize for space \a s (of size \a sz) with options \a o
     DFS(Space* s, size_t sz, const Options& o);
@@ -66,6 +63,8 @@ namespace Gecode { namespace Search { namespace Sequential {
     Space* next(void);
     /// Return statistics
     Statistics statistics(void) const;
+    /// Reset engine to restart at space \a s
+    void reset(Space* s);
     /// Destructor
     ~DFS(void);
   };
@@ -77,7 +76,7 @@ namespace Gecode { namespace Search { namespace Sequential {
     if (s->status(*this) == SS_FAILED) {
       fail++;
       cur = NULL;
-      if (!o.clone)
+      if (!opt.clone)
         delete s;
     } else {
       cur = snapshot(s,opt);
@@ -86,7 +85,7 @@ namespace Gecode { namespace Search { namespace Sequential {
     current(cur);
   }
 
-  forceinline Space*
+  forceinline void
   DFS::reset(Space* s) {
     delete cur;
     path.reset();
@@ -94,11 +93,9 @@ namespace Gecode { namespace Search { namespace Sequential {
     if (s->status(*this) == SS_FAILED) {
       cur = NULL;
       Worker::reset();
-      return NULL;
     } else {
       cur = s;
       Worker::reset(cur);
-      return cur->clone();
     }
   }
 

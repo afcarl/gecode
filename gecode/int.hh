@@ -15,8 +15,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:04:20 +1100 (Wed, 22 Feb 2012) $ by $Author: tack $
- *     $Revision: 12537 $
+ *     $Date: 2013-03-08 02:29:47 +0100 (Fri, 08 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13473 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -108,35 +108,45 @@ namespace Gecode { namespace Int {
    */
   namespace Limits {
     /// Largest allowed integer value
-    const int max =  INT_MAX - 1;
+    const int max = INT_MAX - 1;
     /// Smallest allowed integer value
     const int min = -max;
-    /// Infinity
+    /// Infinity for integers
     const int infinity = max + 1;
-    /// Return whether integer \a n is in range
+    /// Largest allowed long long integer value
+    const long long int llmax =  LLONG_MAX - 1;
+    /// Smallest allowed long long integer value
+    const long long int llmin = -llmax;
+    /// Infinity for long long integers
+    const long long int llinfinity = llmax + 1;
+    /// Return whether \a n is in range
     bool valid(int n);
-    /// Return whether double \a n is in range
-    bool valid(double n);
-    /// Check whether integer \a n is in range, otherwise throw out of limits with information \a l
+    /// Return whether \a n is in range
+    bool valid(long long int n);
+    /// Check whether \a n is in range, otherwise throw out of limits with information \a l
     void check(int n, const char* l);
-    /// Check whether double \a n is in integer range, otherwise throw out of limits exception with information \a l
-    void check(double n, const char* l);
-    /// Check whether integer \a n is in range and strictly positive, otherwise throw out of limits with information \a l
+    /// Check whether \a n is in range, otherwise throw out of limits with information \a l
+    void check(long long int n, const char* l);
+    /// Check whether \a n is in range and strictly positive, otherwise throw out of limits with information \a l
     void positive(int n, const char* l);
-    /// Check whether double \a n is in integer range and strictly postive, otherwise throw out of limits exception with information \a l
-    void positive(double n, const char* l);
-    /// Check whether integer \a n is in range and nonnegative, otherwise throw out of limits with information \a l
+    /// Check whether \a n is in range and strictly positive, otherwise throw out of limits with information \a l
+    void positive(long long int n, const char* l);
+    /// Check whether \a n is in range and nonnegative, otherwise throw out of limits with information \a l
     void nonnegative(int n, const char* l);
-    /// Check whether double \a n is in integer range and nonnegative, otherwise throw out of limits exception with information \a l
-    void nonnegative(double n, const char* l);
-    /// Largest double that can exactly be represented
-    const double double_max = 9007199254740991.0;
-    /// Smallest double that can exactly be represented
-    const double double_min = -9007199254740991.0;
-    /// Check whether double \a n is in exactly representable range, otherwise throw out of limits with information \a l
-    void double_check(double n, const char* l);
-    /// Infinity value for doubles
-    const double double_infinity = DBL_MAX;
+    /// Check whether \a n is in integer range and nonnegative, otherwise throw out of limits exception with information \a l
+    void nonnegative(long long int n, const char* l);
+    /// Check whether adding \a n and \a m would overflow
+    bool overflow_add(int n, int m);
+    /// Check whether adding \a n and \a m would overflow
+    bool overflow_add(long long int n, long long int m);
+    /// Check whether subtracting \a m from \a n would overflow
+    bool overflow_sub(int n, int m);
+    /// Check whether subtracting \a m from \a n would overflow
+    bool overflow_sub(long long int n, long long int m);
+    /// Check whether multiplying \a n and \a m would overflow
+    bool overflow_mul(int n, int m);
+    /// Check whether multiplying \a n and \a m would overflow
+    bool overflow_mul(long long int n, long long int m);
   }
 
 }}
@@ -213,6 +223,9 @@ namespace Gecode {
     /// Initialize with range iterator \a i
     template<class I>
     explicit IntSet(I& i);
+    /// Initialize with range iterator \a i
+    template<class I>
+    explicit IntSet(const I& i);
     //@}
 
     /// \name Range access
@@ -601,6 +614,9 @@ namespace Gecode {
     IntArgs(const SharedArray<int>& x);
     /// Allocate array and copy elements from \a x
     IntArgs(const std::vector<int>& x);
+    /// Allocate array and copy elements from \a first to \a last
+    template<class InputIterator>
+    IntArgs(InputIterator first, InputIterator last);
     /// Allocate array with \a n elements and initialize with \a e0, ...
     GECODE_INT_EXPORT
     IntArgs(int n, int e0, ...);
@@ -627,6 +643,12 @@ namespace Gecode {
     IntVarArgs(const IntVarArgs& a) : VarArgArray<IntVar>(a) {}
     /// Initialize from variable array \a a (copy elements)
     IntVarArgs(const VarArray<IntVar>& a) : VarArgArray<IntVar>(a) {}
+    /// Initialize from vector \a a
+    IntVarArgs(const std::vector<IntVar>& a) : VarArgArray<IntVar>(a) {}
+    /// Initialize from InputIterator \a first and \a last
+    template<class InputIterator>
+    IntVarArgs(InputIterator first, InputIterator last)
+    : VarArgArray<IntVar>(first,last) {}
     /**
      * \brief Initialize array with \a n new variables
      *
@@ -676,6 +698,12 @@ namespace Gecode {
     /// Initialize from variable array \a a (copy elements)
     BoolVarArgs(const VarArray<BoolVar>& a)
      : VarArgArray<BoolVar>(a) {}
+    /// Initialize from vector \a a
+    BoolVarArgs(const std::vector<BoolVar>& a) : VarArgArray<BoolVar>(a) {}
+    /// Initialize from InputIterator \a first and \a last
+    template<class InputIterator>
+    BoolVarArgs(InputIterator first, InputIterator last)
+    : VarArgArray<BoolVar>(first,last) {}
     /**
      * \brief Initialize array with \a n new variables
      *
@@ -790,6 +818,83 @@ namespace Gecode {
 namespace Gecode {
 
   /**
+   * \brief Mode for reification
+   * \ingroup TaskModelInt
+   */
+  enum ReifyMode {
+    /**
+     * \brief Equivalence for reification (default)
+     *
+     * For a constraint \f$c\f$ and a Boolean control variable \f$b\f$
+     * defines that \f$b=1\Leftrightarrow c\f$ is propagated.
+     */
+    RM_EQV,
+    /**
+     * \brief Implication for reification
+     *
+     * For a constraint \f$c\f$ and a Boolean control variable \f$b\f$
+     * defines that \f$b=1\Leftarrow c\f$ is propagated.
+     */
+    RM_IMP,
+    /**
+     * \brief Inverse implication for reification
+     *
+     * For a constraint \f$c\f$ and a Boolean control variable \f$b\f$
+     * defines that \f$b=1\Rightarrow c\f$ is propagated.
+     */
+    RM_PMI
+  };
+
+  /**
+   * \brief Reification specification
+   * \ingroup TaskModelInt
+   */
+  class Reify {
+  protected:
+    /// The Boolean control variable
+    BoolVar x;
+    /// The reification mode
+    ReifyMode rm;
+  public:
+    /// Default constructor without proper initialization
+    Reify(void);
+    /// Construct reification specification
+    Reify(BoolVar x, ReifyMode rm=RM_EQV);
+    /// Return Boolean control variable
+    BoolVar var(void) const;
+    /// Return reification mode
+    ReifyMode mode(void) const;
+    /// Set Boolean control variable
+    void var(BoolVar x);
+    /// Set reification mode
+    void mode(ReifyMode rm);
+  };
+
+  /**
+   * \brief Use equivalence for reification
+   * \ingroup TaskModelInt
+   */
+  Reify eqv(BoolVar x);
+  
+  /**
+   * \brief Use implication for reification
+   * \ingroup TaskModelInt
+   */
+  Reify imp(BoolVar x);
+  
+  /**
+   * \brief Use reverse implication for reification
+   * \ingroup TaskModelInt
+   */
+  Reify pmi(BoolVar x);
+
+}
+  
+#include <gecode/int/reify.hpp>
+
+namespace Gecode {
+
+  /**
    * \brief Relation types for integers
    * \ingroup TaskModelInt
    */
@@ -896,17 +1001,34 @@ namespace Gecode {
   dom(Home home, const IntVarArgs& x, const IntSet& s,
       IntConLevel icl=ICL_DEF);
 
-  /// Post domain consistent propagator for \f$ (x=n) \Leftrightarrow b\f$
+  /// Post domain consistent propagator for \f$ (x=n) \equiv r\f$
   GECODE_INT_EXPORT void
-  dom(Home home, IntVar x, int n, BoolVar b,
+  dom(Home home, IntVar x, int n, Reify r,
       IntConLevel icl=ICL_DEF);
-  /// Post domain consistent propagator for \f$ (l\leq x \leq m) \Leftrightarrow b\f$
+  /// Post domain consistent propagator for \f$ (l\leq x \leq m) \equiv r\f$
   GECODE_INT_EXPORT void
-  dom(Home home, IntVar x, int l, int m, BoolVar b,
+  dom(Home home, IntVar x, int l, int m, Reify r,
       IntConLevel icl=ICL_DEF);
-  /// Post domain consistent propagator for \f$ (x \in s) \Leftrightarrow b\f$
+  /// Post domain consistent propagator for \f$ (x \in s) \equiv r\f$
   GECODE_INT_EXPORT void
-  dom(Home home, IntVar x, const IntSet& s, BoolVar b,
+  dom(Home home, IntVar x, const IntSet& s, Reify r,
+      IntConLevel icl=ICL_DEF);
+
+  /// Constrain domain of \a x according to domain of \a d
+  GECODE_INT_EXPORT void
+  dom(Home home, IntVar x, IntVar d,
+      IntConLevel icl=ICL_DEF);
+  /// Constrain domain of \a x according to domain of \a d
+  GECODE_INT_EXPORT void
+  dom(Home home, BoolVar x, BoolVar d,
+      IntConLevel icl=ICL_DEF);
+  /// Constrain domain of \f$ x_i \f$ according to domain of \f$ d_i \f$ for all \f$0\leq i<|x|\f$
+  GECODE_INT_EXPORT void
+  dom(Home home, const IntVarArgs& x, const IntVarArgs& d,
+      IntConLevel icl=ICL_DEF);
+  /// Constrain domain of \f$ x_i \f$ according to domain of \f$ d_i \f$ for all \f$0\leq i<|x|\f$
+  GECODE_INT_EXPORT void
+  dom(Home home, const BoolVarArgs& x, const BoolVarArgs& d,
       IntConLevel icl=ICL_DEF);
   //@}
 
@@ -915,53 +1037,53 @@ namespace Gecode {
    * \defgroup TaskModelIntRelInt Simple relation constraints over integer variables
    * \ingroup TaskModelInt
    */
-  /** \brief Post propagator for \f$ x_0 \sim_r x_1\f$
+  /** \brief Post propagator for \f$ x_0 \sim_{irt} x_1\f$
    *
    * Supports both bounds (\a icl = ICL_BND) and
    * domain consistency (\a icl = ICL_DOM, default).
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, IntVar x0, IntRelType r, IntVar x1,
+  rel(Home home, IntVar x0, IntRelType irt, IntVar x1,
       IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$ x_i \sim_r y \f$ for all \f$0\leq i<|x|\f$
+  /** \brief Post propagator for \f$ x_i \sim_{irt} y \f$ for all \f$0\leq i<|x|\f$
    *
    * Supports both bounds (\a icl = ICL_BND) and
    * domain consistency (\a icl = ICL_DOM, default).
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const IntVarArgs& x, IntRelType r, IntVar y,
+  rel(Home home, const IntVarArgs& x, IntRelType irt, IntVar y,
       IntConLevel icl=ICL_DEF);
-  /** \brief Propagates \f$ x \sim_r c\f$
+  /** \brief Propagates \f$ x \sim_{irt} c\f$
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, IntVar x, IntRelType r, int c,
+  rel(Home home, IntVar x, IntRelType irt, int c,
       IntConLevel icl=ICL_DEF);
-  /** \brief Propagates \f$ x_i \sim_r c \f$ for all \f$0\leq i<|x|\f$
+  /** \brief Propagates \f$ x_i \sim_{irt} c \f$ for all \f$0\leq i<|x|\f$
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const IntVarArgs& x, IntRelType r, int c,
+  rel(Home home, const IntVarArgs& x, IntRelType irt, int c,
       IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$ (x_0 \sim_r x_1)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$ (x_0 \sim_{irt} x_1)\equiv r\f$
    *
    * Supports both bounds (\a icl = ICL_BND) and
    * domain consistency (\a icl = ICL_DOM, default).
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, IntVar x0, IntRelType r, IntVar x1, BoolVar b,
+  rel(Home home, IntVar x0, IntRelType irt, IntVar x1, Reify r,
       IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$(x \sim_r c)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$(x \sim_{irt} c)\equiv r\f$
    *
    * Supports both bounds (\a icl = ICL_BND) and
    * domain consistency (\a icl = ICL_DOM, default).
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, IntVar x, IntRelType r, int c, BoolVar b,
+  rel(Home home, IntVar x, IntRelType irt, int c, Reify r,
       IntConLevel icl=ICL_DEF);
   /** \brief Post propagator for relation among elements in \a x.
    *
@@ -978,7 +1100,7 @@ namespace Gecode {
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const IntVarArgs& x, IntRelType r,
+  rel(Home home, const IntVarArgs& x, IntRelType irt,
       IntConLevel icl=ICL_DEF);
   /** \brief Post propagator for relation between \a x and \a y.
    *
@@ -995,60 +1117,60 @@ namespace Gecode {
    * \ingroup TaskModelIntRelInt
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const IntVarArgs& x, IntRelType r, const IntVarArgs& y,
+  rel(Home home, const IntVarArgs& x, IntRelType irt, const IntVarArgs& y,
       IntConLevel icl=ICL_DEF);
 
   /**
    * \defgroup TaskModelIntRelBool Simple relation constraints over Boolean variables
    * \ingroup TaskModelInt
    */
-  /** \brief Post domain consistent propagator for \f$ x_0 \sim_r x_1\f$
+  /** \brief Post domain consistent propagator for \f$ x_0 \sim_{irt} x_1\f$
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, BoolVar x0, IntRelType r, BoolVar x1,
+  rel(Home home, BoolVar x0, IntRelType irt, BoolVar x1,
       IntConLevel icl=ICL_DEF);
-  /** \brief Post domain consistent propagator for \f$(x_0 \sim_r x_1)\Leftrightarrow b\f$
+  /** \brief Post domain consistent propagator for \f$(x_0 \sim_{irt} x_1)\equiv r\f$
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, BoolVar x0, IntRelType r, BoolVar x1, BoolVar b,
+  rel(Home home, BoolVar x0, IntRelType irt, BoolVar x1, Reify r,
       IntConLevel icl=ICL_DEF);
-  /** \brief Post doamin consistent propagator for \f$ x_i \sim_r y \f$ for all \f$0\leq i<|x|\f$
+  /** \brief Post doamin consistent propagator for \f$ x_i \sim_{irt} y \f$ for all \f$0\leq i<|x|\f$
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, BoolVar y,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, BoolVar y,
       IntConLevel icl=ICL_DEF);
   /**
-   * \brief Propagates \f$ x \sim_r n\f$
+   * \brief Propagates \f$ x \sim_{irt} n\f$
    *
    * Throws an exception of type Int::NotZeroOne, if \a n is neither
    * 0 or 1.
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, BoolVar x, IntRelType r, int n,
+  rel(Home home, BoolVar x, IntRelType irt, int n,
       IntConLevel icl=ICL_DEF);
   /**
-   * \brief Post domain consistent propagator for \f$(x \sim_r n)\Leftrightarrow b\f$
+   * \brief Post domain consistent propagator for \f$(x \sim_{irt} n)\equiv r\f$
    *
    * Throws an exception of type Int::NotZeroOne, if \a n is neither
    * 0 or 1.
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, BoolVar x, IntRelType r, int n, BoolVar b,
+  rel(Home home, BoolVar x, IntRelType irt, int n, Reify r,
       IntConLevel icl=ICL_DEF);
   /**
-   * \brief Propagates \f$ x_i \sim_r n \f$ for all \f$0\leq i<|x|\f$
+   * \brief Propagates \f$ x_i \sim_{irt} n \f$ for all \f$0\leq i<|x|\f$
    *
    * Throws an exception of type Int::NotZeroOne, if \a n is neither
    * 0 or 1.
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, int n,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, int n,
       IntConLevel icl=ICL_DEF);
   /** \brief Post domain consistent propagator for relation between \a x and \a y.
    *
@@ -1060,7 +1182,7 @@ namespace Gecode {
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const BoolVarArgs& x, IntRelType r, const BoolVarArgs& y,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt, const BoolVarArgs& y,
       IntConLevel icl=ICL_DEF);
   /** \brief Post domain consistent propagator for relation between elements in \a x.
    *
@@ -1073,7 +1195,7 @@ namespace Gecode {
    * \ingroup TaskModelIntRelBool
    */
   GECODE_INT_EXPORT void
-  rel(Home home, const BoolVarArgs& x, IntRelType r,
+  rel(Home home, const BoolVarArgs& x, IntRelType irt,
       IntConLevel icl=ICL_DEF);
   /** \brief Post domain consistent propagator for Boolean operation on \a x0 and \a x1
    *
@@ -1191,13 +1313,13 @@ namespace Gecode {
   GECODE_INT_EXPORT void
   member(Home home, const BoolVarArgs& x, BoolVar y,
          IntConLevel icl=ICL_DEF);
-  /// Post domain consistent propagator for \f$\left(y\in \{x_0,\ldots,x_{|x|-1}\}\right)\Leftrightarrow b\f$
+  /// Post domain consistent propagator for \f$\left(y\in \{x_0,\ldots,x_{|x|-1}\}\right)\equiv r\f$
   GECODE_INT_EXPORT void
-  member(Home home, const IntVarArgs& x, IntVar y, BoolVar b,
+  member(Home home, const IntVarArgs& x, IntVar y, Reify r,
          IntConLevel icl=ICL_DEF);
-  /// Post domain consistent propagator for \f$\left(y\in \{x_0,\ldots,x_{|x|-1}\}\right)\Leftrightarrow b\f$
+  /// Post domain consistent propagator for \f$\left(y\in \{x_0,\ldots,x_{|x|-1}\}\right)\equiv r\f$
   GECODE_INT_EXPORT void
-  member(Home home, const BoolVarArgs& x, BoolVar y, BoolVar b,
+  member(Home home, const BoolVarArgs& x, BoolVar y, Reify r,
          IntConLevel icl=ICL_DEF);
   //@}
 
@@ -1476,21 +1598,21 @@ namespace Gecode {
    */
 
   //@{
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=n\}\sim_r m\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=n\}\sim_{irt} m\f$
    *
    * Performs domain propagation but is not domain consistent.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, int n, IntRelType r, int m,
+  count(Home home, const IntVarArgs& x, int n, IntRelType irt, int m,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i\in y\}\sim_r m\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i\in y\}\sim_{irt} m\f$
    *
    * Performs domain propagation but is not domain consistent.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, const IntSet& y, IntRelType r, int m,
+  count(Home home, const IntVarArgs& x, const IntSet& y, IntRelType irt, int m,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y\}\sim_r m\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y\}\sim_{irt} m\f$
    *
    * Performs domain propagation (\a icl = ICL_DOM, default)
    * and slightly less domain propagation (all other values for \a icl),
@@ -1498,9 +1620,9 @@ namespace Gecode {
    * is not comain consistent.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, IntVar y, IntRelType r, int m,
+  count(Home home, const IntVarArgs& x, IntVar y, IntRelType irt, int m,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y_i\}\sim_r m\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y_i\}\sim_{irt} m\f$
    *
    * Performs domain propagation but is not domain consistent.
    *
@@ -1508,23 +1630,23 @@ namespace Gecode {
    *  \a x and \a y are of different size.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, const IntArgs& y, IntRelType r, int m,
+  count(Home home, const IntVarArgs& x, const IntArgs& y, IntRelType irt, int m,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=n\}\sim_r z\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=n\}\sim_{irt} z\f$
    *
    * Performs domain propagation but is not domain consistent.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, int n, IntRelType r, IntVar z,
+  count(Home home, const IntVarArgs& x, int n, IntRelType irt, IntVar z,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i\in y\}\sim_r z\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i\in y\}\sim_{irt} z\f$
    *
    * Performs domain propagation but is not domain consistent.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, const IntSet& y, IntRelType r, IntVar z,
+  count(Home home, const IntVarArgs& x, const IntSet& y, IntRelType irt, IntVar z,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y\}\sim_r z\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y\}\sim_{irt} z\f$
    *
    * Performs domain propagation (\a icl = ICL_DOM, default)
    * and slightly less domain propagation (all other values for \a icl),
@@ -1532,9 +1654,9 @@ namespace Gecode {
    * is not comain consistent.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, IntVar y, IntRelType r, IntVar z,
+  count(Home home, const IntVarArgs& x, IntVar y, IntRelType irt, IntVar z,
         IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y_i\}\sim_r z\f$
+  /** \brief Post propagator for \f$\#\{i\in\{0,\ldots,|x|-1\}\;|\;x_i=y_i\}\sim_{irt} z\f$
    *
    * Performs domain propagation but is not domain consistent.
    *
@@ -1542,7 +1664,7 @@ namespace Gecode {
    *  \a x and \a y are of different size.
    */
   GECODE_INT_EXPORT void
-  count(Home home, const IntVarArgs& x, const IntArgs& y, IntRelType r, IntVar z,
+  count(Home home, const IntVarArgs& x, const IntArgs& y, IntRelType irt, IntVar z,
         IntConLevel icl=ICL_DEF);
 
   /** \brief Posts a global count (cardinality) constraint
@@ -1655,29 +1777,29 @@ namespace Gecode {
    */
 
   //@{
-  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_r y\f$
+  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_{irt} y\f$
    *
    */
   GECODE_INT_EXPORT void
-  nvalues(Home home, const IntVarArgs& x, IntRelType r, int y,
+  nvalues(Home home, const IntVarArgs& x, IntRelType irt, int y,
           IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_r y\f$
+  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_{irt} y\f$
    *
    */
   GECODE_INT_EXPORT void
-  nvalues(Home home, const IntVarArgs& x, IntRelType r, IntVar y,
+  nvalues(Home home, const IntVarArgs& x, IntRelType irt, IntVar y,
           IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_r y\f$
+  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_{irt} y\f$
    *
    */
   GECODE_INT_EXPORT void
-  nvalues(Home home, const BoolVarArgs& x, IntRelType r, int y,
+  nvalues(Home home, const BoolVarArgs& x, IntRelType irt, int y,
           IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_r y\f$
+  /** \brief Post propagator for \f$\#\{x_0,\ldots,x_{|x|-1}\}\sim_{irt} y\f$
    *
    */
   GECODE_INT_EXPORT void
-  nvalues(Home home, const BoolVarArgs& x, IntRelType r, IntVar y,
+  nvalues(Home home, const BoolVarArgs& x, IntRelType irt, IntVar y,
           IntConLevel icl=ICL_DEF);
   //@}
 
@@ -1756,6 +1878,10 @@ namespace Gecode {
       int i_state; ///< input state
       int symbol;  ///< symbol
       int o_state; ///< output state
+      /// Default constructor
+      Transition();
+      /// Initialize members
+      Transition(int i_state0, int symbol0, int o_state0);
     };
     /// Iterator for %DFA transitions (sorted by symbols)
     class Transitions {
@@ -2066,24 +2192,6 @@ namespace Gecode {
   mult(Home home, IntVar x0, IntVar x1, IntVar x2,
        IntConLevel icl=ICL_DEF);
 
-  /** \brief Post propagator for \f$x_0\cdot x_0=x_1\f$
-   *
-   * Supports both bounds consistency (\a icl = ICL_BND, default)
-   * and domain consistency (\a icl = ICL_DOM).
-   */
-  GECODE_INT_EXPORT void
-  sqr(Home home, IntVar x0, IntVar x1,
-      IntConLevel icl=ICL_DEF);
-
-  /** \brief Post propagator for \f$\lfloor\sqrt{x_0}\rfloor=x_1\f$
-   *
-   * Supports both bounds consistency (\a icl = ICL_BND, default)
-   * and domain consistency (\a icl = ICL_DOM).
-   */
-  GECODE_INT_EXPORT void
-  sqrt(Home home, IntVar x0, IntVar x1,
-       IntConLevel icl=ICL_DEF);
-
   /** \brief Post propagator for \f$x_0\ \mathrm{div}\ x_1=x_2 \land x_0\ \mathrm{mod}\ x_1 = x_3\f$
    *
    * Supports bounds consistency (\a icl = ICL_BND, default).
@@ -2107,6 +2215,49 @@ namespace Gecode {
   GECODE_INT_EXPORT void
   mod(Home home, IntVar x0, IntVar x1, IntVar x2,
       IntConLevel icl=ICL_DEF);
+
+  /** \brief Post propagator for \f$x_0^2=x_1\f$
+   *
+   * Supports both bounds consistency (\a icl = ICL_BND, default)
+   * and domain consistency (\a icl = ICL_DOM).
+   */
+  GECODE_INT_EXPORT void
+  sqr(Home home, IntVar x0, IntVar x1,
+      IntConLevel icl=ICL_DEF);
+
+  /** \brief Post propagator for \f$\lfloor\sqrt{x_0}\rfloor=x_1\f$
+   *
+   * Supports both bounds consistency (\a icl = ICL_BND, default)
+   * and domain consistency (\a icl = ICL_DOM).
+   */
+  GECODE_INT_EXPORT void
+  sqrt(Home home, IntVar x0, IntVar x1,
+       IntConLevel icl=ICL_DEF);
+
+  /** \brief Post propagator for \f$x_0^n=x_1\f$
+   *
+   * Supports both bounds consistency (\a icl = ICL_BND, default)
+   * and domain consistency (\a icl = ICL_DOM).
+   *
+   * Throws an exception of type Int::OutOfLimits, if \a n is
+   * negative.
+   */
+  GECODE_INT_EXPORT void
+  pow(Home home, IntVar x0, int n, IntVar x1,
+      IntConLevel icl=ICL_DEF);
+
+  /** \brief Post propagator for \f$\lfloor\sqrt[n]{x_0}\rfloor=x_1\f$
+   *
+   * Supports both bounds consistency (\a icl = ICL_BND, default)
+   * and domain consistency (\a icl = ICL_DOM).
+   *
+   * Throws an exception of type Int::OutOfLimits, if \a n is
+   * not strictly positive.
+   */
+  GECODE_INT_EXPORT void
+  nroot(Home home, IntVar x0, int n, IntVar x1,
+       IntConLevel icl=ICL_DEF);
+
   //@}
 
   /**
@@ -2130,42 +2281,42 @@ namespace Gecode {
    *    defined in Int::Limits, an exception of type
    *    Int::OutOfLimits is thrown.
    *  - Assume the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the maximal
    *    available precision (at least \f$2^{48}\f$), an exception of
    *    type Int::OutOfLimits is thrown.
    *  - In all other cases, the created propagators are accurate (that
    *    is, they will not silently overflow during propagation).
    */
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_r c\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_{irt} c\f$
    * \ingroup TaskModelIntLI
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntVarArgs& x,
-         IntRelType r, int c,
+         IntRelType irt, int c,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_r y\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_{irt} y\f$
    * \ingroup TaskModelIntLI
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntVarArgs& x,
-         IntRelType r, IntVar y,
+         IntRelType irt, IntVar y,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_r c\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_{irt} c\right)\equiv r\f$
    * \ingroup TaskModelIntLI
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntVarArgs& x,
-         IntRelType r, int c, BoolVar b,
+         IntRelType irt, int c, Reify r,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_r y\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_{irt} y\right)\equiv r\f$
    * \ingroup TaskModelIntLI
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntVarArgs& x,
-         IntRelType r, IntVar y, BoolVar b,
+         IntRelType irt, IntVar y, Reify r,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2173,9 +2324,9 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const IntVarArgs& x,
-         IntRelType r, int c,
+         IntRelType irt, int c,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r y\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} y\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2183,9 +2334,9 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const IntVarArgs& x,
-         IntRelType r, IntVar y,
+         IntRelType irt, IntVar y,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\right)\equiv r\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2193,9 +2344,9 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const IntVarArgs& x,
-         IntRelType r, int c, BoolVar b,
+         IntRelType irt, int c, Reify r,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r y\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} y\right)\equiv r\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2203,7 +2354,7 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const IntVarArgs& x,
-         IntRelType r, IntVar y, BoolVar b,
+         IntRelType irt, IntVar y, Reify r,
          IntConLevel icl=ICL_DEF);
 
 
@@ -2224,42 +2375,42 @@ namespace Gecode {
    *    defined in Int::Limits, an exception of type
    *    Int::OutOfLimits is thrown.
    *  - Assume the constraint
-   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$.
+   *    \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$.
    *    If  \f$|c|+\sum_{i=0}^{|x|-1}a_i\cdot x_i\f$ exceeds the limits
    *    for integers as defined in Int::Limits, an exception of
    *    type Int::OutOfLimits is thrown.
    *  - In all other cases, the created propagators are accurate (that
    *    is, they will not silently overflow during propagation).
    */
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_r c\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_{irt} c\f$
    * \ingroup TaskModelIntLB
    */
   GECODE_INT_EXPORT void
   linear(Home home, const BoolVarArgs& x,
-         IntRelType r, int c,
+         IntRelType irt, int c,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_r c\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_{irt} c\right)\equiv r\f$
    * \ingroup TaskModelIntLB
    */
   GECODE_INT_EXPORT void
   linear(Home home, const BoolVarArgs& x,
-         IntRelType r, int c, BoolVar b,
+         IntRelType irt, int c, Reify r,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_r y\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}x_i\sim_{irt} y\f$
    * \ingroup TaskModelIntLB
    */
   GECODE_INT_EXPORT void
   linear(Home home, const BoolVarArgs& x,
-         IntRelType r, IntVar y,
+         IntRelType irt, IntVar y,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_r y\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}x_i\sim_{irt} y\right)\equiv r\f$
    * \ingroup TaskModelIntLB
    */
   GECODE_INT_EXPORT void
   linear(Home home, const BoolVarArgs& x,
-         IntRelType r, IntVar y, BoolVar b,
+         IntRelType irt, IntVar y, Reify r,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2267,9 +2418,9 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const BoolVarArgs& x,
-         IntRelType r, int c,
+         IntRelType irt, int c,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r c\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} c\right)\equiv r\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2277,9 +2428,9 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const BoolVarArgs& x,
-         IntRelType r, int c, BoolVar b,
+         IntRelType irt, int c, Reify r,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r y\f$
+  /** \brief Post propagator for \f$\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} y\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2287,9 +2438,9 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const BoolVarArgs& x,
-         IntRelType r, IntVar y,
+         IntRelType irt, IntVar y,
          IntConLevel icl=ICL_DEF);
-  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_r y\right)\Leftrightarrow b\f$
+  /** \brief Post propagator for \f$\left(\sum_{i=0}^{|x|-1}a_i\cdot x_i\sim_{irt} y\right)\equiv r\f$
    *
    *  Throws an exception of type Int::ArgumentSizeMismatch, if
    *  \a a and \a x are of different size.
@@ -2297,7 +2448,7 @@ namespace Gecode {
    */
   GECODE_INT_EXPORT void
   linear(Home home, const IntArgs& a, const BoolVarArgs& x,
-         IntRelType r, IntVar y, BoolVar b,
+         IntRelType irt, IntVar y, Reify r,
          IntConLevel icl=ICL_DEF);
 
 
@@ -2323,7 +2474,7 @@ namespace Gecode {
    *  - Of type Int::ArgumentSizeMismatch if \a b and \a s are not of
    *    the same size.
    *  - Of type Int::ArgumentSame if \a l and \a b share unassigned variables.
-   *  - Of type Int::OutOfLimits if \a s contains a non-positive number.
+   *  - Of type Int::OutOfLimits if \a s contains a negative number.
    * 
    * \ingroup TaskModelIntBinPacking
    */
@@ -2346,7 +2497,6 @@ namespace Gecode {
    * Throws the following exceptions:
    *  - Of type Int::ArgumentSizeMismatch if \a x, \a w, \a y, or \a h
    *    are not of the same size.
-   *  - Of type Int::ArgumentSame if \a x or \a y share unassigned variables.
    *  - Of type Int::OutOfLimits if \a w or \a h contain a negative number.
    * 
    * \ingroup TaskModelIntGeoPacking
@@ -2365,8 +2515,6 @@ namespace Gecode {
    * Throws the following exceptions:
    *  - Of type Int::ArgumentSizeMismatch if \a x, \a w, \a y, \a h, or \a o
    *    are not of the same size.
-   *  - Of type Int::ArgumentSame if \a x, \a y, or \a o share unassigned
-   *    variables.
    *  - Of type Int::OutOfLimits if \a w or \a h contain a negative number.
    * 
    * \ingroup TaskModelIntGeoPacking
@@ -2390,8 +2538,6 @@ namespace Gecode {
    * Throws the following exceptions:
    *  - Of type Int::ArgumentSizeMismatch if \a x0, \a x1, \a w, 
    *    \a y0, \a y1, or \a h are not of the same size.
-   *  - Of type Int::ArgumentSame if \a x0, \a x1, \a w, \a y0, \a y1, 
-   *    or \a h share unassigned variables.
    * 
    * \ingroup TaskModelIntGeoPacking
    */
@@ -2414,8 +2560,6 @@ namespace Gecode {
    * Throws the following exceptions:
    *  - Of type Int::ArgumentSizeMismatch if \a x0, \a x1, \a w, 
    *    \a y0, \a y1, or \a h are not of the same size.
-   *  - Of type Int::ArgumentSame if \a x0, \a x1, \a w, \a y0, \a y1, 
-   *    \a h, or \a o share unassigned variables.
    * 
    * \ingroup TaskModelIntGeoPacking
    */
@@ -3323,136 +3467,640 @@ namespace Gecode {
           IntConLevel icl=ICL_DEF);
   //@}
 
+}
+
+namespace Gecode {
 
   /**
    * \defgroup TaskModelIntBranch Branching
    * \ingroup TaskModelInt
    */
-  //@{
-  /// Which variable to select for branching
-  enum IntVarBranch {
-    INT_VAR_NONE = 0,        ///< First unassigned
-    INT_VAR_RND,             ///< Random (uniform, for tie breaking)
-    INT_VAR_DEGREE_MIN,      ///< With smallest degree
-    INT_VAR_DEGREE_MAX,      ///< With largest degree
-    INT_VAR_AFC_MIN,         ///< With smallest accumulated failure count
-    INT_VAR_AFC_MAX,         ///< With largest accumulated failure count
-    INT_VAR_MIN_MIN,         ///< With smallest min
-    INT_VAR_MIN_MAX,         ///< With largest min
-    INT_VAR_MAX_MIN,         ///< With smallest max
-    INT_VAR_MAX_MAX,         ///< With largest max
-    INT_VAR_SIZE_MIN,        ///< With smallest domain size
-    INT_VAR_SIZE_MAX,        ///< With largest domain size
-    INT_VAR_SIZE_DEGREE_MIN, ///< With smallest domain size divided by degree
-    INT_VAR_SIZE_DEGREE_MAX, ///< With largest domain size divided by degree
-    INT_VAR_SIZE_AFC_MIN,    ///< With smallest domain size divided by accumulated failure count
-    INT_VAR_SIZE_AFC_MAX,    ///< With largest domain size divided by accumulated failure count
-    /** \brief With smallest min-regret
-     *
-     * The min-regret of a variable is the difference between the
-     * smallest and second-smallest value still in the domain.
-     */
-    INT_VAR_REGRET_MIN_MIN,
-    /** \brief With largest min-regret
-     *
-     * The min-regret of a variable is the difference between the
-     * smallest and second-smallest value still in the domain.
-     */
-    INT_VAR_REGRET_MIN_MAX,
-    /** \brief With smallest max-regret
-     *
-     * The max-regret of a variable is the difference between the
-     * largest and second-largest value still in the domain.
-     */
-    INT_VAR_REGRET_MAX_MIN,
-    /** \brief With largest max-regret
-     *
-     * The max-regret of a variable is the difference between the
-     * largest and second-largest value still in the domain.
-     */
-    INT_VAR_REGRET_MAX_MAX
-  };
-
-  /// Which values to select first for branching
-  enum IntValBranch {
-    INT_VAL_MIN,       ///< Select smallest value
-    INT_VAL_MED,       ///< Select greatest value not greater than the median
-    INT_VAL_MAX,       ///< Select largest value
-    INT_VAL_RND,       ///< Select random value
-    INT_VAL_SPLIT_MIN, ///< Select values not greater than mean of smallest and largest value
-    INT_VAL_SPLIT_MAX, ///< Select values greater than mean of smallest and largest value
-    INT_VAL_RANGE_MIN, ///< Select the smallest range of the variable domain if it has sevral ranges, otherwise select values not greater than mean of smallest and largest value
-    INT_VAL_RANGE_MAX, ///< Select the largest range of the variable domain if it has sevral ranges, otherwise select values greater than mean of smallest and largest value
-    INT_VALUES_MIN,    ///< Try all values starting from smallest
-    INT_VALUES_MAX     ///< Try all values starting from largest
-  };
-
-  /// Branch over \a x with variable selection \a vars and value selection \a vals
-  GECODE_INT_EXPORT void
-  branch(Home home, const IntVarArgs& x,
-         IntVarBranch vars, IntValBranch vals,
-         const VarBranchOptions& o_vars = VarBranchOptions::def,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
-  GECODE_INT_EXPORT void
-  branch(Home home, const IntVarArgs& x,
-         const TieBreakVarBranch<IntVarBranch>& vars, IntValBranch vals,
-         const TieBreakVarBranchOptions& o_vars = TieBreakVarBranchOptions::def,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with value selection \a vals
-  GECODE_INT_EXPORT void
-  branch(Home home, IntVar x, IntValBranch vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with variable selection \a vars and value selection \a vals
-  GECODE_INT_EXPORT void
-  branch(Home home, const BoolVarArgs& x,
-         IntVarBranch vars, IntValBranch vals,
-         const VarBranchOptions& o_vars = VarBranchOptions::def,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
-  GECODE_INT_EXPORT void
-  branch(Home home, const BoolVarArgs& x,
-         const TieBreakVarBranch<IntVarBranch>& vars, IntValBranch vals,
-         const TieBreakVarBranchOptions& o_vars = TieBreakVarBranchOptions::def,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Branch over \a x with value selection \a vals
-  GECODE_INT_EXPORT void
-  branch(Home home, BoolVar x, IntValBranch vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-
-  //@}
 
   /**
-   * \defgroup TaskModelIntAssign Assigning
-   * \ingroup TaskModelInt
+   * \brief Branch filter function type for integer variables
+   *
+   * The variable \a x is considered for selection and \a i refers to the
+   * variable's position in the original array passed to the brancher.
+   *
+   * \ingroup TaskModelIntBranch
    */
-  //@{
-  /// Which value to select for assignment
-  enum IntAssign {
-    INT_ASSIGN_MIN, ///< Select smallest value
-    INT_ASSIGN_MED, ///< Select greatest element not greater than the median
-    INT_ASSIGN_MAX, ///< Select maximum value
-    INT_ASSIGN_RND  ///< Select random value
+  typedef bool (*IntBranchFilter)(const Space& home, IntVar x, int i);
+  /**
+   * \brief Branch filter function type for Boolean variables
+   *
+   * The variable \a x is considered for selection and \a i refers to the
+   * variable's position in the original array passed to the brancher.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef bool (*BoolBranchFilter)(const Space& home, BoolVar x, int i);
+
+  /**
+   * \brief Branch merit function type for integer variables
+   *
+   * The function must return a merit value for the variable
+   * \a x. The integer \a i refers to the variable's position
+   * in the original array passed to the brancher.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef double (*IntBranchMerit)(const Space& home, IntVar x, int i);
+  /**
+   * \brief Branch merit function type for Boolean variables
+   *
+   * The function must return a merit value for the variable
+   * \a x. The integer \a i refers to the variable's position
+   * in the original array passed to the brancher.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef double (*BoolBranchMerit)(const Space& home, BoolVar x, int i);
+
+  /**
+   * \brief Branch value function type for integer variables
+   *
+   * Returns a value for the variable \a x that is to be used in the
+   * corresponding branch commit function. The integer \a i refers 
+   * to the variable's position in the original array passed to the 
+   * brancher.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef int (*IntBranchVal)(const Space& home, IntVar x, int i);
+  /**
+   * \brief Branch value function type for Boolean variables
+   *
+   * Returns a value for the variable \a x that is to be used in the
+   * corresponding branch commit function. The integer \a i refers 
+   * to the variable's position in the original array passed to the 
+   * brancher.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef int (*BoolBranchVal)(const Space& home, BoolVar x, int i);
+
+  /**
+   * \brief Branch commit function type for integer variables
+   *
+   * The function must post a constraint on the variable \a x which
+   * corresponds to the alternative \a a. The integer \a i refers 
+   * to the variable's position in the original array passed to the 
+   * brancher. The value \a n is the value
+   * computed by the corresponding branch value function.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef void (*IntBranchCommit)(Space& home, unsigned int a,
+                                  IntVar x, int i, int n);
+  /**
+   * \brief Branch commit function type for Boolean variables
+   *
+   * The function must post a constraint on the variable \a x which
+   * corresponds to the alternative \a a.  The integer \a i refers 
+   * to the variable's position in the original array passed to the 
+   * brancher. The value \a n is the value
+   * computed by the corresponding branch value function.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  typedef void (*BoolBranchCommit)(Space& home, unsigned int a,
+                                   BoolVar x, int i, int n);
+
+}
+
+#include <gecode/int/branch/traits.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Recording AFC information for integer and Boolean variables
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  class IntAFC : public AFC {
+  public:
+    /**
+     * \brief Construct as not yet initialized
+     *
+     * The only member functions that can be used on a constructed but not
+     * yet initialized AFC storage is init or the assignment operator.
+     *
+     */
+    IntAFC(void);
+    /// Copy constructor
+    IntAFC(const IntAFC& a);
+    /// Assignment operator
+    IntAFC& operator =(const IntAFC& a);      
+    /// Initialize for integer variables \a x with decay factor \a d
+    IntAFC(Home home, const IntVarArgs& x, double d=1.0);
+    /// Initialize for Boolean variables \a x with decay factor \a d
+    IntAFC(Home home, const BoolVarArgs& x, double d=1.0);
+    /**
+     * \brief Initialize for integer variables \a x with decay factor \a d
+     *
+     * This member function can only be used once and only if the
+     * AFC storage has been constructed with the default constructor.
+     *
+     */
+    void init(Home, const IntVarArgs& x, double d=1.0);
+    /**
+     * \brief Initialize for Boolean variables \a x with decay factor \a d
+     *
+     * This member function can only be used once and only if the
+     * AFC storage has been constructed with the default constructor.
+     *
+     */
+    void init(Home, const BoolVarArgs& x, double d=1.0);
   };
 
-  /// Assign all \a x with value selection \a vals
-  GECODE_INT_EXPORT void
-  assign(Home home, const IntVarArgs& x, IntAssign vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Assign \a x with value selection \a vals
-  GECODE_INT_EXPORT void
-  assign(Home home, IntVar x, IntAssign vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Assign all \a x with value selection \a vals
-  GECODE_INT_EXPORT void
-  assign(Home home, const BoolVarArgs& x, IntAssign vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
-  /// Assign \a x with value selection \a vals
-  GECODE_INT_EXPORT void
-  assign(Home home, BoolVar x, IntAssign vals,
-         const ValBranchOptions& o_vals = ValBranchOptions::def);
+}
 
+#include <gecode/int/branch/afc.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Recording activities for integer and Boolean variables
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  class IntActivity : public Activity {
+  public:
+    /**
+     * \brief Construct as not yet initialized
+     *
+     * The only member functions that can be used on a constructed but not
+     * yet initialized activity storage is init or the assignment operator.
+     *
+     */
+    IntActivity(void);
+    /// Copy constructor
+    IntActivity(const IntActivity& a);
+    /// Assignment operator
+    IntActivity& operator =(const IntActivity& a);      
+    /// Initialize for integer variables \a x with decay factor \a d
+    GECODE_INT_EXPORT 
+    IntActivity(Home home, const IntVarArgs& x, double d=1.0);
+    /// Initialize for Boolean variables \a x with decay factor \a d
+    GECODE_INT_EXPORT 
+    IntActivity(Home home, const BoolVarArgs& x, double d=1.0);
+    /**
+     * \brief Initialize for integer variables \a x with decay factor \a d
+     *
+     * This member function can only be used once and only if the
+     * activity storage has been constructed with the default constructor.
+     *
+     */
+    GECODE_INT_EXPORT void
+    init(Home, const IntVarArgs& x, double d=1.0);
+    /**
+     * \brief Initialize for Boolean variables \a x with decay factor \a d
+     *
+     * This member function can only be used once and only if the
+     * activity storage has been constructed with the default constructor.
+     *
+     */
+    GECODE_INT_EXPORT void
+    init(Home, const BoolVarArgs& x, double d=1.0);
+  };
+
+}
+
+#include <gecode/int/branch/activity.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Which variable to select for branching
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  class IntVarBranch : public VarBranch {
+  public:
+    /// Which variable selection
+    enum Select {
+      SEL_NONE = 0,        ///< First unassigned
+      SEL_RND,             ///< Random (uniform, for tie breaking)
+      SEL_MERIT_MIN,       ///< With least merit
+      SEL_MERIT_MAX,       ///< With highest merit
+      SEL_DEGREE_MIN,      ///< With smallest degree
+      SEL_DEGREE_MAX,      ///< With largest degree
+      SEL_AFC_MIN,         ///< With smallest accumulated failure count
+      SEL_AFC_MAX,         ///< With largest accumulated failure count
+      SEL_ACTIVITY_MIN,    ///< With lowest activity
+      SEL_ACTIVITY_MAX,    ///< With highest activity
+      SEL_MIN_MIN,         ///< With smallest min
+      SEL_MIN_MAX,         ///< With largest min
+      SEL_MAX_MIN,         ///< With smallest max
+      SEL_MAX_MAX,         ///< With largest max
+      SEL_SIZE_MIN,        ///< With smallest domain size
+      SEL_SIZE_MAX,        ///< With largest domain size
+      SEL_DEGREE_SIZE_MIN, ///< With smallest degree divided by domain size
+      SEL_DEGREE_SIZE_MAX, ///< With largest degree divided by domain size
+      SEL_AFC_SIZE_MIN,    ///< With smallest accumulated failure count divided by domain size
+      SEL_AFC_SIZE_MAX,    ///< With largest accumulated failure count divided by domain size
+      SEL_ACTIVITY_SIZE_MIN, ///< With smallest activity divided by domain size
+      SEL_ACTIVITY_SIZE_MAX, ///< With largest activity divided by domain size
+      /** \brief With smallest min-regret
+       *
+       * The min-regret of a variable is the difference between the
+       * smallest and second-smallest value still in the domain.
+       */
+      SEL_REGRET_MIN_MIN,
+      /** \brief With largest min-regret
+       *
+       * The min-regret of a variable is the difference between the
+       * smallest and second-smallest value still in the domain.
+       */
+      SEL_REGRET_MIN_MAX,
+      /** \brief With smallest max-regret
+       *
+       * The max-regret of a variable is the difference between the
+       * largest and second-largest value still in the domain.
+       */
+      SEL_REGRET_MAX_MIN,
+      /** \brief With largest max-regret
+       *
+       * The max-regret of a variable is the difference between the
+       * largest and second-largest value still in the domain.
+       */
+      SEL_REGRET_MAX_MAX
+    };
+  protected:
+    /// Which variable to select
+    Select s;
+  public:
+    /// Initialize with strategy SEL_NONE
+    IntVarBranch(void);
+    /// Initialize with random number generator \a r
+    IntVarBranch(Rnd r);
+    /// Initialize with selection strategy \a s and tie-break limit function \a t
+    IntVarBranch(Select s, BranchTbl t);
+    /// Initialize with selection strategy \a s, decay factor \a d, and tie-break limit function \a t
+    IntVarBranch(Select s, double d, BranchTbl t);
+    /// Initialize with selection strategy \a s, AFC \a a, and tie-break limit function \a t
+    IntVarBranch(Select s, AFC a, BranchTbl t);
+    /// Initialize with selection strategy \a s, activity \a a, and tie-break limit function \a t
+    IntVarBranch(Select s, Activity a, BranchTbl t);
+    /// Initialize with selection strategy \a s, branch merit function \a mf, and tie-break limit function \a t
+    IntVarBranch(Select s, VoidFunction mf, BranchTbl t);
+    /// Return selection strategy
+    Select select(void) const;
+    /// Expand decay factor into AFC or activity
+    void expand(Home home, const IntVarArgs& x);
+    /// Expand decay factor into AFC or activity
+    void expand(Home home, const BoolVarArgs& x);
+  };
+
+  /**
+   * \defgroup TaskModelIntBranchVar Variable selection for integer and Boolean variables
+   * \ingroup TaskModelIntBranch
+   */
+  //@{
+  /// Select first unassigned variable
+  IntVarBranch INT_VAR_NONE(void);
+  /// Select random variable (uniform distribution, for tie breaking)
+  IntVarBranch INT_VAR_RND(Rnd r);
+  /// Select variable with least merit according to branch merit function \a bm
+  IntVarBranch INT_VAR_MERIT_MIN(IntBranchMerit bm, BranchTbl tbl=NULL);
+  /// Select variable with least merit according to branch merit function \a bm
+  IntVarBranch INT_VAR_MERIT_MIN(BoolBranchMerit bm, BranchTbl tbl=NULL);
+  /// Select variable with highest merit according to branch merit function \a bm
+  IntVarBranch INT_VAR_MERIT_MAX(IntBranchMerit bm, BranchTbl tbl=NULL);
+  /// Select variable with highest merit according to branch merit function \a bm
+  IntVarBranch INT_VAR_MERIT_MAX(BoolBranchMerit bm, BranchTbl tbl=NULL);
+  /// Select variable with smallest degree
+  IntVarBranch INT_VAR_DEGREE_MIN(BranchTbl tbl=NULL);
+  /// Select variable with largest degree
+  IntVarBranch INT_VAR_DEGREE_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count with decay factor \a d
+  IntVarBranch INT_VAR_AFC_MIN(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count
+  IntVarBranch INT_VAR_AFC_MIN(IntAFC a, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count with decay factor \a d
+  IntVarBranch INT_VAR_AFC_MAX(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count
+  IntVarBranch INT_VAR_AFC_MAX(IntAFC a, BranchTbl tbl=NULL);
+  /// Select variable with lowest activity with decay factor \a d
+  IntVarBranch INT_VAR_ACTIVITY_MIN(double d=1.0, BranchTbl tbl=NULL);    
+  /// Select variable with lowest activity
+  IntVarBranch INT_VAR_ACTIVITY_MIN(IntActivity a, BranchTbl tbl=NULL);    
+  /// Select variable with highest activity with decay factor \a d
+  IntVarBranch INT_VAR_ACTIVITY_MAX(double d=1.0, BranchTbl tbl=NULL);     
+  /// Select variable with highest activity
+  IntVarBranch INT_VAR_ACTIVITY_MAX(IntActivity a, BranchTbl tbl=NULL);     
+  /// Select variable with smallest min
+  IntVarBranch INT_VAR_MIN_MIN(BranchTbl tbl=NULL);         
+  /// Select variable with largest min
+  IntVarBranch INT_VAR_MIN_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest max
+  IntVarBranch INT_VAR_MAX_MIN(BranchTbl tbl=NULL); 
+  /// Select variable with largest max
+  IntVarBranch INT_VAR_MAX_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest domain size
+  IntVarBranch INT_VAR_SIZE_MIN(BranchTbl tbl=NULL);
+  /// Select variable with largest domain size
+  IntVarBranch INT_VAR_SIZE_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest degree divided by domain size
+  IntVarBranch INT_VAR_DEGREE_SIZE_MIN(BranchTbl tbl=NULL);
+  /// Select variable with largest degree divided by domain size
+  IntVarBranch INT_VAR_DEGREE_SIZE_MAX(BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count divided by domain size with decay factor \a d
+  IntVarBranch INT_VAR_AFC_SIZE_MIN(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with smallest accumulated failure count divided by domain size 
+  IntVarBranch INT_VAR_AFC_SIZE_MIN(IntAFC a, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count divided by domain size with decay factor \a d
+  IntVarBranch INT_VAR_AFC_SIZE_MAX(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with largest accumulated failure count divided by domain size
+  IntVarBranch INT_VAR_AFC_SIZE_MAX(IntAFC a, BranchTbl tbl=NULL);
+  /// Select variable with smallest activity divided by domain size with decay factor \a d
+  IntVarBranch INT_VAR_ACTIVITY_SIZE_MIN(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with smallest activity divided by domain size 
+  IntVarBranch INT_VAR_ACTIVITY_SIZE_MIN(IntActivity a, BranchTbl tbl=NULL);
+  /// Select variable with largest activity divided by domain size with decay factor \a d
+  IntVarBranch INT_VAR_ACTIVITY_SIZE_MAX(double d=1.0, BranchTbl tbl=NULL);
+  /// Select variable with largest activity divided by domain size 
+  IntVarBranch INT_VAR_ACTIVITY_SIZE_MAX(IntActivity a, BranchTbl tbl=NULL);
+  /** \brief Select variable with smallest min-regret
+   *
+   * The min-regret of a variable is the difference between the
+   * smallest and second-smallest value still in the domain.
+   */
+  IntVarBranch INT_VAR_REGRET_MIN_MIN(BranchTbl tbl=NULL);
+  /** \brief Select variable with largest min-regret
+   *
+   * The min-regret of a variable is the difference between the
+   * smallest and second-smallest value still in the domain.
+   */
+  IntVarBranch INT_VAR_REGRET_MIN_MAX(BranchTbl tbl=NULL);
+  /** \brief Select variable with smallest max-regret
+   *
+   * The max-regret of a variable is the difference between the
+   * largest and second-largest value still in the domain.
+   */
+  IntVarBranch INT_VAR_REGRET_MAX_MIN(BranchTbl tbl=NULL);
+  /** \brief Select variable with largest max-regret
+   *
+   * The max-regret of a variable is the difference between the
+   * largest and second-largest value still in the domain.
+   */
+  IntVarBranch INT_VAR_REGRET_MAX_MAX(BranchTbl tbl=NULL);
   //@}
+
+}
+
+#include <gecode/int/branch/var.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Which values to select for branching first
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  class IntValBranch : public ValBranch {
+  public:
+    /// Which value selection
+    enum Select {
+      SEL_MIN,        ///< Select smallest value
+      SEL_MED,        ///< Select greatest value not greater than the median
+      SEL_MAX,        ///< Select largest value
+      SEL_RND,        ///< Select random value
+      SEL_SPLIT_MIN,  ///< Select values not greater than mean of smallest and largest value
+      SEL_SPLIT_MAX,  ///< Select values greater than mean of smallest and largest value
+      SEL_RANGE_MIN,  ///< Select the smallest range of the variable domain if it has several ranges, otherwise select values not greater than mean of smallest and largest value
+      SEL_RANGE_MAX,  ///< Select the largest range of the variable domain if it has several ranges, otherwise select values greater than mean of smallest and largest value
+      SEL_VAL_COMMIT, ///< Select value according to user-defined functions
+      SEL_VALUES_MIN, ///< Select all values starting from smallest
+      SEL_VALUES_MAX, ///< Select all values starting from largest
+      SEL_NEAR_MIN,   ///< Select value nearest to a given value, use smaller one in case of ties
+      SEL_NEAR_MAX,   ///< Select value nearest to a given value, use larger one in case of ties 
+      SEL_NEAR_INC,   ///< Select value near to a given value, increment values first
+      SEL_NEAR_DEC    ///< Select value near to a given value, decrement values first
+   };
+  protected:
+    /// Array of values for near strategies
+    IntSharedArray n;
+    /// Which value to select
+    Select s;
+  public:
+    /// Initialize with selection strategy \a s
+    IntValBranch(Select s = SEL_MIN);
+    /// Initialize with random number generator \a r
+    IntValBranch(Rnd r);
+    /// Initialize with value function \a f and commit function \a c
+    IntValBranch(VoidFunction v, VoidFunction c);
+    /// Initialize with selection startegy \a s and values \a n
+    IntValBranch(Select s, IntSharedArray n);
+    /// Return selection strategy
+    Select select(void) const;
+    /// Return shared array of values
+    IntSharedArray values(void) const;
+  };
+
+  /**
+   * \defgroup TaskModelIntBranchVal Value selection for integer and Boolean variables
+   * \ingroup TaskModelIntBranch
+   */
+  //@{
+  /// Select smallest value
+  IntValBranch INT_VAL_MIN(void);
+  /// Select greatest value not greater than the median
+  IntValBranch INT_VAL_MED(void);
+  /// Select largest value
+  IntValBranch INT_VAL_MAX(void);
+  /// Select random value
+  IntValBranch INT_VAL_RND(Rnd r);
+  /// Select values not greater than mean of smallest and largest value
+  IntValBranch INT_VAL_SPLIT_MIN(void);
+  /// Select values greater than mean of smallest and largest value
+  IntValBranch INT_VAL_SPLIT_MAX(void);
+  /// Select the smallest range of the variable domain if it has several ranges, otherwise select values not greater than mean of smallest and largest value
+  IntValBranch INT_VAL_RANGE_MIN(void);
+  /// Select the largest range of the variable domain if it has several ranges, otherwise select values greater than mean of smallest and largest value
+  IntValBranch INT_VAL_RANGE_MAX(void);
+  /**
+   * \brief Select value as defined by the value function \a v and commit function \a c
+   * Uses a commit function as default that posts the constraints that 
+   * a variable \a x must be equal to a value \a n for the first alternative
+   * and that \a x must be different from \a n for the second alternative.
+   */
+  IntValBranch INT_VAL(IntBranchVal v, IntBranchCommit c=NULL);
+  /**
+   * \brief Select value as defined by the value function \a v and commit function \a c
+   * Uses a commit function as default that posts the constraints that 
+   * a variable \a x must be equal to a value \a n for the first alternative
+   * and that \a x must be different from \a n for the second alternative.
+   */
+  IntValBranch INT_VAL(BoolBranchVal v, BoolBranchCommit c=NULL);
+  /// Try all values starting from smallest
+  IntValBranch INT_VALUES_MIN(void); 
+  /// Try all values starting from largest
+  IntValBranch INT_VALUES_MAX(void);
+  /// Try value nearest to a given value for a variable, in case of ties use the smaller value
+  IntValBranch INT_VAL_NEAR_MIN(IntSharedArray n);
+  /// Try value nearest to a given value for a variable, in case of ties use the larger value
+  IntValBranch INT_VAL_NEAR_MAX(IntSharedArray n);
+  /// Try value larger than a given value for a variable first
+  IntValBranch INT_VAL_NEAR_INC(IntSharedArray n);
+  /// Try value smaller than a given value for a variable first
+  IntValBranch INT_VAL_NEAR_DEC(IntSharedArray n);
+  //@}
+
+}
+
+#include <gecode/int/branch/val.hpp>
+
+namespace Gecode {
+
+  /**
+   * \brief Which values to select for assignment
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  class IntAssign : public ValBranch {
+  public:
+    /// Which value selection
+    enum Select {
+      SEL_MIN,       ///< Select smallest value
+      SEL_MED,       ///< Select greatest value not greater than the median
+      SEL_MAX,       ///< Select largest value
+      SEL_RND,       ///< Select random value
+      SEL_VAL_COMMIT ///< Select value according to user-defined functions
+    };
+  protected:
+    /// Which value to select
+    Select s;
+  public:
+    /// Initialize with selection strategy \a s
+    IntAssign(Select s = SEL_MIN);
+    /// Initialize with random number generator \a r
+    IntAssign(Rnd r);
+    /// Initialize with value function \a f and commit function \a c
+    IntAssign(VoidFunction v, VoidFunction c);
+    /// Return selection strategy
+    Select select(void) const;
+  };
+
+  /**
+   * \defgroup TaskModelIntBranchAssign Value selection for assigning integer and Boolean variables
+   * \ingroup TaskModelIntBranch
+   */
+  //@{
+  /// Select smallest value
+  IntAssign INT_ASSIGN_MIN(void);
+  /// Select greatest value not greater than the median
+  IntAssign INT_ASSIGN_MED(void);
+  /// Select largest value
+  IntAssign INT_ASSIGN_MAX(void);
+  /// Select random value
+  IntAssign INT_ASSIGN_RND(Rnd r);
+  /**
+   * \brief Select value as defined by the value function \a v and commit function \a c
+   *
+   * Uses a commit function as default that posts the constraint that 
+   * a variable \a x must be equal to the value \a n.
+   */
+  IntAssign INT_ASSIGN(IntBranchVal v, IntBranchCommit c=NULL);
+  /**
+   * \brief Select value as defined by the value function \a v and commit function \a c
+   *
+   * Uses a commit function as default that posts the constraint that 
+   * a variable \a x must be equal to the value \a n.
+   */
+  IntAssign INT_ASSIGN(BoolBranchVal v, BoolBranchCommit c=NULL);
+  //@}
+
+}
+
+#include <gecode/int/branch/assign.hpp>
+
+namespace Gecode {
+  /**
+   * \brief Branch over \a x with variable selection \a vars and value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const IntVarArgs& x,
+         IntVarBranch vars, IntValBranch vals, 
+         IntBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const IntVarArgs& x,
+         TieBreak<IntVarBranch> vars, IntValBranch vals,
+         IntBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, IntVar x, IntValBranch vals);
+  /**
+   * \brief Branch over \a x with variable selection \a vars and value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const BoolVarArgs& x,
+         IntVarBranch vars, IntValBranch vals,
+         BoolBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const BoolVarArgs& x,
+         TieBreak<IntVarBranch> vars, IntValBranch vals,
+         BoolBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, BoolVar x, IntValBranch vals);
+
+  /**
+   * \brief Assign all \a x with value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  assign(Home home, const IntVarArgs& x, IntAssign vals,
+         IntBranchFilter ibf=NULL);
+  /**
+   * \brief Assign \a x with value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  assign(Home home, IntVar x, IntAssign vals);
+  /**
+   * \brief Assign all \a x with value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  assign(Home home, const BoolVarArgs& x, IntAssign vals,
+         BoolBranchFilter bbf=NULL);
+  /**
+   * \brief Assign \a x with value selection \a vals
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  assign(Home home, BoolVar x, IntAssign vals);
+
+}
+
+namespace Gecode {
 
   /** Print DFA \a d
    * \relates Gecode::DFA
@@ -3468,6 +4116,162 @@ namespace Gecode {
   std::basic_ostream<Char,Traits>&
   operator <<(std::basic_ostream<Char,Traits>& os, const TupleSet& ts);
 
+}
+
+// LDSB-related declarations.
+namespace Gecode {
+
+  namespace Int { namespace LDSB {
+    class SymmetryObject;
+  }}
+
+  /**
+   * \brief A reference-counted pointer to a SymmetryObject
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  class GECODE_INT_EXPORT SymmetryHandle {
+  public:
+    /// Symmetry object that this handle refers to.
+    Int::LDSB::SymmetryObject* ref;
+    /// Increment counter
+    void increment(void);
+    /// Decrement counter
+    void decrement(void);
+  public:
+    /// Default constructor
+    SymmetryHandle(void);
+    /// Initialies with a SymmetryObject
+    SymmetryHandle(Int::LDSB::SymmetryObject* o);
+    /// Copy constructor
+    SymmetryHandle(const SymmetryHandle& h);
+    /// Assignment operator
+    const SymmetryHandle& operator=(const SymmetryHandle& h);
+    /// Destructor
+    ~SymmetryHandle(void);
+  };
+  class Symmetries;
+  /// Traits of %Symmetries
+  template<>
+  class ArrayTraits<ArgArray<SymmetryHandle> > {
+  public:
+    typedef Symmetries     StorageType;
+    typedef SymmetryHandle ValueType;
+    typedef Symmetries     ArgsType;
+  };
+
+  /**
+   * \defgroup TaskModelIntBranchSymm Symmetry declarations
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  //@{
+  /// Collection of symmetries
+  class Symmetries : public ArgArray<SymmetryHandle> {};
+  // If this is instead a typedef, strange things happen with the
+  // overloading of the "branch" function.
+
+  /// Variables in \a x are interchangeable
+  GECODE_INT_EXPORT SymmetryHandle VariableSymmetry(const IntVarArgs& x);
+  /// Variables in \a x are interchangeable
+  GECODE_INT_EXPORT SymmetryHandle VariableSymmetry(const BoolVarArgs& x);
+  /// Specified variables in \a x are interchangeable
+  GECODE_INT_EXPORT SymmetryHandle VariableSymmetry(const IntVarArgs& x, 
+                                                    const IntArgs& indices);
+  /// Values in \a v are interchangeable
+  GECODE_INT_EXPORT SymmetryHandle ValueSymmetry(const IntArgs& v);
+  /// Values in \a v are interchangeable
+  GECODE_INT_EXPORT SymmetryHandle ValueSymmetry(const IntSet& v);
+  /// All values in the domain of the given variable are interchangeable
+  GECODE_INT_EXPORT SymmetryHandle ValueSymmetry(IntVar vars);
+  /**
+   * \brief Variable sequences in \a x of size \a ss are interchangeable
+   *
+   * The size of \a x must be a multiple of \a ss. 
+   */
+  GECODE_INT_EXPORT
+  SymmetryHandle VariableSequenceSymmetry(const IntVarArgs& x, int ss);
+  /**
+   * \brief Variable sequences in \a x of size \a ss are interchangeable
+   *
+   * The size of \a x must be a multiple of \a ss. 
+   */
+  GECODE_INT_EXPORT
+  SymmetryHandle VariableSequenceSymmetry(const BoolVarArgs& x, int ss);
+  /**
+   * \brief Value sequences in \a v of size \a ss are interchangeable
+   *
+   * The size of \a v must be a multiple of \a ss. 
+   */
+  GECODE_INT_EXPORT
+  SymmetryHandle ValueSequenceSymmetry(const IntArgs& v, int ss);
+
+  /// The values from \a lower to \a upper (inclusive) can be reflected
+  GECODE_INT_EXPORT SymmetryHandle values_reflect(int lower, int upper);
+  /// The values in the domain of \x can be reflected
+  GECODE_INT_EXPORT SymmetryHandle values_reflect(IntVar x);
+  //@}
+
+  /**
+   * \brief Branch over \a x with variable selection \a vars and value
+   * selection \a vals with symmetry breaking
+   *
+   * Throws LDSBBadValueSelection exception if \a vals is any of
+   * SEL_SPLIT_MIN, SEL_SPLIT_MAX, SEL_RANGE_MIN, SEL_RANGE_MAX,
+   * SEL_VALUES_MIN, and SEL_VALUES_MAX, or if \a vals is
+   * SEL_VAL_COMMIT with a custom commit function.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const IntVarArgs& x,
+         IntVarBranch vars, IntValBranch vals,
+         const Symmetries& syms, IntBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with tie-breaking variable selection \a
+   * vars and value selection \a vals with symmetry breaking
+   *
+   * Throws LDSBBadValueSelection exception if \a vals is any of
+   * SEL_SPLIT_MIN, SEL_SPLIT_MAX, SEL_RANGE_MIN, SEL_RANGE_MAX,
+   * SEL_VALUES_MIN, and SEL_VALUES_MAX, or if \a vals is
+   * SEL_VAL_COMMIT with a custom commit function.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const IntVarArgs& x,
+         TieBreak<IntVarBranch> vars, IntValBranch vals,
+         const Symmetries& syms, IntBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with variable selection \a vars and value
+   * selection \a vals with symmetry breaking
+   *
+   * Throws LDSBBadValueSelection exception if \a vals is any of
+   * SEL_SPLIT_MIN, SEL_SPLIT_MAX, SEL_RANGE_MIN, SEL_RANGE_MAX,
+   * SEL_VALUES_MIN, and SEL_VALUES_MAX, or if \a vals is
+   * SEL_VAL_COMMIT with a custom commit function.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const BoolVarArgs& x,
+         IntVarBranch vars, IntValBranch vals,
+         const Symmetries& syms, BoolBranchFilter bf=NULL);
+  /**
+   * \brief Branch over \a x with tie-breaking variable selection \a
+   * vars and value selection \a vals with symmetry breaking
+   *
+   * Throws LDSBBadValueSelection exception if \a vals is any of
+   * SEL_SPLIT_MIN, SEL_SPLIT_MAX, SEL_RANGE_MIN, SEL_RANGE_MAX,
+   * SEL_VALUES_MIN, and SEL_VALUES_MAX, or if \a vals is
+   * SEL_VAL_COMMIT with a custom commit function.
+   *
+   * \ingroup TaskModelIntBranch
+   */
+  GECODE_INT_EXPORT BrancherHandle
+  branch(Home home, const BoolVarArgs& x,
+         TieBreak<IntVarBranch> vars, IntValBranch vals,
+         const Symmetries& syms, BoolBranchFilter bf=NULL);
 }
 
 #endif

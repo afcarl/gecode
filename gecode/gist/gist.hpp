@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-08-25 18:43:31 +1000 (Thu, 25 Aug 2011) $ by $Author: tack $
- *     $Revision: 12352 $
+ *     $Date: 2012-03-30 05:58:02 +0200 (Fri, 30 Mar 2012) $ by $Author: tack $
+ *     $Revision: 12665 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -94,6 +94,17 @@ namespace Gecode { namespace Gist {
            Iter::Ranges::equal(xlubr,ylubr) &&
            x.cardMin() == y.cardMin() &&
            y.cardMax() == y.cardMax()) ) {
+      std::ostringstream ret;
+      ret << x_n << "=" << x << " -> " << y;
+      return ret.str();
+    }
+    return "";
+  }
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+  inline std::string
+  Comparator::compare(std::string x_n, FloatVar x, FloatVar y) {
+    if (! (x.min() == y.min() && x.max() == y.max()) ) {
       std::ostringstream ret;
       ret << x_n << "=" << x << " -> " << y;
       return ret.str();

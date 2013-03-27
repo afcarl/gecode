@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2011-02-02 00:11:54 +1100 (Wed, 02 Feb 2011) $ by $Author: schulte $
- *     $Revision: 11591 $
+ *     $Date: 2013-03-07 20:56:21 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13463 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -44,9 +44,17 @@ namespace Gecode { namespace Search {
 
   /// Clone space \a s dependening on options \a o
   forceinline Space*
-  snapshot(Space* s, const Options& o, bool share=true) {
-    return o.clone ? s->clone(share) : s;
-  }
+  snapshot(Space* s, const Options& o, bool share=true);
+
+  /// A failed space by construction
+  class GECODE_VTABLE_EXPORT FailedSpace : public Space {
+  public:
+    /// Constructor for creation
+    FailedSpace(void);
+    /// Copy during cloning
+    GECODE_SEARCH_EXPORT
+    virtual Space* copy(bool share);
+  };
 
   /// Virtualize a worker to an engine
   template<class Worker>
@@ -62,7 +70,23 @@ namespace Gecode { namespace Search {
     virtual Search::Statistics statistics(void) const;
     /// Check whether engine has been stopped
     virtual bool stopped(void) const;
+    /// Reset engine to restart at space \a s
+    virtual void reset(Space* s);
   };
+
+
+
+  forceinline Space*
+  snapshot(Space* s, const Options& o, bool share) {
+    return o.clone ? s->clone(share) : s;
+  }
+
+  
+  forceinline
+  FailedSpace::FailedSpace(void) {
+    fail();
+  }
+  
 
   template<class Worker>
   WorkerToEngine<Worker>::WorkerToEngine(Space* s, size_t sz, 
@@ -82,6 +106,11 @@ namespace Gecode { namespace Search {
   bool 
   WorkerToEngine<Worker>::stopped(void) const {
     return w.stopped();
+  }
+  template<class Worker>
+  void
+  WorkerToEngine<Worker>::reset(Space* s) {
+    w.reset(s);
   }
 
 }}

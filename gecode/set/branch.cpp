@@ -4,11 +4,11 @@
  *     Christian Schulte <schulte@gecode.org>
  *
  *  Copyright:
- *     Christian Schulte, 2002
+ *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2010-03-12 08:16:29 +1100 (Fri, 12 Mar 2010) $ by $Author: schulte $
- *     $Revision: 10418 $
+ *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
+ *     $Revision: 13455 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -38,91 +38,89 @@
 #include <gecode/set/branch.hh>
 
 namespace Gecode {
-
-  void
-  assign(Home home, const SetVarArgs& x, SetAssign vals,
-         const ValBranchOptions& o_vals) {
+  BrancherHandle
+  branch(Home home, const SetVarArgs& x,
+         SetVarBranch vars, SetValBranch vals, SetBranchFilter bf) {
     using namespace Set;
-    if (home.failed()) return;
+    if (home.failed()) return BrancherHandle();
+    vars.expand(home,x);
     ViewArray<SetView> xv(home,x);
-    ViewSelNone<SetView> v(home,VarBranchOptions::def);
-    switch (vals) {
-    case SET_ASSIGN_MIN_INC:
-      {
-        Branch::AssignValMin<true> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValMin<true> >
-          ::post(home,xv,v,a);
+    ViewSel<SetView>* vs[1] = { 
+      Branch::viewsel(home,vars) 
+    };
+    return ViewValBrancher<SetView,1,int,2>::post
+      (home,xv,vs,Branch::valselcommit(home,vals),bf);
+  }
+
+  BrancherHandle
+  branch(Home home, const SetVarArgs& x,
+         TieBreak<SetVarBranch> vars, SetValBranch vals, SetBranchFilter bf) {
+    using namespace Set;
+    if (home.failed()) return BrancherHandle();
+    vars.a.expand(home,x);
+    if ((vars.a.select() == SetVarBranch::SEL_NONE) ||
+        (vars.a.select() == SetVarBranch::SEL_RND))
+      vars.b = SET_VAR_NONE();
+    vars.b.expand(home,x);
+    if ((vars.b.select() == SetVarBranch::SEL_NONE) ||
+        (vars.b.select() == SetVarBranch::SEL_RND))
+      vars.c = SET_VAR_NONE();
+    vars.c.expand(home,x);
+    if ((vars.c.select() == SetVarBranch::SEL_NONE) ||
+        (vars.c.select() == SetVarBranch::SEL_RND))
+      vars.d = SET_VAR_NONE();
+    vars.d.expand(home,x);
+    if (vars.b.select() == SetVarBranch::SEL_NONE) {
+      return branch(home,x,vars.a,vals,bf);
+    } else {
+      ViewArray<SetView> xv(home,x);
+      ValSelCommitBase<SetView,int>* vsc = Branch::valselcommit(home,vals); 
+      if (vars.c.select() == SetVarBranch::SEL_NONE) {
+        ViewSel<SetView>* vs[2] = { 
+          Branch::viewsel(home,vars.a),Branch::viewsel(home,vars.b)
+        };
+        return ViewValBrancher<SetView,2,int,2>::post(home,xv,vs,vsc,bf);
+      } else if (vars.d.select() == SetVarBranch::SEL_NONE) {
+        ViewSel<SetView>* vs[3] = { 
+          Branch::viewsel(home,vars.a),Branch::viewsel(home,vars.b),
+          Branch::viewsel(home,vars.c)
+        };
+        return ViewValBrancher<SetView,3,int,2>::post(home,xv,vs,vsc,bf);
+      } else {
+        ViewSel<SetView>* vs[4] = { 
+          Branch::viewsel(home,vars.a),Branch::viewsel(home,vars.b),
+          Branch::viewsel(home,vars.c),Branch::viewsel(home,vars.d)
+        };
+        return ViewValBrancher<SetView,4,int,2>::post(home,xv,vs,vsc,bf);
       }
-      break;
-    case SET_ASSIGN_MIN_EXC:
-      {
-        Branch::AssignValMin<false> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValMin<false> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case SET_ASSIGN_MED_INC:
-      {
-        Branch::AssignValMed<true> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValMed<true> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case SET_ASSIGN_MED_EXC:
-      {
-        Branch::AssignValMed<false> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValMed<false> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case SET_ASSIGN_MAX_INC:
-      {
-        Branch::AssignValMax<true> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValMax<true> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case SET_ASSIGN_MAX_EXC:
-      {
-        Branch::AssignValMax<false> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValMax<false> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case SET_ASSIGN_RND_INC:
-      {
-        Branch::AssignValRnd<true> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValRnd<true> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    case SET_ASSIGN_RND_EXC:
-      {
-        Branch::AssignValRnd<false> a(home,o_vals);
-        ViewValBrancher<ViewSelNone<SetView>,Branch::AssignValRnd<false> >
-          ::post(home,xv,v,a);
-      }
-      break;
-    default:
-      throw UnknownBranching("Set::assign");
     }
   }
 
-  void
-  branch(Home home, SetVar x, SetValBranch vals,
-         const ValBranchOptions& o_vals) {
+  BrancherHandle
+  branch(Home home, SetVar x, SetValBranch vals) {
     SetVarArgs xv(1); xv[0]=x;
-    branch(home, xv, SET_VAR_NONE, vals, VarBranchOptions::def, o_vals);
+    return branch(home, xv, SET_VAR_NONE(), vals);
   }
   
-  void
-  assign(Home home, SetVar x, SetAssign vals,
-         const ValBranchOptions& o_vals) {
-    SetVarArgs xv(1); xv[0]=x;
-    assign(home, xv, vals, o_vals);
+  BrancherHandle
+  assign(Home home, const SetVarArgs& x, SetAssign sa,
+         SetBranchFilter bf) {
+    using namespace Set;
+    if (home.failed()) return BrancherHandle();
+    ViewArray<SetView> xv(home,x);
+    ViewSel<SetView>* vs[1] = { 
+      new (home) ViewSelNone<SetView>(home,SET_VAR_NONE())
+    };
+    return ViewValBrancher<SetView,1,int,1>::post
+      (home,xv,vs,Branch::valselcommit(home,sa),bf);
   }
 
+  BrancherHandle
+  assign(Home home, SetVar x, SetAssign sa) {
+    SetVarArgs xv(1); xv[0]=x;
+    return assign(home, xv, sa);
+  }
+  
 }
 
-// STATISTICS: set-branch
-
+// STATISTICS: set-post

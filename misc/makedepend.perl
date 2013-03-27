@@ -6,8 +6,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2008-09-03 22:14:11 +1000 (Wed, 03 Sep 2008) $ by $Author: tack $
-#     $Revision: 7787 $
+#     $Date: 2012-03-28 17:26:41 +0200 (Wed, 28 Mar 2012) $ by $Author: schulte $
+#     $Revision: 12649 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -57,7 +57,7 @@ while ($target = $ARGV[$i++]) {
       if ($l =~ /^\#include <(gecode\/.*)>/ || $l =~ /^\#include "(.*)"/) {
 	$g = $1;
 	$g =~ s|^\./||og;
-	if (!$done{$g}) {
+	if (!($g =~ /^gecode\/third-party/) && !$done{$g}) {
 	  push @todo, $g;
 	  if (-e "$root/$g") {
 	    $done{$g} = "$root/";

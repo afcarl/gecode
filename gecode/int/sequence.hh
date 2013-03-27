@@ -7,7 +7,7 @@
  *     David Rijsman, 2009
  *
  *  Last modified:
- *     $Date: 2010-04-08 20:35:31 +1000 (Thu, 08 Apr 2010) $
+ *     $Date: 2010-04-08 12:35:31 +0200 (Thu, 08 Apr 2010) $
  *     $Revision: 10684 $
  *
  *  This file is part of Gecode, the generic constraint

@@ -11,8 +11,8 @@
  *     Christian Schulte, 2007
  *
  *  Last modified:
- *     $Date: 2011-06-17 00:13:18 +1000 (Fri, 17 Jun 2011) $ by $Author: schulte $
- *     $Revision: 12053 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -288,7 +288,7 @@ public:
 
     distinct(*this, game, opt.icl());
 
-    branch(*this, game, INT_VAR_NONE, INT_VAL_SPLIT_MIN);
+    branch(*this, game, INT_VAR_NONE(), INT_VAL_SPLIT_MIN());
   }
   /// Constructor for cloning \a s
   SportsLeague(bool share, SportsLeague& s)

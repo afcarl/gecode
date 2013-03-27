@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2011-05-03 00:31:59 +1000 (Tue, 03 May 2011) $ by $Author: schulte $
- *     $Revision: 11982 $
+ *     $Date: 2012-12-21 01:48:30 +0100 (Fri, 21 Dec 2012) $ by $Author: tack $
+ *     $Revision: 13214 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,6 +41,9 @@
 
 #if defined(GECODE_HAS_QT) && defined(GECODE_HAS_GIST)
 #include <QtGui>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#endif
 #endif
 
 using namespace Gecode;
@@ -91,7 +94,7 @@ public:
       distinct(*this, q, opt.icl());
       break;
     }
-    branch(*this, q, INT_VAR_SIZE_MIN, INT_VAL_MIN);
+    branch(*this, q, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
   }
 
   /// Constructor for cloning \a s

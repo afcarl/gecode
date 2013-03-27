@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2009-10-15 20:39:29 +1100 (Thu, 15 Oct 2009) $ by $Author: schulte $
- *     $Revision: 9919 $
+ *     $Date: 2012-10-01 15:02:39 +0200 (Mon, 01 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13121 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -90,13 +90,14 @@ namespace Gecode { namespace Support {
   }
   inline void
   Thread::run(Runnable* r) {
-    m.acquire();
+    m()->acquire();
     if (idle != NULL) {
-      idle->run(r);
+      Run* i = idle;
       idle = idle->n;
-      m.release();
+      m()->release();
+      i->run(r);
     } else {
-      m.release();
+      m()->release();
       (void) new Run(r);
     }
   }

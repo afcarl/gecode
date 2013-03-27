@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-23 00:02:09 +1000 (Tue, 23 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12330 $
+ *     $Date: 2011-11-18 16:02:48 +0100 (Fri, 18 Nov 2011) $ by $Author: schulte $
+ *     $Revision: 12472 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -60,23 +60,54 @@ namespace Gecode {
   }
 
   void
-  member(Home home, const IntVarArgs& x, IntVar y, BoolVar b,
+  member(Home home, const IntVarArgs& x, IntVar y, Reify r,
          IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
 
     ViewArray<IntView> xv(home,x);
-    GECODE_ES_FAIL(Member::ReProp<IntView>::post(home,xv,y,b));
+
+    switch (r.mode()) {
+    case RM_EQV:
+      GECODE_ES_FAIL((Member::ReProp<IntView,RM_EQV>
+                      ::post(home,xv,y,r.var()))); 
+      break;
+    case RM_IMP:
+      GECODE_ES_FAIL((Member::ReProp<IntView,RM_IMP>
+                      ::post(home,xv,y,r.var())));
+      break;
+    case RM_PMI:
+      GECODE_ES_FAIL((Member::ReProp<IntView,RM_PMI>
+                      ::post(home,xv,y,r.var())));
+      break;
+    default: throw UnknownReifyMode("Int::member");
+    }
   }
 
   void
-  member(Home home, const BoolVarArgs& x, BoolVar y, BoolVar b,
+  member(Home home, const BoolVarArgs& x, BoolVar y, Reify r,
          IntConLevel) {
     using namespace Int;
     if (home.failed()) return;
 
     ViewArray<BoolView> xv(home,x);
-    GECODE_ES_FAIL(Member::ReProp<BoolView>::post(home,xv,y,b));
+
+    switch (r.mode()) {
+    case RM_EQV:
+      GECODE_ES_FAIL((Member::ReProp<BoolView,RM_EQV>
+                      ::post(home,xv,y,r.var()))); 
+      break;
+    case RM_IMP:
+      GECODE_ES_FAIL((Member::ReProp<BoolView,RM_IMP>
+                      ::post(home,xv,y,r.var())));
+      break;
+    case RM_PMI:
+      GECODE_ES_FAIL((Member::ReProp<BoolView,RM_PMI>
+                      ::post(home,xv,y,r.var())));
+      break;
+    default: throw UnknownReifyMode("Int::member");
+    }
+
   }
 
 }

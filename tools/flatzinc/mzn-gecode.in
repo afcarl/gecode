@@ -7,8 +7,8 @@
 #     Guido Tack, 2012
 #
 #  Last modified:
-#     $Date: 2012-03-21 20:28:46 +1100 (Wed, 21 Mar 2012) $ by $Author: schulte $
-#     $Revision: 12608 $
+#     $Date: 2013-03-08 04:24:10 +0100 (Fri, 08 Mar 2013) $ by $Author: tack $
+#     $Revision: 13479 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -38,4 +38,4 @@
 
 prefix=@prefix@
 datarootdir=@datarootdir@
-FLATZINC_CMD=fz minizinc -I @datadir@/gecode/mznlib $*
+FLATZINC_CMD=fzn-gecode minizinc -I @datadir@/gecode/mznlib "$@"

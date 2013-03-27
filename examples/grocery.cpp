@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -79,7 +79,7 @@ public:
     // Break symmetries: order the variables
     rel(*this, abcd, IRT_LQ);
 
-    branch(*this, abcd, INT_VAR_NONE, INT_VAL_SPLIT_MAX);
+    branch(*this, abcd, INT_VAR_NONE(), INT_VAL_SPLIT_MAX());
   }
 
   /// Constructor for cloning \a s

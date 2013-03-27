@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-22 00:27:00 +1000 (Mon, 22 Aug 2011) $ by $Author: schulte $
- *     $Revision: 12319 $
+ *     $Date: 2013-02-14 16:29:11 +0100 (Thu, 14 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,19 +41,19 @@
 namespace Gecode {
 
   void
-  nvalues(Home home, const IntVarArgs& x, IntRelType r, int y,
+  nvalues(Home home, const IntVarArgs& x, IntRelType irt, int y,
           IntConLevel) {
     using namespace Int;
     Limits::check(y,"Int::nvalues");
     // Due to the quadratic Boolean matrix used in propagation
-    Limits::check(static_cast<double>(x.size())*static_cast<double>(x.size()),
-                  "Int::nvalues");
+    long long int n = x.size();
+    Limits::check(n*n,"Int::nvalues");
 
     if (home.failed()) return;
 
     ViewArray<IntView> xv(home,x);
 
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       {
         ConstIntView yv(y);
@@ -91,23 +91,23 @@ namespace Gecode {
   }
 
   void
-  nvalues(Home home, const IntVarArgs& x, IntRelType r, IntVar y,
+  nvalues(Home home, const IntVarArgs& x, IntRelType irt, IntVar y,
           IntConLevel) {
     using namespace Int;
     // Due to the quadratic Boolean matrix used in propagation
-    Limits::check(static_cast<double>(x.size())*static_cast<double>(x.size()),
-                  "Int::nvalues");
+    long long int n = x.size();
+    Limits::check(n*n,"Int::nvalues");
 
     if (home.failed()) return;
 
     if (y.assigned()) {
-      nvalues(home, x, r, y.val());
+      nvalues(home, x, irt, y.val());
       return;
     }
 
     ViewArray<IntView> xv(home,x);
 
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       GECODE_ES_FAIL(NValues::EqInt<IntView>::post(home,xv,y));
       break;
@@ -142,7 +142,7 @@ namespace Gecode {
   }
 
   void
-  nvalues(Home home, const BoolVarArgs& x, IntRelType r, int y,
+  nvalues(Home home, const BoolVarArgs& x, IntRelType irt, int y,
           IntConLevel) {
     using namespace Int;
     Limits::check(y,"Int::nvalues");
@@ -152,7 +152,7 @@ namespace Gecode {
     Region region(home);
     ViewArray<BoolView> xv(region,x);
 
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       {
         ConstIntView yv(y);
@@ -190,21 +190,21 @@ namespace Gecode {
   }
 
   void
-  nvalues(Home home, const BoolVarArgs& x, IntRelType r, IntVar y,
+  nvalues(Home home, const BoolVarArgs& x, IntRelType irt, IntVar y,
           IntConLevel) {
     using namespace Int;
 
     if (home.failed()) return;
 
     if (y.assigned()) {
-      nvalues(home, x, r, y.val());
+      nvalues(home, x, irt, y.val());
       return;
     }
 
     Region region(home);
     ViewArray<BoolView> xv(region,x);
 
-    switch (r) {
+    switch (irt) {
     case IRT_EQ:
       GECODE_ES_FAIL(NValues::EqBool<IntView>::post(home,xv,y));
       break;

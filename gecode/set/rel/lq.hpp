@@ -7,8 +7,8 @@
  *     Guido Tack, 2011
  *
  *  Last modified:
- *     $Date: 2011-08-25 00:34:16 +1000 (Thu, 25 Aug 2011) $ by $Author: tack $
- *     $Revision: 12346 $
+ *     $Date: 2013-02-08 16:47:00 +0100 (Fri, 08 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13278 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -85,7 +85,8 @@ namespace Gecode { namespace Set { namespace Rel {
       CSIter(void) {}
       /// Constructor
       CSIter(CharacteristicSets& cs0, int xoff0, int yoff0)
-        : cs(&cs0), i(-1), xoff(xoff0), yoff(yoff0) {
+        : cs(&cs0), i(static_cast<unsigned int>(-1)), 
+          xoff(xoff0), yoff(yoff0) {
         ++(*this);
       }
       /// Test if iterator is finished

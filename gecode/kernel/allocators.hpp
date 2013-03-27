@@ -10,8 +10,8 @@
  *     Gustavo Gutierrez
  *
  *  Last modified:
- *     $Date: 2010-10-11 21:10:44 +1100 (Mon, 11 Oct 2010) $ by $Author: tack $
- *     $Revision: 11514 $
+ *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13458 $
  *
  *  Permission is hereby granted, free of charge, to any person obtaining
  *  a copy of this software and associated documentation files (the
@@ -229,7 +229,7 @@ typedef std::set<int, std::less<int>, Gecode::region_allocator<int> > SR;
     /// Convert a const reference \a x to a const pointer
     const_pointer address(const_reference x) const { return &x; }
     /// Returns the largest size for which a call to allocate might succeed.
-    size_type max_size() const throw() {
+    size_type max_size(void) const throw() {
       return std::numeric_limits<size_type>::max() / 
         (sizeof(T)>0 ? sizeof(T) : 1);
     }
@@ -385,7 +385,7 @@ typedef std::set<int, std::less<int>, Gecode::region_allocator<int> > SR;
     /// Convert a const reference \a x to a const pointer
     const_pointer address(const_reference x) const { return &x; }
     /// Returns the largest size for which a call to allocate might succeed.
-    size_type max_size() const throw() {
+    size_type max_size(void) const throw() {
       return std::numeric_limits<size_type>::max() 
         / (sizeof(T)>0 ? sizeof(T) : 1);
     }
@@ -473,4 +473,4 @@ typedef std::set<int, std::less<int>, Gecode::region_allocator<int> > SR;
 
 }
 
-// STATISTICS: kernel-other
+// STATISTICS: kernel-memory

@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2011-07-14 02:56:36 +1000 (Thu, 14 Jul 2011) $ by $Author: tack $
- *     $Revision: 12195 $
+ *     $Date: 2013-03-11 06:26:07 +0100 (Mon, 11 Mar 2013) $ by $Author: tack $
+ *     $Revision: 13487 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -53,18 +53,16 @@ namespace Gecode {
     if ((s.size() != p.size()) || (s.size() != u.size()) ||
         (s.size() != t.size()))
       throw Int::ArgumentSizeMismatch("Int::cumulative");
-    double w = 0.0;
+    long long int w = 0;
     for (int i=p.size(); i--; ) {
-      Int::Limits::nonnegative(p[i],"Int::cumulative");
-      Int::Limits::nonnegative(u[i],"Int::cumulative");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i],
-                         "Int::cumulative");
-      Int::Limits::double_check(static_cast<double>(p[i]) * u[i],
-                                "Int::cumulative");
+      Limits::nonnegative(p[i],"Int::cumulative");
+      Limits::nonnegative(u[i],"Int::cumulative");
+      Limits::check(static_cast<long long int>(s[i].max()) + p[i], 
+                    "Int::cumulative");
+      mul_check(p[i],u[i]);
       w += s[i].width();
     }
-    Int::Limits::double_check(c.max() * w * s.size(),
-                              "Int::cumulative");
+    mul_check(c.max(),w,s.size());
     if (home.failed()) return;
 
     int minU = INT_MAX; int minU2 = INT_MAX; int maxU = INT_MIN;
@@ -128,18 +126,16 @@ namespace Gecode {
     if ((s.size() != p.size()) || (s.size() != u.size()) ||
         (s.size() != t.size()) || (s.size() != m.size()))
       throw Int::ArgumentSizeMismatch("Int::cumulative");
-    double w = 0.0;
+    long long int w = 0;
     for (int i=p.size(); i--; ) {
-      Int::Limits::nonnegative(p[i],"Int::cumulative");
-      Int::Limits::nonnegative(u[i],"Int::cumulative");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i],
-                         "Int::cumulative");
-      Int::Limits::double_check(static_cast<double>(p[i]) * u[i],
-                                "Int::cumulative");
+      Limits::nonnegative(p[i],"Int::cumulative");
+      Limits::nonnegative(u[i],"Int::cumulative");
+      Limits::check(static_cast<long long int>(s[i].max()) + p[i],
+                    "Int::cumulative");
+      mul_check(p[i],u[i]);
       w += s[i].width();
     }
-    Int::Limits::double_check(c.max() * w * s.size(),
-                              "Int::cumulative");
+    mul_check(c.max(),w,s.size());
     if (home.failed()) return;
     
     bool allMandatory = true;
@@ -196,18 +192,16 @@ namespace Gecode {
     using namespace Gecode::Int::Cumulative;
     if ((s.size() != p.size()) || (s.size() != u.size()))
       throw Int::ArgumentSizeMismatch("Int::cumulative");
-    double w = 0.0;
+    long long int w = 0;
     for (int i=p.size(); i--; ) {
-      Int::Limits::nonnegative(p[i],"Int::cumulative");
-      Int::Limits::nonnegative(u[i],"Int::cumulative");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i],
-                         "Int::cumulative");
-      Int::Limits::double_check(static_cast<double>(p[i]) * u[i],
-                                "Int::cumulative");
+      Limits::nonnegative(p[i],"Int::cumulative");
+      Limits::nonnegative(u[i],"Int::cumulative");
+      Limits::check(static_cast<long long int>(s[i].max()) + p[i],
+                    "Int::cumulative");
+      mul_check(p[i],u[i]);
       w += s[i].width();
     }
-    Int::Limits::double_check(c.max() * w * s.size(),
-                              "Int::cumulative");
+    mul_check(c.max(),w,s.size());
     if (home.failed()) return;
 
     int minU = INT_MAX; int minU2 = INT_MAX; int maxU = INT_MIN;
@@ -257,18 +251,16 @@ namespace Gecode {
     if ((s.size() != p.size()) || (s.size() != u.size()) ||
         (s.size() != m.size()))
       throw Int::ArgumentSizeMismatch("Int::cumulative");
-    double w = 0.0;
+    long long int w = 0;
     for (int i=p.size(); i--; ) {
-      Int::Limits::nonnegative(p[i],"Int::cumulative");
-      Int::Limits::nonnegative(u[i],"Int::cumulative");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i],
-                         "Int::cumulative");
-      Int::Limits::double_check(static_cast<double>(p[i]) * u[i],
-                                "Int::cumulative");
+      Limits::nonnegative(p[i],"Int::cumulative");
+      Limits::nonnegative(u[i],"Int::cumulative");
+      Limits::check(static_cast<long long int>(s[i].max()) + p[i],
+                    "Int::cumulative");
+      mul_check(p[i],u[i]);
       w += s[i].width();
     }
-    Int::Limits::double_check(c.max() * w * s.size(),
-                              "Int::cumulative");
+    mul_check(c.max(),w,s.size());
     if (home.failed()) return;
 
     bool allMandatory = true;
@@ -314,20 +306,18 @@ namespace Gecode {
     if ((s.size() != p.size()) || (s.size() != e.size()) ||
         (s.size() != u.size()))
       throw Int::ArgumentSizeMismatch("Int::cumulative");
-    double w = 0.0;
+    long long int w = 0;
     for (int i=p.size(); i--; ) {
       rel(home, p[i], IRT_GQ, 0);
     }
     for (int i=p.size(); i--; ) {
-      Int::Limits::nonnegative(u[i],"Int::cumulative");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i].max(),
-                         "Int::cumulative");
-      Int::Limits::double_check(static_cast<double>(p[i].max()) * u[i],
-                                "Int::cumulative");
+      Limits::nonnegative(u[i],"Int::cumulative");
+      Limits::check(static_cast<long long int>(s[i].max()) + p[i].max(),
+                    "Int::cumulative");
+      mul_check(p[i].max(),u[i]);
       w += s[i].width();
     }
-    Int::Limits::double_check(c.max() * w * s.size(),
-                              "Int::cumulative");
+    mul_check(c.max(),w,s.size());
     if (home.failed()) return;
 
     bool fixP = true;
@@ -380,17 +370,15 @@ namespace Gecode {
     for (int i=p.size(); i--; ) {
       rel(home, p[i], IRT_GQ, 0);
     }
-    double w = 0.0;
+    long long int w = 0;
     for (int i=p.size(); i--; ) {
-      Int::Limits::nonnegative(u[i],"Int::cumulative");
-      Int::Limits::check(static_cast<double>(s[i].max()) + p[i].max(),
-                         "Int::cumulative");
-      Int::Limits::double_check(static_cast<double>(p[i].max()) * u[i],
-                                "Int::cumulative");
+      Limits::nonnegative(u[i],"Int::cumulative");
+      Limits::check(static_cast<long long int>(s[i].max()) + p[i].max(),
+                    "Int::cumulative");
+      mul_check(p[i].max(),u[i]);
       w += s[i].width();
     }
-    Int::Limits::double_check(c.max() * w * s.size(),
-                              "Int::cumulative");
+    mul_check(c.max(),w,s.size());
     if (home.failed()) return;
 
     bool allMandatory = true;

@@ -9,8 +9,8 @@
 #     Guido Tack, 2006
 #
 #  Last modified:
-#     $Date: 2010-06-03 21:11:11 +1000 (Thu, 03 Jun 2010) $ by $Author: tack $
-#     $Revision: 11013 $
+#     $Date: 2012-09-10 19:38:07 +0200 (Mon, 10 Sep 2012) $ by $Author: schulte $
+#     $Revision: 13073 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -58,7 +58,7 @@ $modclear{"search"} = "Search engines";
 $modclear{"int"} = "Finite domain integers";
 $modclear{"set"} = "Finite integer sets";
 $modclear{"cpltset"} = "Finite integer sets with complete representation";
-$modclear{"minimodel"} = "Minimal modelling support";
+$modclear{"minimodel"} = "Minimal modeling support";
 $modclear{"graph"} = "Graph constraints";
 $modclear{"scheduling"} = "Scheduling constraints";
 $modclear{"driver"} = "Script commandline driver";

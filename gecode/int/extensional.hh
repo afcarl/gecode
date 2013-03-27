@@ -9,8 +9,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2010-07-15 01:46:18 +1000 (Thu, 15 Jul 2010) $ by $Author: schulte $
- *     $Revision: 11192 $
+ *     $Date: 2012-07-19 08:53:57 +0200 (Thu, 19 Jul 2012) $ by $Author: tack $
+ *     $Revision: 12963 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -252,7 +252,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     /// Constructor for posting
     Base(Home home, ViewArray<View>& x, const TupleSet& t);
     /// Initialize last support
-    void init_last(Space& home, Tuple** source);
+    void init_last(Space& home, Tuple** source, Tuple* base);
     /// Find last support for view at position \a i and value \a n
     Tuple last(int i, int n);
     /// Find last support for view at position \a i and value \a n

@@ -8,8 +8,8 @@ rem  Copyright:
 rem     Guido Tack, 2012
 rem
 rem  Last modified:
-rem     $Date: 2009-10-26 21:16:18 +0100 (Mon, 26 Oct 2009) $ by $Author: schulte $
-rem     $Revision: 9990 $
+rem     $Date: 2013-03-08 04:24:10 +0100 (Fri, 08 Mar 2013) $ by $Author: tack $
+rem     $Revision: 13479 $
 rem
 rem  This file is part of Gecode, the generic constraint
 rem  development environment:
@@ -37,5 +37,5 @@ rem
 rem
 
 setlocal
-set FLATZINC_CMD=fz
+set FLATZINC_CMD=fzn-gecode
 minizinc -I "%GECODEDIR%\mznlib" %*

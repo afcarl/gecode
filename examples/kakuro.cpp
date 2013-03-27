@@ -11,8 +11,8 @@
  *     Mikael Lagerkivst, 2007
  *
  *  Last modified:
- *     $Date: 2011-09-19 22:02:26 +1000 (Mon, 19 Sep 2011) $ by $Author: schulte $
- *     $Revision: 12400 $
+ *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13313 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -382,7 +382,7 @@ namespace {
     DistinctLinear(int n, int s) : x(*this,n,1,9) {
       distinct(*this, x);
       linear(*this, x, IRT_EQ, s);
-      branch(*this, x, INT_VAR_NONE, INT_VAL_SPLIT_MIN);
+      branch(*this, x, INT_VAR_NONE(), INT_VAL_SPLIT_MIN());
     }
     /// Constructor for cloning \a s
     DistinctLinear(bool share, DistinctLinear& s) : Space(share,s) {
@@ -574,7 +574,7 @@ public:
         row[i]=init(b(x+i+1,y));
       distinctlinear(cache,row,s,opt);
     }
-    branch(*this, f, INT_VAR_SIZE_AFC_MIN, INT_VAL_SPLIT_MIN);
+    branch(*this, f, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_SPLIT_MIN());
   }
   /// Constructor for cloning \a s
   Kakuro(bool share, Kakuro& s) : Script(share,s), w(s.w), h(s.h) {

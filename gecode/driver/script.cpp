@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2012-02-22 16:04:20 +1100 (Wed, 22 Feb 2012) $ by $Author: tack $
- *     $Revision: 12537 $
+ *     $Date: 2013-02-20 17:42:40 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13341 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -97,7 +97,7 @@ namespace Gecode { namespace Driver {
     return ::sqrt(s / (n-1)) / m;
   }
 
-  bool Cutoff::sigint;
+  bool CombinedStop::sigint;
 
 }}
 

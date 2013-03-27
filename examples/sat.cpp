@@ -9,8 +9,8 @@
  *     Guido Tack, 2008
  *
  *  Last modified:
- *     $Date: 2010-10-07 20:52:01 +1100 (Thu, 07 Oct 2010) $ by $Author: schulte $
- *     $Revision: 11473 $
+ *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
+ *     $Revision: 13061 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -120,7 +120,7 @@ public:
   /// The actual problem
   Sat(const SatOptions& opt) {
     parseDIMACS(opt.filename.c_str());
-    branch(*this, x, INT_VAR_NONE, INT_VAL_MIN);
+    branch(*this, x, INT_VAR_NONE(), INT_VAL_MIN());
   }
 
   /// Constructor for cloning

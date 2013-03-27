@@ -4,11 +4,11 @@
  *     Christian Schulte <schulte@gecode.org>
  *
  *  Copyright:
- *     Christian Schulte, 2002
+ *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2011-05-11 20:44:17 +1000 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-03-05 20:51:24 +0100 (Tue, 05 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13438 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -47,189 +47,499 @@
 
 namespace Gecode { namespace Int { namespace Branch {
 
-  /*
-   * Value selection classes
+  /**
+   * \defgroup FuncIntViewSel Merit-based integer view selection for branchers
    *
+   * Contains merit-based view selection strategies on integer
+   * views that can be used together with the generic view/value
+   * brancher classes.
+   *
+   * All merit-based view selection classes require 
+   * \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup Other
    */
 
   /**
-   * \brief Class for selecting minimum value
+   * \brief Merit class for mimimum of integer views
    *
-   * All value selection classes require
-   * \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelVal
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
    */
   template<class View>
-  class ValMin : public ValSelBase<View,int> {
+  class MeritMin : public MeritBase<View,int> {
   public:
-    /// Default constructor
-    ValMin(void);
     /// Constructor for initialization
-    ValMin(Space& home, const ValBranchOptions& vbo);
-    /// Return minimum value of view \a x
-    int val(Space& home, View x) const;
-    /// Tell \f$x=n\f$ (\a a = 0) or \f$x\neq n\f$ (\a a = 1)
-    ModEvent tell(Space& home, unsigned int a, View x, int n);
+    MeritMin(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritMin(Space& home, bool shared, MeritMin& m);
+    /// Return minimum as merit for view \a x at position \a i
+    int operator ()(const Space& home, View x, int i);
   };
 
   /**
-   * \brief Class for selecting median value
+   * \brief Merit class for maximum
    *
-   * Requires
-   * \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelVal
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
    */
   template<class View>
-  class ValMed : public ValSelBase<View,int> {
+  class MeritMax : public MeritBase<View,int> {
   public:
-    /// Default constructor
-    ValMed(void);
     /// Constructor for initialization
-    ValMed(Space& home, const ValBranchOptions& vbo);
-    /// Return maximum value of view \a x
-    int val(Space& home, View x) const;
-    /// Tell \f$x=n\f$ (\a a = 0) or \f$x\neq n\f$ (\a a = 1)
-    ModEvent tell(Space& home, unsigned int a, View x, int n);
+    MeritMax(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritMax(Space& home, bool shared, MeritMax& m);
+    /// Return maximum as merit for view \a x at position \a i
+    int operator ()(const Space& home, View x, int i);
   };
 
   /**
-   * \brief Class for random value selection
+   * \brief Merit class for size
    *
-   * Requires
-   * \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelVal
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
    */
-  template<class _View>
-  class ValRnd {
+  template<class View>
+  class MeritSize : public MeritBase<View,unsigned int> {
+  public:
+    /// Constructor for initialization
+    MeritSize(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritSize(Space& home, bool shared, MeritSize& m);
+    /// Return size as merit for view \a x at position \a i
+    unsigned int operator ()(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Merit class for size over degree
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
+   */
+  template<class View>
+  class MeritDegreeSize : public MeritBase<View,double> {
+  public:
+    /// Constructor for initialization
+    MeritDegreeSize(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritDegreeSize(Space& home, bool shared, MeritDegreeSize& m);
+    /// Return size over degree as merit for view \a x at position \a i
+    double operator ()(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Merit class for size over afc
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
+   */
+  template<class View>
+  class MeritAFCSize : public MeritBase<View,double> {
   protected:
-    /// The random number generator
-    ArchivedRandomGenerator r;
+    /// AFC information
+    AFC afc;
   public:
-    /// View type
-    typedef _View View;
-    /// Value type
-    typedef int Val;
-    /// Choice type
-    typedef ArchivedRandomGenerator Choice;
-    /// Number of alternatives
-    static const unsigned int alternatives = 2;
-    /// Default constructor
-    ValRnd(void);
     /// Constructor for initialization
-    ValRnd(Space& home, const ValBranchOptions& vbo);
-    /// Return minimum value of view \a x
-    int val(Space& home, _View x);
-    /// Tell \f$x\leq n\f$ (\a a = 0) or \f$x\neq n\f$ (\a a = 1)
-    ModEvent tell(Space& home, unsigned int a, _View x, int n);
-    /// Return choice
-    Choice choice(Space& home);
-    /// Return choice
-    Choice choice(const Space& home, Archive& e);
-    /// Commit to choice
-    void commit(Space& home, const Choice& c, unsigned a);
-    /// Updating during cloning
-    void update(Space& home, bool share, ValRnd& vs);
+    MeritAFCSize(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritAFCSize(Space& home, bool shared, MeritAFCSize& m);
+    /// Return size over AFC as merit for view \a x at position \a i
+    double operator ()(const Space& home, View x, int i);
+    /// Whether dispose must always be called (that is, notice is needed)
+    bool notice(void) const;
+    /// Dispose view selection
+    void dispose(Space& home);
+  };
+
+  /**
+   * \brief Merit class for size over activity
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
+   */
+  template<class View>
+  class MeritActivitySize : public MeritBase<View,double> {
+  protected:
+    /// Activity information
+    Activity activity;
+  public:
+    /// Constructor for initialization
+    MeritActivitySize(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritActivitySize(Space& home, bool shared, MeritActivitySize& m);
+    /// Return size over activity as merit for view \a x at position \a i
+    double operator ()(const Space& home, View x, int i);
+    /// Whether dispose must always be called (that is, notice is needed)
+    bool notice(void) const;
+    /// Dispose view selection
+    void dispose(Space& home);
+  };
+
+  /**
+   * \brief Merit class for minimum regret
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
+   */
+  template<class View>
+  class MeritRegretMin : public MeritBase<View,unsigned int> {
+  public:
+    /// Constructor for initialization
+    MeritRegretMin(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritRegretMin(Space& home, bool shared, MeritRegretMin& m);
+    /// Return minimum regret as merit for view \a x at position \a i
+    unsigned int operator ()(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Merit class for maximum regret
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntViewSel
+   */
+  template<class View>
+  class MeritRegretMax : public MeritBase<View,unsigned int> {
+  public:
+    /// Constructor for initialization
+    MeritRegretMax(Space& home, const VarBranch& vb);
+    /// Constructor for cloning
+    MeritRegretMax(Space& home, bool shared, MeritRegretMax& m);
+    /// Return maximum regret as merit for view \a x at position \a i
+    unsigned int operator ()(const Space& home, View x, int i);
+  };
+
+}}}
+
+#include <gecode/int/branch/merit.hpp>
+
+namespace Gecode { namespace Int { namespace Branch {
+
+  /// Return view selectors for integer views
+  GECODE_INT_EXPORT
+  ViewSel<IntView>* viewselint(Space& home, const IntVarBranch& ivb);
+  /// Return view selectors for Boolean views
+  GECODE_INT_EXPORT
+  ViewSel<BoolView>* viewselbool(Space& home, const IntVarBranch& ivb);
+
+}}}
+
+namespace Gecode { namespace Int { namespace Branch {
+
+  /**
+   * \defgroup FuncIntValSel Integer value selection for brancher
+   *
+   * Contains a description of value selection strategies on integer
+   * views that can be used together with the generic view/value
+   * branchers.
+   *
+   * All value selection classes require 
+   * \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup Other
+   */
+
+  /**
+   * \brief Value selection class for mimimum of view
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View>
+  class ValSelMin : public ValSel<View,int> {
+  public:
+    /// Constructor for initialization
+    ValSelMin(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelMin(Space& home, bool shared, ValSelMin& vs);
+    /// Return value of view \a x at position \a i
+    int val(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Value selection class for maximum of view
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View>
+  class ValSelMax : public ValSel<View,int> {
+  public:
+    /// Constructor for initialization
+    ValSelMax(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelMax(Space& home, bool shared, ValSelMax& vs);
+    /// Return value of view \a x at position \a i
+    int val(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Value selection class for median of view
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View>
+  class ValSelMed : public ValSel<View,int> {
+  public:
+    /// Constructor for initialization
+    ValSelMed(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelMed(Space& home, bool shared, ValSelMed& vs);
+    /// Return value of view \a x at position  i
+    int val(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Value selection class for average of view
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View>
+  class ValSelAvg : public ValSel<View,int> {
+  public:
+    /// Constructor for initialization
+    ValSelAvg(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelAvg(Space& home, bool shared, ValSelAvg& vs);
+    /// Return value of view \a x at position \a i
+    int val(const Space& home, View x, int i);
+  };
+
+  /**
+   * \brief Value selection class for random value of view
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View>
+  class ValSelRnd : public ValSel<View,int> {
+  protected:
+    /// The used random number generator
+    Rnd r;
+  public:
+    /// Constructor for initialization
+    ValSelRnd(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelRnd(Space& home, bool shared, ValSelRnd& vs);
+    /// Return value of view \a x at position \a i
+    int val(const Space& home, View x, int i);
+    /// Whether dispose must always be called (that is, notice is needed)
+    bool notice(void) const;
     /// Delete value selection
     void dispose(Space& home);
   };
 
   /**
-   * \brief Class for splitting domain at mean of smallest and largest element 
-   * (lower half first)
+   * \brief Value selection class for minimum range of integer view
    *
-   * Requires
-   * \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelVal
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
    */
-  template<class View>
-  class ValSplitMin : public ValSelBase<View,int> {
+  class ValSelRangeMin : public ValSel<IntView,int> {
   public:
-    /// Default constructor
-    ValSplitMin(void);
     /// Constructor for initialization
-    ValSplitMin(Space& home, const ValBranchOptions& vbo);
-    /// Return minimum value of view \a x
-    int val(Space& home, View x) const;
-    /// Tell \f$x\leq n\f$ (\a a = 0) or \f$x >n\f$ (\a a = 1)
-    ModEvent tell(Space& home, unsigned int a, View x, int n);
+    ValSelRangeMin(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelRangeMin(Space& home, bool shared, ValSelRangeMin& vs);
+    /// Return value of integer view \a x at position \a i
+    int val(const Space& home, IntView x, int i);
   };
-
 
   /**
-   * \brief Class for trying the first range of a domain first or splitting domain at mean of smallest and largest element 
-   * (lower half first)
+   * \brief Value selection class for maximum range of integer view
    *
-   * Requires
-   * \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelVal
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
    */
-  template<class View>
-  class ValRangeMin : public ValSelBase<View,int> {
+  class ValSelRangeMax : public ValSel<IntView,int> {
   public:
-    /// Default constructor
-    ValRangeMin(void);
     /// Constructor for initialization
-    ValRangeMin(Space& home, const ValBranchOptions& vbo);
-    /// Return minimum value of view \a x
-    int val(Space& home, View x) const;
-    /// Tell \f$x\leq n\f$ (\a a = 0) or \f$x >n\f$ (\a a = 1)
-    ModEvent tell(Space& home, unsigned int a, View x, int n);
+    ValSelRangeMax(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelRangeMax(Space& home, bool shared, ValSelRangeMax& vs);
+    /// Return value of integer view \a x at position \a i
+    int val(const Space& home, IntView x, int i);
   };
 
+  /**
+   * \brief Value selection class for nearest value
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View, bool min>
+  class ValSelNearMinMax : public ValSel<View,int> {
+  protected:
+    /// The used values
+    IntSharedArray c;
+  public:
+    /// Constructor for initialization
+    ValSelNearMinMax(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelNearMinMax(Space& home, bool shared, ValSelNearMinMax& vs);
+    /// Return value of view \a x at position \a i
+    int val(const Space& home, View x, int i);
+    /// Whether dispose must always be called (that is, notice is needed)
+    bool notice(void) const;
+    /// Delete value selection
+    void dispose(Space& home);
+  };
 
-  /// For Boolean branchers not needing a value
-  class NoValue {};
+  /**
+   * \brief Value selection class for nearest value
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValSel
+   */
+  template<class View, bool inc>
+  class ValSelNearIncDec : public ValSel<View,int> {
+  protected:
+    /// The used values
+    IntSharedArray c;
+  public:
+    /// Constructor for initialization
+    ValSelNearIncDec(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValSelNearIncDec(Space& home, bool shared, ValSelNearIncDec& vs);
+    /// Return value of view \a x at position \a i
+    int val(const Space& home, View x, int i);
+    /// Whether dispose must always be called (that is, notice is needed)
+    bool notice(void) const;
+    /// Delete value selection
+    void dispose(Space& home);
+  };
 
 }}}
 
-namespace Gecode {
-  forceinline Archive&
-  operator >>(Archive& e, Gecode::Int::Branch::NoValue&) {
-    return e;
-  }
-  forceinline Archive&
-  operator <<(Archive& e, const Gecode::Int::Branch::NoValue&) {
-    return e;
-  }
-}
+#include <gecode/int/branch/val-sel.hpp>
 
 namespace Gecode { namespace Int { namespace Branch {
 
   /**
-   * \brief Class for trying zero and then one
+   * \defgroup FuncIntValCommit Integer value commit classes
    *
-   * Requires
+   * Contains the value commit classes for integer and Boolean
+   * views that can be used together with the generic view/value
+   * branchers.
+   *
+   * All value commit classes require 
    * \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelVal
+   * \ingroup Other
+   */
+
+  /**
+   * \brief Value commit class for equality
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValCommit
    */
   template<class View>
-  class ValZeroOne : public ValSelBase<View,NoValue> {
+  class ValCommitEq : public ValCommit<View,int> {
   public:
-    /// Default constructor
-    ValZeroOne(void);
     /// Constructor for initialization
-    ValZeroOne(Space& home, const ValBranchOptions& vbo);
-    /// Return no value of view \a x
-    NoValue val(Space& home, View x) const;
-    /// Tell \f$x=0\f$ (\a a = 0) or \f$x=1\f$ (\a a = 1)
-    ModEvent tell(Space& home, unsigned int a, View x, NoValue n);
+    ValCommitEq(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValCommitEq(Space& home, bool shared, ValCommitEq& vc);
+    /// Commit view \a x at position \a i to value \a n for alternative \a a
+    ModEvent commit(Space& home, unsigned int a, View x, int i, int n);
   };
 
+  /**
+   * \brief Value commit class for less or equal
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValCommit
+   */
+  template<class View>
+  class ValCommitLq : public ValCommit<View,int> {
+  public:
+    /// Constructor for initialization
+    ValCommitLq(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValCommitLq(Space& home, bool shared, ValCommitLq& vc);
+    /// Commit view \a x at position \a i to value \a n for alternative \a a
+    ModEvent commit(Space& home, unsigned int a, View x, int i, int n);
+  };
+
+  /**
+   * \brief Value commit class for greater or equal
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValCommit
+   */
+  template<class View>
+  class ValCommitGq : public ValCommit<View,int> {
+  public:
+    /// Constructor for initialization
+    ValCommitGq(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValCommitGq(Space& home, bool shared, ValCommitGq& vc);
+    /// Commit view \a x at position \a i to value \a n for alternative \a a
+    ModEvent commit(Space& home, unsigned int a, View x, int i, int n);
+  };
+
+  /**
+   * \brief Value commit class for greater
+   *
+   * Requires \code #include <gecode/int/branch.hh> \endcode
+   * \ingroup FuncIntValCommit
+   */
+  template<class View>
+  class ValCommitGr : public ValCommit<View,int> {
+  public:
+    /// Constructor for initialization
+    ValCommitGr(Space& home, const ValBranch& vb);
+    /// Constructor for cloning
+    ValCommitGr(Space& home, bool shared, ValCommitGr& vc);
+    /// Commit view \a x at position \a i to value \a n for alternative \a a
+    ModEvent commit(Space& home, unsigned int a, View x, int i, int n);
+  };
+
+}}}
+
+#include <gecode/int/branch/val-commit.hpp>
+
+namespace Gecode { namespace Int { namespace Branch {
+
+  /// Return value and commit for integer views
+  GECODE_INT_EXPORT
+  ValSelCommitBase<IntView,int>* 
+  valselcommitint(Space& home, int n, const IntValBranch& ivb);
+
+  /// Return value and commit for Boolean views
+  GECODE_INT_EXPORT
+  ValSelCommitBase<BoolView,int>* 
+  valselcommitbool(Space& home, int n, const IntValBranch& ivb);
+
+  /// Return value and commit for integer views
+  GECODE_INT_EXPORT
+  ValSelCommitBase<IntView,int>* 
+  valselcommitint(Space& home, const IntAssign& ia);
+
+  /// Return value and commit for Boolean views
+  GECODE_INT_EXPORT
+  ValSelCommitBase<BoolView,int>* 
+  valselcommitbool(Space& home, const IntAssign& ia);
+
+}}}
+
+namespace Gecode { namespace Int { namespace Branch {
 
   /**
    * \brief %Brancher by view and values selection
    *
    */
-  template<class ViewSel, class View>
-  class ViewValuesBrancher : public ViewBrancher<ViewSel> {
+  template<int n, bool min>
+  class ViewValuesBrancher : public ViewBrancher<IntView,n> {
+    typedef typename ViewBrancher<IntView,n>::BranchFilter BranchFilter;
   protected:
-    using ViewBrancher<ViewSel>::x;
-    using ViewBrancher<ViewSel>::viewsel;
+    using ViewBrancher<IntView,n>::x;
     /// Constructor for cloning \a b
-    ViewValuesBrancher(Space& home, bool share, ViewValuesBrancher& b);
+    ViewValuesBrancher(Space& home, bool shared, ViewValuesBrancher& b);
     /// Constructor for creation
-    ViewValuesBrancher(Home home, ViewArray<typename ViewSel::View>& x,
-                       ViewSel& vi_s, BranchFilter bf);
+    ViewValuesBrancher(Home home, ViewArray<IntView>& x,
+                       ViewSel<IntView>* vs[n], BranchFilter bf);
   public:
     /// Return choice
     virtual const Choice* choice(Space& home);
@@ -240,367 +550,13 @@ namespace Gecode { namespace Int { namespace Branch {
     /// Perform cloning
     virtual Actor* copy(Space& home, bool share);
     /// Constructor for creation
-    static void post(Home home, ViewArray<typename ViewSel::View>& x,
-                     ViewSel& vi_s, BranchFilter bf=NULL);
-  };
-
-
-  /// Class for assigning minimum value
-  template<class View>
-  class AssignValMin : public ValMin<View> {
-  public:
-    /// Number of alternatives
-    static const unsigned int alternatives = 1;
-    /// Default constructor
-    AssignValMin(void);
-    /// Constructor for initialization
-    AssignValMin(Space& home, const ValBranchOptions& vbo);
-  };
-
-  /// Class for assigning maximum value
-  template<class View>
-  class AssignValMed : public ValMed<View> {
-  public:
-    /// Number of alternatives
-    static const unsigned int alternatives = 1;
-    /// Default constructor
-    AssignValMed(void);
-    /// Constructor for initialization
-    AssignValMed(Space& home, const ValBranchOptions& vbo);
-  };
-
-  /// Class for assigning random value
-  template<class View>
-  class AssignValRnd : public ValRnd<View> {
-  public:
-    /// Number of alternatives
-    static const unsigned int alternatives = 1;
-    /// Default constructor
-    AssignValRnd(void);
-    /// Constructor for initialization
-    AssignValRnd(Space& home, const ValBranchOptions& vbo);
-  };
-
-  /// Class for assigning zero
-  template<class View>
-  class AssignValZero : public ValZeroOne<View> {
-  public:
-    /// Number of alternatives
-    static const unsigned int alternatives = 1;
-    /// Default constructor
-    AssignValZero(void);
-    /// Constructor for initialization
-    AssignValZero(Space& home, const ValBranchOptions& vbo);
-  };
-
-  /*
-   * Variable selection classes
-   *
-   */
-
-  /**
-   * \brief View selection class for view with smallest min
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByMinMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest minimum
-    int min;
-  public:
-    /// Default constructor
-    ByMinMin(void);
-    /// Constructor for initialization
-    ByMinMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest min
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByMinMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest minimum
-    int min;
-  public:
-    /// Default constructor
-    ByMinMax(void);
-    /// Constructor for initialization
-    ByMinMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with smallest max
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByMaxMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest maximum
-    int max;
-  public:
-    /// Default constructor
-    ByMaxMin(void);
-    /// Constructor for initialization
-    ByMaxMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest max
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByMaxMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest maximum
-    int max;
-  public:
-    /// Default constructor
-    ByMaxMax(void);
-    /// Constructor for initialization
-    ByMaxMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with smallest size
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class BySizeMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest size
-    unsigned int size;
-  public:
-    /// Default constructor
-    BySizeMin(void);
-    /// Constructor for initialization
-    BySizeMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest size
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class BySizeMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest size
-    unsigned int size;
-  public:
-    /// Default constructor
-    BySizeMax(void);
-    /// Constructor for initialization
-    BySizeMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with smallest size divided
-   * by degree.
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class BySizeDegreeMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest size/degree
-    double sizedegree;
-  public:
-    /// Default constructor
-    BySizeDegreeMin(void);
-    /// Constructor for initialization
-    BySizeDegreeMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest size divided
-   * by degree.
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class BySizeDegreeMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest size/degree
-    double sizedegree;
-  public:
-    /// Default constructor
-    BySizeDegreeMax(void);
-    /// Constructor for initialization
-    BySizeDegreeMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with smallest size divided by accumulated failure count
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class BySizeAfcMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest size/afc
-    double sizeafc;
-  public:
-    /// Default constructor
-    BySizeAfcMin(void);
-    /// Constructor for initialization
-    BySizeAfcMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest size divided by accumulated failure count
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class BySizeAfcMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest size/afc
-    double sizeafc;
-  public:
-    /// Default constructor
-    BySizeAfcMax(void);
-    /// Constructor for initialization
-    BySizeAfcMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with smallest min-regret
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByRegretMinMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest regret
-    unsigned int regret;
-  public:
-    /// Default constructor
-    ByRegretMinMin(void);
-    /// Constructor for initialization
-    ByRegretMinMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest min-regret
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByRegretMinMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest regret
-    unsigned int regret;
-  public:
-    /// Default constructor
-    ByRegretMinMax(void);
-    /// Constructor for initialization
-    ByRegretMinMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with smallest max-regret
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByRegretMaxMin : public ViewSelBase<IntView> {
-  protected:
-    /// So-far smallest regret
-    unsigned int regret;
-  public:
-    /// Default constructor
-    ByRegretMaxMin(void);
-    /// Constructor for initialization
-    ByRegretMaxMin(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
-  };
-
-  /**
-   * \brief View selection class for view with largest max-regret
-   *
-   * Requires \code #include <gecode/int/branch.hh> \endcode
-   * \ingroup FuncIntSelView
-   */
-  class ByRegretMaxMax : public ViewSelBase<IntView> {
-  protected:
-    /// So-far largest regret
-    unsigned int regret;
-  public:
-    /// Default constructor
-    ByRegretMaxMax(void);
-    /// Constructor for initialization
-    ByRegretMaxMax(Space& home, const VarBranchOptions& vbo);
-    /// Intialize with view \a x
-    ViewSelStatus init(Space& home, IntView x);
-    /// Possibly select better view \a x
-    ViewSelStatus select(Space& home, IntView x);
+    static BrancherHandle post(Home home, ViewArray<IntView>& x,
+                               ViewSel<IntView>* vs[n], BranchFilter bf);
   };
 
 }}}
 
-#include <gecode/int/branch/select-val.hpp>
-#include <gecode/int/branch/select-values.hpp>
-#include <gecode/int/branch/select-view.hpp>
-#include <gecode/int/branch/post-val-int.hpp>
-#include <gecode/int/branch/post-val-bool.hpp>
+#include <gecode/int/branch/view-values.hpp>
 
 #endif
 

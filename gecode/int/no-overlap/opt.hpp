@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2011-07-14 00:42:33 +1000 (Thu, 14 Jul 2011) $ by $Author: schulte $
- *     $Revision: 12191 $
+ *     $Date: 2012-10-22 21:13:52 +0200 (Mon, 22 Oct 2012) $ by $Author: schulte $
+ *     $Revision: 13163 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -37,49 +37,49 @@
 
 namespace Gecode { namespace Int { namespace NoOverlap {
 
-  template<class Dim, int d>
+  template<class Box>
   forceinline
-  OptProp<Dim,d>::OptProp(Home home, OptBox<Dim,d>* b, int n, int m0)
-    : Base<OptBox<Dim,d> >(home,b,n), m(m0) {
+  OptProp<Box>::OptProp(Home home, Box* b, int n, int m0)
+    : Base<Box>(home,b,n), m(m0) {
     for (int i=m; i--; )
       b[n+i].subscribe(home, *this);
   }
 
-  template<class Dim, int d>
+  template<class Box>
   ExecStatus
-  OptProp<Dim,d>::post(Home home, OptBox<Dim,d>* b, int n) {
+  OptProp<Box>::post(Home home, Box* b, int n) {
     // Partition into mandatory and optional boxes
     if (n > 1) {
-      int p = Base<OptBox<Dim,d> >::partition(b, 0, n);
-      (void) new (home) OptProp<Dim,d>(home,b,p,n-p);
+      int p = Base<Box>::partition(b, 0, n);
+      (void) new (home) OptProp<Box>(home,b,p,n-p);
     }
     return ES_OK;
   }
 
-  template<class Dim, int d>
+  template<class Box>
   forceinline size_t 
-  OptProp<Dim,d>::dispose(Space& home) {
+  OptProp<Box>::dispose(Space& home) {
     for (int i=m; i--; )
       b[n+i].cancel(home, *this);
-    (void) Base<OptBox<Dim,d> >::dispose(home);
+    (void) Base<Box>::dispose(home);
     return sizeof(*this);
   }
 
 
-  template<class Dim, int d>
+  template<class Box>
   forceinline
-  OptProp<Dim,d>::OptProp(Space& home, bool shared, OptProp<Dim,d>& p) 
-    : Base<OptBox<Dim,d> >(home, shared, p, p.n + p.m), m(p.m) {}
+  OptProp<Box>::OptProp(Space& home, bool shared, OptProp<Box>& p) 
+    : Base<Box>(home, shared, p, p.n + p.m), m(p.m) {}
 
-  template<class Dim, int d>
+  template<class Box>
   Actor* 
-  OptProp<Dim,d>::copy(Space& home, bool share) {
-    return new (home) OptProp<Dim,d>(home,share,*this);
+  OptProp<Box>::copy(Space& home, bool share) {
+    return new (home) OptProp<Box>(home,share,*this);
   }
 
-  template<class Dim, int d>
+  template<class Box>
   ExecStatus 
-  OptProp<Dim,d>::propagate(Space& home, const ModEventDelta& med) {
+  OptProp<Box>::propagate(Space& home, const ModEventDelta& med) {
     Region r(home);
 
     if (BoolView::me(med) == ME_BOOL_VAL) {
@@ -91,7 +91,7 @@ namespace Gecode { namespace Int { namespace NoOverlap {
         }
       // Reconsider optional boxes
       if (m > 0) {
-        int p = Base<OptBox<Dim,d> >::partition(b+n, 0, m);
+        int p = Base<Box>::partition(b+n, 0, m);
         n += p; m -= p;
       }
     }
@@ -134,14 +134,21 @@ namespace Gecode { namespace Int { namespace NoOverlap {
 
     // Check whether some optional boxes must be excluded
     for (int i=m; i--; ) {
-      assert(b[n+i].optional());
-      for (int j=n; j--; )
-        if (b[n+i].overlap(b[j])) {
-          GECODE_ES_CHECK(b[n+i].exclude(home));
-          b[n+i].cancel(home,*this);
-          b[n+i] = b[n+(--m)];
-          break;
-        }
+      if (b[n+i].optional()) {
+        for (int j=n; j--; )
+          if (b[n+i].overlap(b[j])) {
+            GECODE_ES_CHECK(b[n+i].exclude(home));
+            b[n+i].cancel(home,*this);
+            b[n+i] = b[n+(--m)];
+            break;
+          }
+      } else {
+        // This might be the case if the same Boolean view occurs
+        // several times and has already been excluded
+        assert(b[n+i].excluded());
+        b[n+i].cancel(home,*this);
+        b[n+i] = b[n+(--m)];
+      }
     }
 
     return ES_NOFIX;

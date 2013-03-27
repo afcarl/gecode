@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2011-04-11 19:28:27 +1000 (Mon, 11 Apr 2011) $ by $Author: tack $
- *     $Revision: 11929 $
+ *     $Date: 2013-03-07 20:56:21 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
+ *     $Revision: 13463 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,8 +56,8 @@ namespace Gecode { namespace Search { namespace Parallel {
       virtual void run(void);
       /// Try to find some work
       void find(void);
-      /// Reset engine to restart at space \a s and return new root space
-      Space* reset(Space* s);
+      /// Reset worker to restart at space \a s
+      void reset(Space* s);
     };
     /// Array of worker references
     Worker** _worker;
@@ -69,8 +69,6 @@ namespace Gecode { namespace Search { namespace Parallel {
     //@{
     /// Report solution \a s
     void solution(Space* s);
-    /// Reset engine to restart at space \a s and return new root space
-    Space* reset(Space* s);
     //@}
 
     /// \name Engine interface
@@ -79,6 +77,8 @@ namespace Gecode { namespace Search { namespace Parallel {
     DFS(Space* s, size_t sz, const Options& o);
     /// Return statistics
     virtual Statistics statistics(void) const;
+    /// Reset engine to restart at space \a s
+    virtual void reset(Space* s);
     /// Destructor
     virtual ~DFS(void);
     //@}
@@ -125,7 +125,7 @@ namespace Gecode { namespace Search { namespace Parallel {
   /*
    * Statistics
    */
-  forceinline Space*
+  forceinline void
   DFS::Worker::reset(Space* s) {
     delete cur;
     path.reset();
@@ -135,22 +135,11 @@ namespace Gecode { namespace Search { namespace Parallel {
       delete s;
       cur = NULL;
       Search::Worker::reset();
-      return NULL;
     } else {
       cur = s;
       Search::Worker::reset(cur);
-      return s->clone(false);
     }
   }
-  forceinline Space*
-  DFS::reset(Space* s) {
-    // All workers are marked as busy again
-    n_busy = workers();
-    for (unsigned int i=1; i<workers(); i++)
-      (void) worker(i)->reset(NULL);
-    return worker(0)->reset(s);
-  }
-
   /*
    * Engine: search control
    */
@@ -164,7 +153,6 @@ namespace Gecode { namespace Search { namespace Parallel {
     m_search.release();
   }
   
-
 
 
   /*

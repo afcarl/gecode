@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2011-04-08 22:12:09 +1000 (Fri, 08 Apr 2011) $ by $Author: schulte $
- *     $Revision: 11917 $
+ *     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
+ *     $Revision: 13347 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -47,7 +47,7 @@ namespace Gecode {
       assert(!Support::marked(hi));
     } else if (!Support::marked(hi)) {
       HeapInfo* h = static_cast<HeapInfo*>
-        (heap.ralloc(sizeof(HeapInfo)+4*sizeof(void*)));
+        (heap.ralloc(sizeof(HeapInfo)+(4-1)*sizeof(void*)));
       h->n=2; h->size=4;
       h->blocks[0]=hi; h->blocks[1]=p;
       hi = Support::mark(h);
@@ -55,7 +55,7 @@ namespace Gecode {
       HeapInfo* h = static_cast<HeapInfo*>(Support::unmark(hi));
       if (h->n == h->size) {
         HeapInfo* n = static_cast<HeapInfo*>
-          (heap.ralloc(sizeof(HeapInfo)+2*h->n*sizeof(void*)));
+          (heap.ralloc(sizeof(HeapInfo)+(2*h->n-1)*sizeof(void*)));
         n->size = 2*h->n;
         n->n = h->n;
         memcpy(&n->blocks[0], &h->blocks[0], h->n*sizeof(void*));
@@ -82,4 +82,4 @@ namespace Gecode {
 
 }
 
-// STATISTICS: kernel-other
+// STATISTICS: kernel-memory
