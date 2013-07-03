@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-09-03 11:25:49 +0200 (Fri, 03 Sep 2010) $ by $Author: tack $
- *     $Revision: 11387 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -61,37 +61,33 @@ namespace Gecode { namespace Gist {
   }
 
   forceinline int
-  Shape::depth(void) const { return _depth+1; }
+  Shape::depth(void) const { return _depth; }
 
   forceinline void
   Shape::setDepth(int d) {
-    assert(d <= _depth+1);
-    _depth = d-1;
+    assert(d <= _depth);
+    _depth = d;
   }
 
   forceinline const Extent&
   Shape::operator [](int i) const {
-    assert(i < _depth+1);
-    return i == 0 ? leaf->shape[0] : shape[i-1];
+    assert(i < _depth);
+    return shape[i];
   }
 
   forceinline Extent&
   Shape::operator [](int i) {
-    assert(i < _depth+1);
-    return i == 0 ? leaf->shape[0] : shape[i-1];
+    assert(i < _depth);
+    return shape[i];
   }
 
   inline Shape*
   Shape::allocate(int d) {
+    assert(d >= 1);
     Shape* ret;
-    if (d == 1) {
-      ret = static_cast<Shape*>(heap.ralloc(sizeof(Shape)));
-      ret->shape[0] = Extent(Layout::extent);      
-    } else {
-      ret = static_cast<Shape*>(heap.ralloc(sizeof(Shape) +
-                                            (d-2)*sizeof(Extent)));
-    }
-    ret->_depth = d-1;
+    ret = 
+      static_cast<Shape*>(heap.ralloc(sizeof(Shape)+(d-1)*sizeof(Extent)));
+    ret->_depth = d;
     return ret;
   }
 

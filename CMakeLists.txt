@@ -6,8 +6,8 @@
 #     Victor Zverovich, 2013
 #
 #  Last modified:
-#     $Date: 2013-02-20 18:36:17 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
-#     $Revision: 13349 $
+#     $Date: 2013-03-27 14:56:33 +0100 (Wed, 27 Mar 2013) $ by $Author: schulte $
+#     $Revision: 13560 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -40,6 +40,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(GECODE)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include(CheckCXXCompilerFlag)
 if (GECODE_DISABLE_WARNINGS)
@@ -298,7 +301,6 @@ file(WRITE ${GECODE_BINARY_DIR}/gecode/support/config.hpp
 #define GECODE_BUILD_SEARCH
 #define GECODE_BUILD_INT
 #define GECODE_BUILD_SET
-#define GECODE_BUILD_FLOAT
 #define GECODE_BUILD_MINIMODEL
 
 ${CONFIG_OUT}")
@@ -369,7 +371,6 @@ if (FLOATSRC)
   target_link_libraries(gecodeminimodel gecodefloat)
 endif ()
 
-include_directories(.)
 add_executable(gecode-test ${TESTSRC} ${TESTHDR})
 target_link_libraries(gecode-test gecodeminimodel)
 

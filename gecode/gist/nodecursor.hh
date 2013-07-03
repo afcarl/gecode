@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 09:48:30 +0200 (Thu, 12 Aug 2010) $ by $Author: tack $
- *     $Revision: 11345 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -189,6 +189,30 @@ namespace Gecode { namespace Gist {
     void moveUpwards(void);
     //@}
     
+  };
+
+  /// \brief A cursor that labels branches
+  class BranchLabelCursor : public NodeCursor<VisualNode> {
+  private:
+    /// The node allocator
+    VisualNode::NodeAllocator& _na;
+    /// Current best solution
+    BestNode* _curBest;
+    /// Recomputation distance
+    int _c_d;
+    /// Adaptive rcomputation distance
+    int _a_d;
+    /// Whether to clear labels
+    bool _clear;
+  public:
+    /// Constructor
+    BranchLabelCursor(VisualNode* theNode, BestNode* curBest,
+                      int c_d, int a_d, bool clear,
+                      VisualNode::NodeAllocator& na);
+    /// \name Cursor interface
+    //@{
+    void processCurrentNode(void);
+    //@}
   };
 
   /// \brief A cursor that frees all memory

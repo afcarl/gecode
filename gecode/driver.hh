@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-02-26 14:40:29 +0100 (Tue, 26 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13419 $
+ *     $Date: 2013-04-09 15:16:43 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13571 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -652,15 +652,40 @@ namespace Gecode {
    */
   typedef Driver::ScriptBase<Space> Script;
   /**
-   * \brief Base-class for scripts for finding solution of lowest cost
+   * \brief Base-class for scripts for finding solution of lowest integer cost
    * \ingroup TaskDriverScript
    */
   typedef Driver::ScriptBase<MinimizeSpace> MinimizeScript;
   /**
-   * \brief Base-class for scripts for finding solution of highest cost
+   * \brief Base-class for scripts for finding solution of highest integer cost
    * \ingroup TaskDriverScript
    */
   typedef Driver::ScriptBase<MaximizeSpace> MaximizeScript;
+  /**
+   * \brief Base-class for scripts for finding solution of lowest integer cost
+   * \ingroup TaskDriverScript
+   */
+  typedef Driver::ScriptBase<IntMinimizeSpace> IntMinimizeScript;
+  /**
+   * \brief Base-class for scripts for finding solution of highest integer cost
+   * \ingroup TaskDriverScript
+   */
+  typedef Driver::ScriptBase<IntMaximizeSpace> IntMaximizeScript;
+
+#ifdef GECODE_HAS_FLOAT_VARS 
+
+  /**
+   * \brief Base-class for scripts for finding solution of lowest float cost
+   * \ingroup TaskDriverScript
+   */
+  typedef Driver::ScriptBase<FloatMinimizeSpace> FloatMinimizeScript;
+  /**
+   * \brief Base-class for scripts for finding solution of highest float cost
+   * \ingroup TaskDriverScript
+   */
+  typedef Driver::ScriptBase<FloatMaximizeSpace> FloatMaximizeScript;
+
+#endif
 
 }
 

@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-05-11 12:44:17 +0200 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
+ *     $Revision: 13603 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -69,6 +69,10 @@ namespace Gecode { namespace Gist {
     virtual Choice* choice(const Space& home, Archive&);
     /// Perform commit for choice \a _c and alternative \a a
     virtual ExecStatus commit(Space&, const Choice&, unsigned int);
+    /// Print explanation
+    virtual void print(const Space& home, const Gecode::Choice& c, 
+                       unsigned int,
+                       std::ostream& o) const;
     /// Copy brancher
     virtual Actor* copy(Space& home, bool share);
     /// Post brancher

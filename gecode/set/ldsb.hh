@@ -7,8 +7,8 @@
  *     Christopher Mears, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13458 $
+ *     $Date: 2013-05-08 13:30:48 +0200 (Wed, 08 May 2013) $ by $Author: schulte $
+ *     $Revision: 13622 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -60,6 +60,12 @@ namespace Gecode { namespace Set { namespace LDSB {
   template<class View, int n, class Val, unsigned int a>
   class LDSBSetBrancher : public LDSBBrancher<View,n,Val,a> {
   public:
+    /// Function type for printing variable and value selection
+    typedef void (*VarValPrint)(const Space& home, const BrancherHandle& bh,
+                                unsigned int b,
+                                typename View::VarType x, int i,
+                                const Val& m,
+                                std::ostream& o);
     /// Position of previous variable that was branched on
     int _prevPos;
     /// Number of non-value symmetries
@@ -91,7 +97,8 @@ namespace Gecode { namespace Set { namespace LDSB {
                     ViewSel<View>* vs[n], 
                     ValSelCommitBase<View,Val>* vsc,
                     SymmetryImp<View>** syms, int nsyms,
-                    SetBranchFilter bf);
+                    SetBranchFilter bf,
+                    VarValPrint vvp);
     /// Return choice
     virtual const Choice* choice(Space& home);
     /// Perform commit for choice \a c and alternative \a b
@@ -105,7 +112,8 @@ namespace Gecode { namespace Set { namespace LDSB {
                                ValSelCommitBase<View,Val>* vsc,
                                SymmetryImp<View>** _syms,
                                int _nsyms,
-                               SetBranchFilter bf);
+                               SetBranchFilter bf,
+                               VarValPrint vvp);
 
     /**
      * \brief Part one of the update phase

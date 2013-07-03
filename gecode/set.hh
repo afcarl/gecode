@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
- *     $Revision: 13455 $
+ *     $Date: 2013-05-08 13:30:48 +0200 (Wed, 08 May 2013) $ by $Author: schulte $
+ *     $Revision: 13622 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1222,6 +1222,16 @@ namespace Gecode {
 
 namespace Gecode {
 
+  /// Function type for printing branching alternatives for set variables
+  typedef void (*SetVarValPrint)(const Space &home, const BrancherHandle& bh,
+                                 unsigned int a,
+                                 SetVar x, int i, const int& n,
+                                 std::ostream& o);
+
+}
+
+namespace Gecode {
+
   /**
    * \brief Which variable to select for branching
    *
@@ -1498,7 +1508,8 @@ namespace Gecode {
   GECODE_SET_EXPORT BrancherHandle
   branch(Home home, const SetVarArgs& x,
          SetVarBranch vars, SetValBranch vals, 
-         SetBranchFilter sbf=NULL);
+         SetBranchFilter bf=NULL,
+         SetVarValPrint vvp=NULL);
   /**
    * \brief Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
    *
@@ -1507,14 +1518,16 @@ namespace Gecode {
   GECODE_SET_EXPORT BrancherHandle
   branch(Home home, const SetVarArgs& x,
          TieBreak<SetVarBranch> vars, SetValBranch vals,
-         SetBranchFilter sbf=NULL);
+         SetBranchFilter bf=NULL,
+         SetVarValPrint vvp=NULL);
   /**
    * \brief Branch over \a x with value selection \a vals
    *
    * \ingroup TaskModelSetBranch
    */
   GECODE_SET_EXPORT BrancherHandle
-  branch(Home home, SetVar x, SetValBranch vals);
+  branch(Home home, SetVar x, SetValBranch vals,
+         SetVarValPrint vvp=NULL);
   /**
    * \brief Assign all \a x with value selection \a vals
    *
@@ -1522,14 +1535,16 @@ namespace Gecode {
    */
   GECODE_SET_EXPORT BrancherHandle
   assign(Home home, const SetVarArgs& x, SetAssign vals,
-         SetBranchFilter sbf=NULL);
+         SetBranchFilter bf=NULL,
+         SetVarValPrint vvp=NULL);
   /**
    * \brief Assign \a x with value selection \a vals
    *
    * \ingroup TaskModelSetBranch
    */
   GECODE_SET_EXPORT BrancherHandle
-  assign(Home home, SetVar x, SetAssign vals);
+  assign(Home home, SetVar x, SetAssign vals,
+         SetVarValPrint vvp=NULL);
 
 }
 
@@ -1554,7 +1569,8 @@ namespace Gecode {
   branch(Home home, const SetVarArgs& x,
          SetVarBranch vars, SetValBranch vals,
          const Symmetries& syms,
-         SetBranchFilter sbf=NULL);
+         SetBranchFilter bf=NULL,
+         SetVarValPrint vvp=NULL);
   /**
    * \brief Branch over \a x with tie-breaking variable selection \a
    * vars and value selection \a vals with symmetry breaking
@@ -1564,7 +1580,9 @@ namespace Gecode {
   GECODE_SET_EXPORT BrancherHandle
   branch(Home home, const SetVarArgs& x,
          TieBreak<SetVarBranch> vars, SetValBranch vals,
-         const Symmetries& syms, SetBranchFilter bf=NULL);
+         const Symmetries& syms, 
+         SetBranchFilter bf=NULL,
+         SetVarValPrint vvp=NULL);
 }
 
 #endif

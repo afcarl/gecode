@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2012-09-18 18:07:37 +0200 (Tue, 18 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13101 $
+ *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
+ *     $Revision: 13672 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,18 +39,19 @@
 
 namespace Gecode { namespace Float { namespace Branch {
 
-  ValSelCommitBase<FloatView,FloatNum>* 
+  ValSelCommitBase<FloatView,FloatNumBranch>* 
   valselcommit(Space& home, const FloatValBranch& fvb) {
-    assert(fvb.select() != FloatValBranch::SEL_SPLIT_RND);
     switch (fvb.select()) {
     case FloatValBranch::SEL_SPLIT_MIN:
-      return new (home) ValSelCommit<ValSelMed,ValCommitLq>(home,fvb);
+      return new (home) ValSelCommit<ValSelLq,ValCommitLqGq>(home,fvb);
     case FloatValBranch::SEL_SPLIT_MAX:
-      return new (home) ValSelCommit<ValSelMed,ValCommitGq>(home,fvb);
+      return new (home) ValSelCommit<ValSelGq,ValCommitLqGq>(home,fvb);
+    case FloatValBranch::SEL_SPLIT_RND:
+      return new (home) ValSelCommit<ValSelRnd,ValCommitLqGq>(home,fvb);
     case FloatValBranch::SEL_VAL_COMMIT:
       if (fvb.commit() == NULL) {
         return new (home)
-          ValSelCommit<ValSelFunction<FloatView>,ValCommitLq>(home,fvb);
+          ValSelCommit<ValSelFunction<FloatView>,ValCommitLqGq>(home,fvb);
       } else {
         return new (home)
           ValSelCommit<ValSelFunction<FloatView>,ValCommitFunction<FloatView> >(home,fvb);
@@ -60,18 +61,19 @@ namespace Gecode { namespace Float { namespace Branch {
     }
   }
 
-  ValSelCommitBase<FloatView,FloatNum>* 
+  ValSelCommitBase<FloatView,FloatNumBranch>* 
   valselcommit(Space& home, const FloatAssign& fa) {
-    assert(fa.select() != FloatAssign::SEL_RND);
     switch (fa.select()) {
     case FloatAssign::SEL_MIN:
-      return new (home) ValSelCommit<ValSelMed,ValCommitLq>(home,fa);
+      return new (home) ValSelCommit<ValSelLq,ValCommitLqGq>(home,fa);
     case FloatAssign::SEL_MAX:
-      return new (home) ValSelCommit<ValSelMed,ValCommitGq>(home,fa);
+      return new (home) ValSelCommit<ValSelGq,ValCommitLqGq>(home,fa);
+    case FloatAssign::SEL_RND:
+      return new (home) ValSelCommit<ValSelRnd,ValCommitLqGq>(home,fa);
     case FloatAssign::SEL_VAL_COMMIT:
       if (fa.commit() == NULL) {
         return new (home)
-          ValSelCommit<ValSelFunction<FloatView>,ValCommitLq>(home,fa);
+          ValSelCommit<ValSelFunction<FloatView>,ValCommitLqGq>(home,fa);
       } else {
         return new (home)
           ValSelCommit<ValSelFunction<FloatView>,ValCommitFunction<FloatView> >(home,fa);

@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2012
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -165,7 +165,7 @@ namespace {
  * \ingroup Example
  *
  */
-class ColoredMatrix : public MinimizeScript {
+class ColoredMatrix : public IntMinimizeScript {
 protected:
   /** \name Instance specification
    */
@@ -445,7 +445,7 @@ public:
 
   /// Constructor for cloning \a s
   ColoredMatrix(bool share, ColoredMatrix& s)
-    : MinimizeScript(share,s), opt(s.opt),
+    : IntMinimizeScript(share,s), opt(s.opt),
       height(s.height), width(s.width), colors(s.colors) {
     x.update(*this, share, s.x);
     max_color.update(*this, share, s.max_color);

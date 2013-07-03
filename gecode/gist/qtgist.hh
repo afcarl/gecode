@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2012-05-01 01:25:23 +0200 (Tue, 01 May 2012) $ by $Author: tack $
- *     $Revision: 12803 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -150,6 +150,10 @@ namespace Gecode {  namespace Gist {
     QAction* hideFailed;
     /// Unhide all hidden subtrees under current node
     QAction* unhideAll;
+    /// Label branches under current node
+    QAction* labelBranches;
+    /// Label branches on path to root
+    QAction* labelPath;
     /// Zoom tree to fit window
     QAction* zoomToFit;
     /// Center on current node

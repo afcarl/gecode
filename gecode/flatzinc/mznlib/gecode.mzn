@@ -6,8 +6,8 @@
 %     Guido Tack, 2007
 %
 %  Last modified:
-%     $Date: 2013-02-22 06:40:39 +0100 (Fri, 22 Feb 2013) $ by $Author: tack $
-%     $Revision: 13381 $
+%     $Date: 2013-04-30 02:39:15 +0200 (Tue, 30 Apr 2013) $ by $Author: tack $
+%     $Revision: 13592 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -39,15 +39,19 @@
 
 % Additional search annotations
 annotation afc_min;
-annotation size_afc_min;
+annotation afc_size_min;
 annotation afc_max;
-annotation size_afc_max;
+annotation afc_size_max;
 annotation activity_min;
-annotation size_activity_min;
+annotation activity_size_min;
 annotation activity_max;
-annotation size_activity_max;
+annotation activity_size_max;
 annotation int_assign(array[int] of var int: x, ann:a);
 
+annotation int_default_search(ann: varsel, ann: valsel);
+annotation bool_default_search(ann: varsel, ann: valsel);
+annotation set_default_search(ann: varsel, ann: valsel);
+annotation float_default_search(ann: varsel, ann: valsel);
 
 % i in z <-> forall (j in x) (i in y[j])
 predicate gecode_array_set_element_intersect(var set of int: x,

@@ -11,8 +11,8 @@
  *     Mikael Lagerkvist, 2009
  *
  *  Last modified:
- *     $Date: 2013-01-29 17:43:05 +0100 (Tue, 29 Jan 2013) $ by $Author: schulte $
- *     $Revision: 13241 $
+ *     $Date: 2013-04-09 02:20:14 +0200 (Tue, 09 Apr 2013) $ by $Author: tack $
+ *     $Revision: 13568 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1682,6 +1682,12 @@ namespace Gecode { namespace FlatZinc {
 
 #ifdef GECODE_HAS_FLOAT_VARS
 
+    void p_int2float(FlatZincSpace& s, const ConExpr& ce, AST::Node*) {
+      IntVar x0 = s.arg2IntVar(ce[0]);
+      FloatVar x1 = s.arg2FloatVar(ce[1]);
+      channel(s, x0, x1);
+    }
+
     void p_float_lin_cmp(FlatZincSpace& s, FloatRelType frt,
                          const ConExpr& ce, AST::Node*) {
       FloatValArgs fa = s.arg2floatargs(ce[0]);
@@ -1840,6 +1846,7 @@ namespace Gecode { namespace FlatZinc {
     class FloatPoster {
     public:
       FloatPoster(void) {
+        registry().add("int2float",&p_int2float);
         registry().add("float_abs",&p_float_abs);
         registry().add("float_sqrt",&p_float_sqrt);
         registry().add("float_eq",&p_float_eq);

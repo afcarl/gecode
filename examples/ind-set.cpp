@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -81,7 +81,7 @@ const Graph g_40_20(40, 20, e_40_20);
  * \ingroup Example
  *
  */
-class IndSet : public MaximizeScript {
+class IndSet : public IntMaximizeScript {
 protected:
   /// %Graph used
   const Graph& g;
@@ -104,7 +104,7 @@ public:
   }
 
   /// Constructor for cloning \a s
-  IndSet(bool share, IndSet& s) : MaximizeScript(share,s), g(s.g) {
+  IndSet(bool share, IndSet& s) : IntMaximizeScript(share,s), g(s.g) {
     v.update(*this, share, s.v);
     k.update(*this, share, s.k);
   }
@@ -136,7 +136,7 @@ main(int argc, char* argv[]) {
   opt.size(1);
   opt.iterations(2000);
   opt.parse(argc,argv);
-  MaximizeScript::run<IndSet,BAB,SizeOptions>(opt);
+  IntMaximizeScript::run<IndSet,BAB,SizeOptions>(opt);
   return 0;
 }
 

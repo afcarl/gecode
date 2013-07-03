@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13458 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,7 +54,7 @@ namespace Gecode { namespace Gist {
     if (currentNode->isDirty()) {
       if (currentNode->isHidden()) {
         // do nothing
-      } else if (currentNode->getNumberOfChildren() < 1) {
+      } else if (false && currentNode->getNumberOfChildren() < 1) {
         currentNode->setShape(Shape::leaf);
       } else {
         currentNode->computeShape(na,startNode());

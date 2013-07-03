@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 13:38:27 +0200 (Thu, 12 Aug 2010) $ by $Author: zayenz $
- *     $Revision: 11349 $
+ *     $Date: 2013-07-02 03:37:47 +0200 (Tue, 02 Jul 2013) $ by $Author: tack $
+ *     $Revision: 13750 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -40,6 +40,9 @@
 
 #include <gecode/kernel.hh>
 
+#include <QHash>
+#include <QString>
+
 namespace Gecode { namespace Gist {
 
   class VisualNode;
@@ -70,6 +73,8 @@ namespace Gecode { namespace Gist {
     void allocate(void);
     /// Flag whether search uses branch-and-bound
     bool _bab;
+    /// Hash table mapping nodes to label text
+    QHash<T*,QString> labels;
   public:
     /// Constructor
     NodeAllocatorBase(bool bab);
@@ -87,6 +92,18 @@ namespace Gecode { namespace Gist {
     void setBest(int i, int b);
     /// Return branch-and-bound flag
     bool bab(void) const;
+    /// Return branching label flag
+    bool showLabels(void) const;
+    /// Set branching label flag
+    void showLabels(bool b);
+    /// Return whether node \a n has a label
+    bool hasLabel(T* n) const;
+    /// Set label of node \a n to \a l
+    void setLabel(T* n, const QString& l);
+    /// Remove label of node \a n
+    void clearLabel(T* n);
+    /// Get label of node \a n
+    QString getLabel(T* n) const;
   };
 
   /// \brief Base class for nodes of the search tree

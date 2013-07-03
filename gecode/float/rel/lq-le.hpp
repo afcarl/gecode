@@ -11,8 +11,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2012-12-13 16:02:59 +0100 (Thu, 13 Dec 2012) $ by $Author: vbarichard $
- *     $Revision: 13202 $
+ *     $Date: 2013-03-18 10:20:43 +0100 (Mon, 18 Mar 2013) $ by $Author: vbarichard $
+ *     $Revision: 13548 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -238,7 +238,14 @@ namespace Gecode { namespace Float { namespace Rel {
   ReLqFloat<View,CtrlView,rm>::post(Home home, View x, FloatVal c, CtrlView b) {
     if (b.one()) {
       if (rm != RM_PMI)
-        GECODE_ME_CHECK(x.lq(home,c));
+        GECODE_ME_CHECK(x.lq(home,c.max()));
+    } if (b.zero()) {
+      if (rm != RM_IMP) {
+        GECODE_ME_CHECK(x.gq(home,c.min()));
+        if (x.assigned() && (x.min() <= c.max()))
+          return ES_FAILED;
+        (void) new (home) ReLqFloat<View,CtrlView,rm>(home,x,c,b);
+      }
     } else {
       switch (rtest_lq(x,c)) {
       case RT_TRUE:
@@ -275,7 +282,15 @@ namespace Gecode { namespace Float { namespace Rel {
   ReLqFloat<View,CtrlView,rm>::propagate(Space& home, const ModEventDelta&) {
     if (b.one()) {
       if (rm != RM_PMI)
-        GECODE_ME_CHECK(x0.lq(home,c));
+        GECODE_ME_CHECK(x0.lq(home,c.max()));
+    } else if (b.zero()) {
+      if (rm != RM_IMP)
+      {
+        GECODE_ME_CHECK(x0.gq(home,c.min()));
+        if (x0.assigned()) {
+          return (x0.min() <= c.max()) ? ES_FAILED : home.ES_SUBSUMED(*this);
+        } 
+      }
     } else {
       switch (rtest_lq(x0,c)) {
       case RT_TRUE:
@@ -314,7 +329,11 @@ namespace Gecode { namespace Float { namespace Rel {
         GECODE_ME_CHECK(x.lq(home,c.max()));
         if (x.assigned() && (x.max() >= c.min()))
           return ES_FAILED;
+        (void) new (home) ReLeFloat<View,CtrlView,rm>(home,x,c,b);
       }
+    } else if (b.zero()) {
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(x.gq(home,c.min()));
     } else {
       switch (rtest_le(x,c)) {
       case RT_TRUE:
@@ -357,6 +376,9 @@ namespace Gecode { namespace Float { namespace Rel {
           return (x0.max() >= c.min()) ? ES_FAILED : home.ES_SUBSUMED(*this);
         } 
       }
+    } else if (b.zero()) {
+      if (rm != RM_IMP)
+        GECODE_ME_CHECK(x0.gq(home,c.min()));
     } else {
       switch (rtest_le(x0,c)) {
       case RT_TRUE:

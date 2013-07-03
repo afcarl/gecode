@@ -11,8 +11,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-01-22 13:48:12 +0100 (Tue, 22 Jan 2013) $ by $Author: schulte $
- *     $Revision: 13227 $
+ *     $Date: 2013-04-29 14:55:17 +0200 (Mon, 29 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13588 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -87,9 +87,12 @@ namespace Gecode {
    * Operations for nodes
    *
    */
-  BoolExpr::Node::Node(void) : use(1), m(NULL) {}
+  BoolExpr::Node::Node(void) 
+    : use(1), l(NULL), r(NULL), m(NULL) {}
 
-  BoolExpr::Node::~Node(void) { delete m; }
+  BoolExpr::Node::~Node(void) {    
+    delete m;  
+  }
 
   void*
   BoolExpr::Node::operator new(size_t size) {

@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 09:48:30 +0200 (Thu, 12 Aug 2010) $ by $Author: tack $
- *     $Revision: 11345 $
+ *     $Date: 2013-05-13 04:14:37 +0200 (Mon, 13 May 2013) $ by $Author: tack $
+ *     $Revision: 13631 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -107,6 +107,21 @@ namespace Gecode { namespace Gist {
       path.moveTo(myx,myy);
       path.lineTo(parentX,parentY);
       painter.drawPath(path);
+      
+      QFontMetrics fm = painter.fontMetrics();
+      QString label = na.getLabel(n);
+      int alt = n->getAlternative(na);
+      int n_alt = n->getParent(na)->getNumberOfChildren();
+      int tw = fm.width(label);
+      int lx;
+      if (alt==0 && n_alt > 1) {
+        lx = myx-tw-4;
+      } else if (alt==n_alt-1 && n_alt > 1) {
+        lx = myx+4;
+      } else {
+        lx = myx-tw/2;
+      }
+      painter.drawText(QPointF(lx,myy-2),label);
     }
 
     // draw shadow

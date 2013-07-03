@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2011-10-06 14:38:44 +0200 (Thu, 06 Oct 2011) $ by $Author: schulte $
- *     $Revision: 12421 $
+ *     $Date: 2013-04-17 17:43:48 +0200 (Wed, 17 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13581 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -441,6 +441,31 @@ namespace Test { namespace Int {
        }
      };
 
+     /// %Test for if-the-else-constraint
+     class ITE : public Test {
+     public:
+       /// Construct and register test
+       ITE(Gecode::IntConLevel icl)
+         : Test("ITE::"+str(icl),4,-4,4,false,icl) {}
+       /// Check whether \a x is solution
+       virtual bool solution(const Assignment& x) const {
+         if ((x[0] < 0) || (x[0] > 1))
+           return false;
+         if (x[0] == 1)
+           return x[1] == x[3];
+         else
+           return x[2] == x[3];
+       }
+       /// Post constraint
+       virtual void post(Gecode::Space& home, Gecode::IntVarArray& x) {
+         using namespace Gecode;
+         if (Base::rand(2) != 0)
+           ite(home,channel(home,x[0]),x[1],x[2],x[3]);
+         else
+           rel(home, ite(channel(home,x[0]),x[1],x[2]) == x[3]);
+       }
+     };
+
      /// Help class to create and register tests
      class Create {
      public:
@@ -491,6 +516,9 @@ namespace Test { namespace Int {
      };
 
      Create c;
+     ITE itebnd(Gecode::ICL_BND);
+     ITE itedom(Gecode::ICL_DOM);
+
      //@}
 
    }

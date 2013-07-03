@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
+ *     $Revision: 13672 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -48,7 +48,7 @@ namespace Gecode {
     /// Type for the branching value function
     typedef FloatBranchVal Val;
     /// Return type of the branching value function
-    typedef FloatNum ValType;
+    typedef FloatNumBranch ValType;
     /// Type for the branching commit function
     typedef FloatBranchCommit Commit;
   };

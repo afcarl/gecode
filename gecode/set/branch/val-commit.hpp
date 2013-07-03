@@ -13,8 +13,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2012-10-02 15:49:50 +0200 (Tue, 02 Oct 2012) $ by $Author: schulte $
- *     $Revision: 13123 $
+ *     $Date: 2013-05-03 10:21:32 +0200 (Fri, 03 May 2013) $ by $Author: schulte $
+ *     $Revision: 13608 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -53,6 +53,12 @@ namespace Gecode { namespace Set { namespace Branch {
   ValCommitInc::commit(Space& home, unsigned int a, SetView x, int, int n) {
     return (a == 0) ? x.include(home,n) : x.exclude(home,n);
   }
+  forceinline void
+  ValCommitInc::print(const Space&, unsigned int a, SetView, int i, int n,
+                      std::ostream& o) const {
+    o << "var[" << i << "]." 
+      << ((a == 0) ? "include" : "exclude") << "(" << n << ")";
+  }
 
   forceinline
   ValCommitExc::ValCommitExc(Space& home, const ValBranch& vb)
@@ -63,6 +69,12 @@ namespace Gecode { namespace Set { namespace Branch {
   forceinline ModEvent
   ValCommitExc::commit(Space& home, unsigned int a, SetView x, int, int n) {
     return (a == 0) ? x.exclude(home,n) : x.include(home,n);
+  }
+  forceinline void
+  ValCommitExc::print(const Space&, unsigned int a, SetView, int i, int n,
+                      std::ostream& o) const {
+    o << "var[" << i << "]." 
+      << ((a == 0) ? "exclude" : "include") << "(" << n << ")";
   }
 
 }}}

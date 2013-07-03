@@ -11,8 +11,8 @@
  *     Mikael Lagerkvist, 2009
  *
  *  Last modified:
- *     $Date: 2013-02-25 21:43:24 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13406 $
+ *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
+ *     $Revision: 13603 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -99,7 +99,7 @@ namespace {
  *
  */
 
-class Radiotherapy : public MinimizeScript {
+class Radiotherapy : public IntMinimizeScript {
 private:
   /// Instance data
   const RadiotherapyData rd;
@@ -178,7 +178,7 @@ public:
 
   /// Constructor for cloning \a s
   Radiotherapy(bool share, Radiotherapy& s)
-  : MinimizeScript(share,s), rd(s.rd) {
+  : IntMinimizeScript(share,s), rd(s.rd) {
     beamtime.update(*this, share, s.beamtime);
     N.update(*this, share, s.N);
     K.update(*this, share, s.K);
@@ -274,7 +274,7 @@ public:
       }
       return ri;
     }
-
+    /// Return choice
     virtual Gecode::Choice* choice(Space& home) {
       done = true;
       Radiotherapy& rt = static_cast<Radiotherapy&>(home);
@@ -307,12 +307,21 @@ public:
 
       return new Choice(*this, fail);
     }
+    /// Return choice
     virtual Choice* choice(const Space&, Archive& e) {
       bool fail; e >> fail;
       return new Choice(*this, fail);
     }
+    /// Perform commit for choice \a _c and alternative \a a
     virtual ExecStatus commit(Space&, const Gecode::Choice& _c, unsigned int) {
       return static_cast<const Choice&>(_c).fail ? ES_FAILED : ES_OK;
+    }
+    /// Print explanation
+    virtual void print(const Space&, const Gecode::Choice& _c, 
+                       unsigned int,
+                       std::ostream& o) const {
+      const Choice& c = static_cast<const Choice&>(_c);
+      o << (c.fail ? "fail" : "ok");
     }
     /// Copy brancher
     virtual Actor* copy(Space& home, bool share) {
@@ -355,7 +364,7 @@ main(int argc, char* argv[]) {
     return 1;
   }
 
-  MinimizeScript::run<Radiotherapy,BAB,SizeOptions>(opt);
+  IntMinimizeScript::run<Radiotherapy,BAB,SizeOptions>(opt);
   return 0;
 }
 

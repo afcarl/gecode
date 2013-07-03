@@ -13,8 +13,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-08 01:36:33 +0100 (Fri, 08 Mar 2013) $ by $Author: tack $
- *     $Revision: 13470 $
+ *     $Date: 2013-04-17 17:43:48 +0200 (Wed, 17 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13581 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1518,6 +1518,9 @@ namespace Gecode {
   /// \brief Return expression for \f$x[y]\f$
   GECODE_MINIMODEL_EXPORT LinIntExpr
   element(const IntArgs& x, const LinIntExpr& y);
+  /// \brief Return expression for if-then-else \f$b?x:y\f$
+  GECODE_MINIMODEL_EXPORT LinIntExpr
+  ite(const BoolExpr& b, const LinIntExpr& x, const LinIntExpr& y);
   //@}
 
 #ifdef GECODE_HAS_FLOAT_VARS
@@ -2181,27 +2184,58 @@ namespace Gecode {
   //@{
   namespace MiniModel {
 
-    /// Baseclass for cost-based optimization
+    /// Baseclass for integer-based cost-based optimization
     template<IntRelType irt>
-    class OptimizeSpace : public Space {
+    class IntOptimizeSpace : public Space {
     public:
       /// Default constructor
-      OptimizeSpace(void);
+      IntOptimizeSpace(void);
       /// Constructor for cloning
-      OptimizeSpace(bool share, OptimizeSpace& s);
+      IntOptimizeSpace(bool share, IntOptimizeSpace& s);
       /// Member function constraining according to cost
       virtual void constrain(const Space& best);
       /// Return variable with current cost
       virtual IntVar cost(void) const = 0;
     };
 
+#ifdef GECODE_HAS_FLOAT_VARS 
+
+    /// Baseclass for float-based cost-based optimization
+    template<FloatRelType frt>
+    class FloatOptimizeSpace : public Space {
+    public:
+      /// Default constructor
+      FloatOptimizeSpace(void);
+      /// Constructor for cloning
+      FloatOptimizeSpace(bool share, FloatOptimizeSpace& s);
+      /// Member function constraining according to cost
+      virtual void constrain(const Space& best);
+      /// Return variable with current cost
+      virtual FloatVar cost(void) const = 0;
+    };
+
+#endif
+
   }
 
-  /// Class for minimizing cost
-  typedef MiniModel::OptimizeSpace<IRT_LE> MinimizeSpace;
+  /// Class for minimizing integer cost
+  typedef MiniModel::IntOptimizeSpace<IRT_LE> MinimizeSpace;
+  /// Class for maximizing integer cost
+  typedef MiniModel::IntOptimizeSpace<IRT_GR> MaximizeSpace;
+  /// Class for minimizing integer cost
+  typedef MiniModel::IntOptimizeSpace<IRT_LE> IntMinimizeSpace;
+  /// Class for maximizing integer cost
+  typedef MiniModel::IntOptimizeSpace<IRT_GR> IntMaximizeSpace;
 
-  /// Class for maximizing cost
-  typedef MiniModel::OptimizeSpace<IRT_GR> MaximizeSpace;
+#ifdef GECODE_HAS_FLOAT_VARS 
+
+  /// Class for minimizing float cost
+  typedef MiniModel::FloatOptimizeSpace<FRT_LE> FloatMinimizeSpace;
+  /// Class for maximizing float cost
+  typedef MiniModel::FloatOptimizeSpace<FRT_GR> FloatMaximizeSpace;
+
+#endif
+
   //@}
 
 }

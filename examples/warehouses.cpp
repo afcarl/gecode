@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -96,7 +96,7 @@ const int c_supply[n_stores][n_warehouses] = {
  * \ingroup Example
  *
  */
-class Warehouses : public MinimizeScript {
+class Warehouses : public IntMinimizeScript {
 protected:
   /// Which warehouse supplies a store
   IntVarArray supplier;
@@ -145,7 +145,7 @@ public:
     return c_total;
   }
   /// Constructor for cloning \a s
-  Warehouses(bool share, Warehouses& s) : MinimizeScript(share,s) {
+  Warehouses(bool share, Warehouses& s) : IntMinimizeScript(share,s) {
     supplier.update(*this, share, s.supplier);
     open.update(*this, share, s.open);
     c_store.update(*this, share, s.c_store);
@@ -177,7 +177,7 @@ main(int argc, char* argv[]) {
   opt.solutions(0);
   opt.iterations(10);
   opt.parse(argc,argv);
-  MinimizeScript::run<Warehouses,BAB,Options>(opt);
+  IntMinimizeScript::run<Warehouses,BAB,Options>(opt);
   return 0;
 }
 

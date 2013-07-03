@@ -7,8 +7,8 @@
  *     Christian Schulte, 2010
  *
  *  Last modified:
- *     $Date: 2013-02-25 21:43:24 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13406 $
+ *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
+ *     $Revision: 13603 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -351,6 +351,24 @@ public:
     }
     return ES_OK;
   }
+  /// Print explanation
+  virtual void print(const Space&, const Gecode::Choice& _c, 
+                     unsigned int a,
+                     std::ostream& o) const {
+    const Choice& c = static_cast<const Choice&>(_c);
+    if (a == 0) {
+      o << "bin[" << c.item << "] = " << c.same[0];
+    } else {
+      o << "bin[" << c.item;
+      for (int i = c.item+1; (i<bin.size()) && 
+                             (size[i] == size[c.item]); i++)
+        o << "," << i;
+      o << "] != ";
+      for (int i = 0; i<c.n_same-1; i++)
+        o << c.same[i] << ",";
+      o << c.same[c.n_same-1];
+    }
+  }
 };
 
 /// Post branching (assumes that \a s is sorted)
@@ -372,7 +390,7 @@ BrancherHandle cdbf(Home home, const IntVarArgs& l, const IntVarArgs& b,
  * \ingroup Example
  *
  */
-class BinPacking : public MinimizeScript {
+class BinPacking : public IntMinimizeScript {
 protected:
   /// Specification
   const Spec spec;
@@ -473,7 +491,7 @@ public:
   }
   /// Constructor for cloning \a s
   BinPacking(bool share, BinPacking& s) 
-    : MinimizeScript(share,s), spec(s.spec) {
+    : IntMinimizeScript(share,s), spec(s.spec) {
     load.update(*this, share, s.load);
     bin.update(*this, share, s.bin);
     bins.update(*this, share, s.bins);
@@ -534,7 +552,7 @@ main(int argc, char* argv[]) {
     std::cerr << "Error: unkown instance" << std::endl;
     return 1;
   }
-  MinimizeScript::run<BinPacking,BAB,InstanceOptions>(opt);
+  IntMinimizeScript::run<BinPacking,BAB,InstanceOptions>(opt);
   return 0;
 }
 

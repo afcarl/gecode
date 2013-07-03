@@ -3,12 +3,16 @@
  *  Main authors:
  *     Christian Schulte <schulte@gecode.org>
  *
+ *  Contributing authors:
+ *     Stefano Gualandi <stefano.gualandi@gmail.com>
+ *
  *  Copyright:
  *     Christian Schulte, 2004
+ *     Stefano Gualandi, 2013
  *
  *  Last modified:
- *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13313 $
+ *     $Date: 2013-05-23 12:02:46 +0200 (Thu, 23 May 2013) $ by $Author: schulte $
+ *     $Revision: 13657 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -308,7 +312,7 @@ const GraphColorSpec g2(200, g2_e, g2_c);
  * \ingroup Example
  *
  */
-class GraphColor : public MinimizeScript {
+class GraphColor : public IntMinimizeScript {
 private:
   const GraphColorSpec& g;
   /// Color of nodes
@@ -323,16 +327,22 @@ public:
   };
   /// Branching to use for model
   enum {
-    BRANCH_DEGREE,      ///< Choose variable with largest degree
-    BRANCH_SIZE,        ///< Choose variable with smallest size
-    BRANCH_SIZE_DEGREE, ///< Choose variable with smallest size/degree
-    BRANCH_SIZE_AFC,    ///< Choose variable with smallest size/degree
+    BRANCH_DEGREE,         ///< Choose variable with largest degree
+    BRANCH_SIZE,           ///< Choose variable with smallest size
+    BRANCH_SIZE_DEGREE,    ///< Choose variable with smallest size/degree
+    BRANCH_SIZE_AFC,       ///< Choose variable with smallest size/afc
+    BRANCH_SIZE_ACTIVITY,  ///< Choose variable with smallest size/activity
+  };
+  /// Symmetry variants
+  enum {
+    SYMMETRY_NONE,      ///< Simple symmetry
+    SYMMETRY_LDSB       ///< Use LDSB for value symmetry breaking
   };
   /// The actual model
   GraphColor(const SizeOptions& opt)
     : g(opt.size() == 1 ? g2 : g1),
-      v(*this,g.n_v,0,g.n_v),
-      m(*this,0,g.n_v) {
+      v(*this,g.n_v,0,g.n_v-1),
+      m(*this,0,g.n_v-1) {
     rel(*this, v, IRT_LQ, m);
     for (int i = 0; g.e[i] != -1; i += 2)
       rel(*this, v[g.e[i]], IRT_NQ, v[g.e[i+1]]);
@@ -349,23 +359,55 @@ public:
       if (opt.model() == MODEL_CLIQUE)
         rel(*this, m, IRT_GQ, n-1);
     }
+    /// Branching on the number of colors
     branch(*this, m, INT_VAL_MIN());
-    switch (opt.branching()) {
-    case BRANCH_SIZE:
-      branch(*this, v, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
-      break;
-    case BRANCH_DEGREE:
-      branch(*this, v, tiebreak(INT_VAR_DEGREE_MAX(),INT_VAR_SIZE_MIN()),
-             INT_VAL_MIN());
-      break;
-    case BRANCH_SIZE_DEGREE:
-      branch(*this, v, INT_VAR_DEGREE_SIZE_MAX(), INT_VAL_MIN());
-      break;
-    case BRANCH_SIZE_AFC:
-      branch(*this, v, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
-      break;
-    default:
-      break;
+    if (opt.symmetry() == SYMMETRY_NONE) {
+       /// Branching without symmetry breaking
+       switch (opt.branching()) {
+          case BRANCH_SIZE:
+             branch(*this, v, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
+             break;
+          case BRANCH_DEGREE:
+             branch(*this, v, tiebreak(INT_VAR_DEGREE_MAX(),INT_VAR_SIZE_MIN()),
+                   INT_VAL_MIN());
+             break;
+          case BRANCH_SIZE_DEGREE:
+             branch(*this, v, INT_VAR_DEGREE_SIZE_MAX(), INT_VAL_MIN());
+             break;
+          case BRANCH_SIZE_AFC:
+             branch(*this, v, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
+             break;
+          case BRANCH_SIZE_ACTIVITY:
+             branch(*this, v, INT_VAR_ACTIVITY_SIZE_MAX(opt.decay()), INT_VAL_MIN());
+             break;
+          default:
+             break;
+       }
+    } else { // opt.symmetry() == SYMMETRY_LDSB
+       /// Branching while considering value symmetry breaking
+       /// (every permutation of color values gives equivalent solutions)
+       Symmetries syms;
+       syms << ValueSymmetry(IntArgs::create(g.n_v,0));
+       switch (opt.branching()) {
+          case BRANCH_SIZE:
+             branch(*this, v, INT_VAR_SIZE_MIN(), INT_VAL_MIN(), syms);
+             break;
+          case BRANCH_DEGREE:
+             branch(*this, v, tiebreak(INT_VAR_DEGREE_MAX(),INT_VAR_SIZE_MIN()),
+                   INT_VAL_MIN(), syms);
+             break;
+          case BRANCH_SIZE_DEGREE:
+             branch(*this, v, INT_VAR_DEGREE_SIZE_MAX(), INT_VAL_MIN(), syms);
+             break;
+          case BRANCH_SIZE_AFC:
+             branch(*this, v, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN(), syms);
+             break;
+          case BRANCH_SIZE_ACTIVITY:
+             branch(*this, v, INT_VAR_ACTIVITY_SIZE_MAX(opt.decay()), INT_VAL_MIN(), syms);
+             break;
+          default:
+             break;
+       }
     }
   }
   /// Cost function
@@ -373,7 +415,7 @@ public:
     return m;
   }
   /// Constructor for cloning \a s
-  GraphColor(bool share, GraphColor& s) : MinimizeScript(share,s), g(s.g) {
+  GraphColor(bool share, GraphColor& s) : IntMinimizeScript(share,s), g(s.g) {
     v.update(*this, share, s.v);
     m.update(*this, share, s.m);
   }
@@ -416,6 +458,10 @@ main(int argc, char* argv[]) {
   opt.branching(GraphColor::BRANCH_SIZE, "size");
   opt.branching(GraphColor::BRANCH_SIZE_DEGREE, "sizedegree");
   opt.branching(GraphColor::BRANCH_SIZE_AFC, "sizeafc");
+  opt.branching(GraphColor::BRANCH_SIZE_ACTIVITY, "sizeact");
+  opt.symmetry(GraphColor::SYMMETRY_NONE);
+  opt.symmetry(GraphColor::SYMMETRY_NONE,"none");
+  opt.symmetry(GraphColor::SYMMETRY_LDSB,"ldsb","use value symmetry breaking");
   opt.parse(argc,argv);
   Script::run<GraphColor,BAB,SizeOptions>(opt);
   return 0;

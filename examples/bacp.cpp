@@ -11,8 +11,8 @@
  *     Mikael Lagerkvist, 2010
  *
  *  Last modified:
- *     $Date: 2012-10-02 15:49:50 +0200 (Tue, 02 Oct 2012) $ by $Author: schulte $
- *     $Revision: 13123 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -97,7 +97,7 @@ namespace {
  * \ingroup Example
  *
  */
-class BACP : public MinimizeScript {
+class BACP : public IntMinimizeScript {
 protected:
   /// The curriculum to be scheduled
   const Curriculum curr;
@@ -209,7 +209,7 @@ public:
     return val;
   }
   /// Constructor for copying \a bacp
-  BACP(bool share, BACP& bacp) : MinimizeScript(share,bacp),
+  BACP(bool share, BACP& bacp) : IntMinimizeScript(share,bacp),
     curr(bacp.curr) {
     l.update(*this, share, bacp.l);
     u.update(*this, share, bacp.u);
@@ -264,7 +264,7 @@ main(int argc, char* argv[]) {
               << std::endl;
     return 1;
   }
-  MinimizeScript::run<BACP,BAB,SizeOptions>(opt);
+  IntMinimizeScript::run<BACP,BAB,SizeOptions>(opt);
   return 0;
 }
 

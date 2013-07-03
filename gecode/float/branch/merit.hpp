@@ -11,8 +11,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13313 $
+ *     $Date: 2013-06-13 20:53:42 +0200 (Thu, 13 Jun 2013) $ by $Author: tack $
+ *     $Revision: 13706 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -125,7 +125,7 @@ namespace Gecode { namespace Float { namespace Branch {
   }
   forceinline double
   MeritActivitySize::operator ()(const Space&, FloatView x, int i) {
-    return x.size() / activity[i];
+    return activity[i] / static_cast<double>(x.size());
   }
   forceinline bool
   MeritActivitySize::notice(void) const {

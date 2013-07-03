@@ -7,8 +7,8 @@
 #     Christian Schulte, 2010
 #
 #  Last modified:
-#     $Date: 2011-01-19 12:58:04 +0100 (Wed, 19 Jan 2011) $ by $Author: schulte $
-#     $Revision: 11552 $
+#     $Date: 2013-03-27 14:22:50 +0100 (Wed, 27 Mar 2013) $ by $Author: schulte $
+#     $Revision: 13558 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -49,7 +49,7 @@ if ($file =~ /(.*)Gecode([A-Za-z]+)-[0-9]+-[0-9]+-[0-9]+-[rd]-x[0-9]+\.dll\.mani
 } elsif ($file =~ /(.*)\/examples\/(.+)\.exe/) {
   $type = "Examples";
   $name = $2;
-} elsif ($file =~ /(.*)fz\.exe/) {
+} elsif ($file =~ /(.*)fzn-gecode\.exe/) {
   $type = "Tools";
   $name = "FlatZinc";
 } elsif ($file =~ /(.*)\/test\.exe/) {

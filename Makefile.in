@@ -9,8 +9,8 @@
 #     Guido Tack, 2005
 #
 #  Last modified:
-#     $Date: 2013-03-14 21:25:49 +0100 (Thu, 14 Mar 2013) $ by $Author: schulte $
-#     $Revision: 13540 $
+#     $Date: 2013-04-17 17:17:53 +0200 (Wed, 17 Apr 2013) $ by $Author: schulte $
+#     $Revision: 13580 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -240,7 +240,7 @@ EXTRA_HEADERS   = gecode/support/config.hpp
 #
 
 SEARCHSRC0 = \
-	stop options cutoff support \
+	stop options cutoff \
 	parallel/engine \
 	dfs parallel/dfs \
 	bab parallel/bab \
@@ -320,7 +320,7 @@ INTHDR0 = \
 	arithmetic/pow-ops.hpp arithmetic/pow.hpp arithmetic/nroot.hpp \
 	arithmetic/math.hpp \
 	bool/or.hpp bool/eq.hpp bool/lq.hpp bool/eqv.hpp bool/base.hpp \
-	bool/clause.hpp \
+	bool/clause.hpp bool/ite.hpp \
 	precede.hh precede/single.hpp \
 	branch/traits.hpp branch/var.hpp branch/val.hpp branch/assign.hpp \
 	branch/view-values.hpp branch/merit.hpp \

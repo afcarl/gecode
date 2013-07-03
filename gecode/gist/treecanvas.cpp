@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13458 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -774,6 +774,23 @@ namespace Gecode { namespace Gist {
   }
 
   void
+  TreeCanvas::labelBranches(void) {
+    QMutexLocker locker(&mutex);
+    currentNode->labelBranches(*na,curBest,c_d,a_d);
+    update();
+    centerCurrentNode();
+    emit statusChanged(currentNode, stats, true);
+  }
+  void
+  TreeCanvas::labelPath(void) {
+    QMutexLocker locker(&mutex);
+    currentNode->labelPath(*na,curBest,c_d,a_d);
+    update();
+    centerCurrentNode();
+    emit statusChanged(currentNode, stats, true);
+  }
+
+  void
   TreeCanvas::inspectSolution(const Space* s) {
     int failedInspectorType = -1;
     int failedInspector = -1;
@@ -1155,11 +1172,11 @@ namespace Gecode { namespace Gist {
     if (mutex.tryLock()) {
       if (event->type() == QEvent::ToolTip) {
         VisualNode* n = eventNode(event);
-        if (n != NULL && !n->isHidden() &&
-            (n->getStatus() == BRANCH || n->getStatus() == STOP)) {
+        if (n != NULL) {
           QHelpEvent* he = static_cast<QHelpEvent*>(event);
           QToolTip::showText(he->globalPos(),
-                             QString(n->toolTip(curBest,c_d,a_d).c_str()));
+                             QString(n->toolTip(*na,curBest,
+                                                c_d,a_d).c_str()));
         } else {
           QToolTip::hideText();
         }

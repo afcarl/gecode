@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,7 +54,7 @@ using namespace Gecode;
  * \ingroup Example
  *
  */
-class DominatingQueens : public MinimizeScript {
+class DominatingQueens : public IntMinimizeScript {
 protected:
   /// Size of the board
   const int n;
@@ -118,7 +118,7 @@ public:
 
   /// Constructor for cloning \a s
   DominatingQueens(bool share, DominatingQueens& s) 
-    : MinimizeScript(share,s), n(s.n) {
+    : IntMinimizeScript(share,s), n(s.n) {
     b.update(*this, share, s.b);
     q.update(*this, share, s.q);
   }
@@ -162,7 +162,7 @@ main(int argc, char* argv[]) {
   opt.size(7);
   opt.solutions(0);
   opt.parse(argc,argv);
-  MinimizeScript::run<DominatingQueens,BAB,SizeOptions>(opt);
+  IntMinimizeScript::run<DominatingQueens,BAB,SizeOptions>(opt);
   return 0;
 }
 

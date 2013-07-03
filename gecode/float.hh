@@ -11,8 +11,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-05 13:52:08 +0100 (Tue, 05 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13434 $
+ *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
+ *     $Revision: 13672 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1365,6 +1365,19 @@ namespace Gecode {
   typedef double (*FloatBranchMerit)(const Space& home, FloatVar x, int i);
 
   /**
+   * \brief Value description class for branching
+   *
+   * \ingroup TaskModelFloatBranch
+   */
+  class FloatNumBranch {
+  public:
+    /// The middle value for branching
+    FloatNum n;
+    /// Whether to try the lower or upper half first
+    bool l;
+  };
+
+  /**
    * \brief Branch value function type for float variables
    *
    * Returns a value for the variable \a x that is to be used in the
@@ -1374,7 +1387,7 @@ namespace Gecode {
    *
    * \ingroup TaskModelFloatBranch
    */
-  typedef FloatNum (*FloatBranchVal)(const Space& home, FloatVar x, int i);
+  typedef FloatNumBranch (*FloatBranchVal)(const Space& home, FloatVar x, int i);
 
   /**
    * \brief Branch commit function type for float variables
@@ -1382,13 +1395,13 @@ namespace Gecode {
    * The function must post a constraint on the variable \a x which
    * corresponds to the alternative \a a.  The integer \a i refers 
    * to the variable's position in the original array passed to the 
-   * brancher. The value \a n is the value
+   * brancher. The value \a nl is the value description
    * computed by the corresponding branch value function.
    *
    * \ingroup TaskModelFloatBranch
    */
   typedef void (*FloatBranchCommit)(Space& home, unsigned int a,
-                                    FloatVar x, int i, FloatNum n);
+                                    FloatVar x, int i, FloatNumBranch nl);
 
 }
 
@@ -1469,6 +1482,16 @@ namespace Gecode {
 }
 
 #include <gecode/float/branch/activity.hpp>
+
+namespace Gecode {
+
+  /// Function type for explaining branching alternatives for set variables
+  typedef void (*FloatVarValPrint)(const Space &home, const BrancherHandle& bh,
+                                   unsigned int a,
+                                   FloatVar x, int i, const FloatNumBranch& n,
+                                   std::ostream& o);
+
+}
 
 namespace Gecode {
 
@@ -1640,7 +1663,7 @@ namespace Gecode {
   /// Select values greater than mean of smallest and largest value
   FloatValBranch FLOAT_VAL_SPLIT_MAX(void);
   /// Select values randomly which are not greater or not smaller than mean of largest and smallest value
-  FloatValBranch FLOAT_VAL_SPLIT_RND(void);
+  FloatValBranch FLOAT_VAL_SPLIT_RND(Rnd r);
   /**
    * Select value as defined by the value function \a v and commit function \a c
    * The default commit function posts the constraint that the float variable
@@ -1717,7 +1740,8 @@ namespace Gecode {
   GECODE_FLOAT_EXPORT BrancherHandle
   branch(Home home, const FloatVarArgs& x,
          FloatVarBranch vars, FloatValBranch vals, 
-         FloatBranchFilter fbf=NULL);
+         FloatBranchFilter bf=NULL,
+         FloatVarValPrint vvp=NULL);
   /**
    * \brief Branch over \a x with tie-breaking variable selection \a vars and value selection \a vals
    *
@@ -1726,14 +1750,16 @@ namespace Gecode {
   GECODE_FLOAT_EXPORT BrancherHandle
   branch(Home home, const FloatVarArgs& x,
          TieBreak<FloatVarBranch> vars, FloatValBranch vals,
-         FloatBranchFilter bf=NULL);
+         FloatBranchFilter bf=NULL,
+         FloatVarValPrint vvp=NULL);
   /**
    * \brief Branch over \a x with value selection \a vals
    *
    * \ingroup TaskModelFloatBranch
    */
   GECODE_FLOAT_EXPORT BrancherHandle
-  branch(Home home, FloatVar x, FloatValBranch vals);
+  branch(Home home, FloatVar x, FloatValBranch vals,
+         FloatVarValPrint vvp=NULL);
 
   /**
    * \brief Assign all \a x with value selection \a vals
@@ -1742,14 +1768,16 @@ namespace Gecode {
    */
   GECODE_FLOAT_EXPORT BrancherHandle
   assign(Home home, const FloatVarArgs& x, FloatAssign vals,
-         FloatBranchFilter fbf=NULL);
+         FloatBranchFilter fbf=NULL,
+         FloatVarValPrint vvp=NULL);
   /**
    * \brief Assign \a x with value selection \a vals
    *
    * \ingroup TaskModelFloatBranch
    */
   GECODE_FLOAT_EXPORT BrancherHandle
-  assign(Home home, FloatVar x, FloatAssign vals);
+  assign(Home home, FloatVar x, FloatAssign vals,
+         FloatVarValPrint vvp=NULL);
   //@}
 
 }

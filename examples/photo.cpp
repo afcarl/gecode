@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -77,7 +77,7 @@ const PhotoSpec p_large(9,17, l_prefs);
  * \ingroup Example
  *
  */
-class Photo : public MinimizeScript {
+class Photo : public IntMinimizeScript {
 protected:
   /// Photo specification
   const PhotoSpec& spec;
@@ -122,7 +122,7 @@ public:
 
   /// Constructor for cloning \a s
   Photo(bool share, Photo& s) :
-    MinimizeScript(share,s), spec(s.spec) {
+    IntMinimizeScript(share,s), spec(s.spec) {
     pos.update(*this, share, s.pos);
     violations.update(*this, share, s.violations);
   }
@@ -157,7 +157,7 @@ main(int argc, char* argv[]) {
   opt.branching(Photo::BRANCH_NONE,   "none");
   opt.branching(Photo::BRANCH_DEGREE, "degree");
   opt.parse(argc,argv);
-  MaximizeScript::run<Photo,BAB,SizeOptions>(opt);
+  IntMaximizeScript::run<Photo,BAB,SizeOptions>(opt);
   return 0;
 }
 

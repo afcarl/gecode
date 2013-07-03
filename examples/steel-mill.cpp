@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2008
  *
  *  Last modified:
- *     $Date: 2013-03-11 14:47:11 +0100 (Mon, 11 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13490 $
+ *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
+ *     $Revision: 13603 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -159,7 +159,7 @@ public:
  * \ingroup Example
  *
  */
-class SteelMill : public MinimizeScript {
+class SteelMill : public IntMinimizeScript {
 protected:
   /** \name Instance specification
    */
@@ -322,7 +322,7 @@ public:
 
   /// Constructor for cloning \a s
   SteelMill(bool share, SteelMill& s)
-    : MinimizeScript(share,s),
+    : IntMinimizeScript(share,s),
       capacities(s.capacities), ncapacities(s.ncapacities),
       maxcapacity(s.maxcapacity), loss(s.loss),
       ncolors(s.ncolors), orders(s.orders),
@@ -444,6 +444,15 @@ public:
       else
         return me_failed(Int::IntView(sm.slab[c.pos]).eq(home, c.val))
           ? ES_FAILED : ES_OK;
+    }
+    /// Print explanation
+    virtual void print(const Space&, const Gecode::Choice& _c, 
+                       unsigned int a,
+                       std::ostream& o) const {
+      const Choice& c = static_cast<const Choice&>(_c);
+      o << "slab[" << c.pos << "] "
+        << ((a == 0) ? "=" : "!=")
+        << " " << c.val;
     }
     /// Copy brancher
     virtual Actor* copy(Space& home, bool share) {

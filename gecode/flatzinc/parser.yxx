@@ -92,7 +92,8 @@ void yyassert(ParserState* pp, bool cond, const char* str)
  *
  */
 
-AST::Node* getArrayElement(ParserState* pp, string id, int offset) {
+AST::Node* getArrayElement(ParserState* pp, string id, int offset,
+                           bool annotation) {
   if (offset > 0) {
     SymbolEntry e;
     if (pp->symbols.get(id,e)) {
@@ -100,19 +101,51 @@ AST::Node* getArrayElement(ParserState* pp, string id, int offset) {
       case ST_INTVARARRAY:
         if (offset > pp->arrays[e.i])
           goto error;
-        return new AST::IntVar(pp->arrays[e.i+offset]);
+        {
+          std::string n;
+          if (annotation) {
+            std::ostringstream oss;
+            oss << id << "[" << offset << "]";
+            n = oss.str();
+          }
+          return new AST::IntVar(pp->arrays[e.i+offset],n);
+        }
       case ST_BOOLVARARRAY:
         if (offset > pp->arrays[e.i])
           goto error;
-        return new AST::BoolVar(pp->arrays[e.i+offset]);
+        {
+          std::string n;
+          if (annotation) {
+            std::ostringstream oss;
+            oss << id << "[" << offset << "]";
+            n = oss.str();
+          }
+          return new AST::BoolVar(pp->arrays[e.i+offset],n);
+        }
       case ST_SETVARARRAY:
         if (offset > pp->arrays[e.i])
           goto error;
-        return new AST::SetVar(pp->arrays[e.i+offset]);
+        {
+          std::string n;
+          if (annotation) {
+            std::ostringstream oss;
+            oss << id << "[" << offset << "]";
+            n = oss.str();
+          }
+          return new AST::SetVar(pp->arrays[e.i+offset],n);
+        }
       case ST_FLOATVARARRAY:
         if (offset > pp->arrays[e.i])
           goto error;
-        return new AST::FloatVar(pp->arrays[e.i+offset]);
+        {
+          std::string n;
+          if (annotation) {
+            std::ostringstream oss;
+            oss << id << "[" << offset << "]";
+            n = oss.str();
+          }          
+          return new AST::FloatVar(pp->arrays[e.i+offset],n);
+        }
       case ST_INTVALARRAY:
         if (offset > pp->arrays[e.i])
           goto error;
@@ -139,12 +172,15 @@ error:
 }
 AST::Node* getVarRefArg(ParserState* pp, string id, bool annotation = false) {
   SymbolEntry e;
+  string n;
+  if (annotation)
+    n = id;
   if (pp->symbols.get(id, e)) {
     switch (e.t) {
-    case ST_INTVAR: return new AST::IntVar(e.i);
-    case ST_BOOLVAR: return new AST::BoolVar(e.i);
-    case ST_SETVAR: return new AST::SetVar(e.i);
-    case ST_FLOATVAR: return new AST::FloatVar(e.i);
+    case ST_INTVAR: return new AST::IntVar(e.i,n);
+    case ST_BOOLVAR: return new AST::BoolVar(e.i,n);
+    case ST_SETVAR: return new AST::SetVar(e.i,n);
+    case ST_FLOATVAR: return new AST::FloatVar(e.i,n);
     default: break;
     }
   }
@@ -180,7 +216,8 @@ void addDomainConstraint(ParserState* pp, AST::Node* var,
   }
   {
     AST::Array* args = new AST::Array(2);
-    args->a[0] = var;
+    AST::FloatVar* fv = static_cast<AST::FloatVar*>(var);
+    args->a[0] = new AST::FloatVar(fv->i,fv->n);
     args->a[1] = new AST::FloatLit(dom.some()->second);
     pp->domainConstraints.push_back(new ConExpr("float_le", args));
   }
@@ -654,8 +691,8 @@ vardecl_item:
             yyassert(pp, false, "Invalid var float initializer");
           }
           if (!pp->hadError && $2()) {
-            addDomainConstraint(pp,
-              new AST::FloatVar(pp->floatvars.size()-1), $2);
+            AST::FloatVar* fv = new AST::FloatVar(pp->floatvars.size()-1);
+            addDomainConstraint(pp, fv, $2);
           }
           delete arg;
         } else {
@@ -1359,10 +1396,12 @@ solve_item :
         ParserState *pp = static_cast<ParserState*>(parm);
         if (!pp->hadError) {
           try {
+            int v = $4 < 0 ? (-$4-1) : $4;
+            bool vi = $4 >= 0;
             if ($3)
-              pp->fg->minimize($4,$2);
+              pp->fg->minimize(v,vi,$2);
             else
-              pp->fg->maximize($4,$2);
+              pp->fg->maximize(v,vi,$2);
           } catch (Gecode::FlatZinc::Error& e) {
             yyerror(pp, e.toString().c_str());
           }
@@ -1600,7 +1639,7 @@ non_array_expr :
         int i = -1;
         yyassert(pp, $3->isInt(i), "Non-integer array index");
         if (!pp->hadError)
-          $$ = getArrayElement(static_cast<ParserState*>(parm),$1,i);
+          $$ = getArrayElement(static_cast<ParserState*>(parm),$1,i,false);
         else
           $$ = new AST::IntLit(0); // keep things consistent
         free($1);
@@ -1627,10 +1666,13 @@ solve_expr:
       { 
         ParserState *pp = static_cast<ParserState*>(parm);
         SymbolEntry e;
-        if (pp->symbols.get($1,e) && e.t == ST_INTVAR) {
+        bool haveSym = pp->symbols.get($1,e);
+        if (haveSym && e.t == ST_INTVAR) {
           $$ = e.i;
+        } else if (haveSym && e.t == ST_FLOATVAR) {
+          $$ = -e.i-1;
         } else {
-          pp->err << "Error: unknown integer variable " << $1
+          pp->err << "Error: unknown int or float variable " << $1
                   << " in line no. "
                   << yyget_lineno(pp->yyscanner) << std::endl;
           pp->hadError = true;
@@ -1641,8 +1683,9 @@ solve_expr:
       {
         SymbolEntry e;
         ParserState *pp = static_cast<ParserState*>(parm);
-        if ( (!pp->symbols.get($1, e)) || e.t != ST_INTVARARRAY) {
-          pp->err << "Error: unknown integer variable array " << $1
+        if ( (!pp->symbols.get($1, e)) ||
+             (e.t != ST_INTVARARRAY && e.t != ST_FLOATVARARRAY)) {
+          pp->err << "Error: unknown int or float variable array " << $1
                   << " in line no. "
                   << yyget_lineno(pp->yyscanner) << std::endl;
           pp->hadError = true;
@@ -1653,7 +1696,10 @@ solve_expr:
                   << yyget_lineno(pp->yyscanner) << std::endl;
           pp->hadError = true;
         } else {
-          $$ = pp->arrays[e.i+$3];
+          if (e.t == ST_INTVARARRAY)
+            $$ = pp->arrays[e.i+$3];
+          else
+            $$ = -pp->arrays[e.i+$3]-1;
         }
         free($1);
       }
@@ -1720,32 +1766,44 @@ ann_non_array_expr :
           case ST_INTVARARRAY:
             {
               AST::Array *v = new AST::Array(pp->arrays[e.i]);
-              for (int i=pp->arrays[e.i]; i--;)
-                v->a[i] = new AST::IntVar(pp->arrays[e.i+i+1]);
+              for (int i=pp->arrays[e.i]; i--;) {
+                std::ostringstream oss;
+                oss << $1 << "["<<(i+1)<<"]";
+                v->a[i] = new AST::IntVar(pp->arrays[e.i+i+1], oss.str());
+              }
               $$ = v;
             }
             break;
           case ST_BOOLVARARRAY:
             {
               AST::Array *v = new AST::Array(pp->arrays[e.i]);
-              for (int i=pp->arrays[e.i]; i--;)
-                v->a[i] = new AST::BoolVar(pp->arrays[e.i+i+1]);
+              for (int i=pp->arrays[e.i]; i--;) {
+                std::ostringstream oss;
+                oss << $1 << "["<<(i+1)<<"]";
+                v->a[i] = new AST::BoolVar(pp->arrays[e.i+i+1], oss.str());
+              }
               $$ = v;
             }
             break;
           case ST_FLOATVARARRAY:
             {
               AST::Array *v = new AST::Array(pp->arrays[e.i]);
-              for (int i=pp->arrays[e.i]; i--;)
-                v->a[i] = new AST::FloatVar(pp->arrays[e.i+i+1]);
+              for (int i=pp->arrays[e.i]; i--;) {
+                std::ostringstream oss;
+                oss << $1 << "["<<(i+1)<<"]";
+                v->a[i] = new AST::FloatVar(pp->arrays[e.i+i+1], oss.str());
+              }
               $$ = v;
             }
             break;
           case ST_SETVARARRAY:
             {
               AST::Array *v = new AST::Array(pp->arrays[e.i]);
-              for (int i=pp->arrays[e.i]; i--;)
-                v->a[i] = new AST::SetVar(pp->arrays[e.i+i+1]);
+              for (int i=pp->arrays[e.i]; i--;) {
+                std::ostringstream oss;
+                oss << $1 << "["<<(i+1)<<"]";
+                v->a[i] = new AST::SetVar(pp->arrays[e.i+i+1], oss.str());
+              }
               $$ = v;
             }
             break;
@@ -1809,7 +1867,7 @@ ann_non_array_expr :
         int i = -1;
         yyassert(pp, $3->isInt(i), "Non-integer array index");
         if (!pp->hadError)
-          $$ = getArrayElement(static_cast<ParserState*>(parm),$1,i);
+          $$ = getArrayElement(static_cast<ParserState*>(parm),$1,i,true);
         else
           $$ = new AST::IntLit(0); // keep things consistent
         free($1);

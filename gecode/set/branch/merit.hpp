@@ -13,8 +13,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13313 $
+ *     $Date: 2013-07-01 09:17:01 +0200 (Mon, 01 Jul 2013) $ by $Author: tack $
+ *     $Revision: 13742 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -132,7 +132,7 @@ namespace Gecode { namespace Set { namespace Branch {
   }
   forceinline double
   MeritActivitySize::operator ()(const Space&, SetView x, int i) {
-    return static_cast<double>(x.unknownSize()) / activity[i];
+    return activity[i] / static_cast<double>(x.unknownSize());
   }
   forceinline bool
   MeritActivitySize::notice(void) const {

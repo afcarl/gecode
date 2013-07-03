@@ -6,9 +6,9 @@ dnl Copyright:
 dnl   Guido Tack, 2004, 2005
 dnl
 dnl Last modified:
-dnl   $Date: 2013-02-15 11:45:05 +0100 (Fri, 15 Feb 2013) $
-dnl   by $Author: schulte $
-dnl   $Revision: 13300 $
+dnl   $Date: 2013-07-01 06:38:48 +0200 (Mon, 01 Jul 2013) $
+dnl   by $Author: tack $
+dnl   $Revision: 13740 $
 dnl
 dnl This file is part of Gecode, the generic constraint
 dnl development environment:
@@ -1351,6 +1351,16 @@ AC_DEFUN([AC_GECODE_THREADS],[
   [AC_DEFINE(GECODE_THREADS_PTHREADS,1,[Whether we have posix threads])
    AC_GECODE_ADD_TO_COMPILERFLAGS([-pthread])
    AC_GECODE_ADD_TO_DLLFLAGS([-pthread])
+   AC_CHECK_HEADER([libkern/OSAtomic.h],
+   [AC_DEFINE(GECODE_THREADS_OSX,1,[Whether we have Mac OS threads])],
+    AC_MSG_CHECKING([for spin locks])
+     AC_TRY_COMPILE([#include <pthread.h>],
+       [pthread_spinlock_t t;],
+       [AC_MSG_RESULT(yes)
+        AC_DEFINE(GECODE_THREADS_PTHREADS_SPINLOCK,1,Whether we have posix spinlocks)],
+[AC_MSG_RESULT(no)]
+     )
+   )
   ],
   [AC_CHECK_HEADER(windows.h,
     [AC_DEFINE(GECODE_THREADS_WINDOWS,1,[Whether we have windows threads])])]

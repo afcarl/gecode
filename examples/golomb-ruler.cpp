@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-03-07 20:40:42 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13462 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -63,7 +63,7 @@ using namespace Gecode;
  * \ingroup Example
  *
  */
-class GolombRuler : public MinimizeScript {
+class GolombRuler : public IntMinimizeScript {
 protected:
   /// Array for ruler marks
   IntVarArray m;
@@ -115,7 +115,7 @@ public:
 
   /// Constructor for cloning \a s
   GolombRuler(bool share, GolombRuler& s)
-    : MinimizeScript(share,s) {
+    : IntMinimizeScript(share,s) {
     m.update(*this, share, s.m);
   }
   /// Copy during cloning
@@ -136,7 +136,7 @@ main(int argc, char* argv[]) {
   opt.icl(ICL_BND);
   opt.parse(argc,argv);
   if (opt.size() > 0)
-    MinimizeScript::run<GolombRuler,BAB,SizeOptions>(opt);
+    IntMinimizeScript::run<GolombRuler,BAB,SizeOptions>(opt);
   return 0;
 }
 

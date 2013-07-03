@@ -13,8 +13,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-13 08:45:17 +0100 (Wed, 13 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13522 $
+ *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
+ *     $Revision: 13672 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -341,8 +341,10 @@ namespace Test { namespace Branch {
   const int n_float_val_branch =
     sizeof(float_val_branch_name)/sizeof(const char*);
   /// Test function for branch value function
-  Gecode::FloatNum float_val(const Gecode::Space&, Gecode::FloatVar x, int) {
-    return x.med();
+  Gecode::FloatNumBranch float_val(const Gecode::Space&, 
+                                   Gecode::FloatVar x, int) {
+    Gecode::FloatNumBranch nl; nl.n=x.med(); nl.l=true;
+    return nl;
   }
   //@}
 #endif

@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-09-03 11:25:49 +0200 (Fri, 03 Sep 2010) $ by $Author: tack $
- *     $Revision: 11387 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -216,8 +216,20 @@ namespace Gecode { namespace Gist {
     /// Find a node in this subtree at coordinates \a x, \a y
     VisualNode* findNode(const NodeAllocator& na, int x, int y);
 
+    /// Create or clear branch labels in subtree
+    void labelBranches(NodeAllocator& na,
+                       BestNode* curBest, int c_d, int a_d);
+    /// Create or clear branch labels on path to root
+    void labelPath(NodeAllocator& na,
+                   BestNode* curBest, int c_d, int a_d);
+    /// Return string that describes the branch
+    std::string getBranchLabel(NodeAllocator& na,
+                               VisualNode* p, const Choice* c,
+                               BestNode* curBest, int c_d, int a_d, int alt);
+
     /// Return string that is used as a tool tip
-    std::string toolTip(BestNode* curBest, int c_d, int a_d);
+    std::string toolTip(NodeAllocator& na, BestNode* curBest,
+                        int c_d, int a_d);
 
     /// Return size information
     size_t size(void) const;

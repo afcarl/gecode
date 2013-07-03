@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-02-19 13:26:08 +0100 (Tue, 19 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13313 $
+ *     $Date: 2013-05-08 13:30:48 +0200 (Wed, 08 May 2013) $ by $Author: schulte $
+ *     $Revision: 13622 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -144,14 +144,36 @@ public:
     case BRANCH_WORDS:
       // Branch by assigning words
       branch(*this, allwords, 
-             INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_SPLIT_MIN());
+             INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_SPLIT_MIN(),
+             NULL, &printwords);
       break;
     case BRANCH_LETTERS:
       // Branch by assigning letters
       branch(*this, letters, 
-             INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN());
+             INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN(),
+             NULL, &printletters);
       break;
     }
+  }
+  /// Print brancher information when branching on letters
+  static void printletters(const Space& home, const BrancherHandle& bh,
+                           unsigned int a,
+                           IntVar, int i, const int& n,
+                           std::ostream& o) {
+    const Crossword& c = static_cast<const Crossword&>(home);
+    int x = i % c.w, y = i / c.w;
+    o << "letters[" << x << "," << y << "] "
+      << ((a == 0) ? "=" : "!=") << " "
+      << static_cast<char>(n);
+  }
+  /// Print brancher information when branching on words
+  static void printwords(const Space&, const BrancherHandle& bh,
+                         unsigned int a,
+                         IntVar, int i, const int& n,
+                         std::ostream& o) {
+    o << "allwords[" << i << "] "
+      << ((a == 0) ? "<=" : ">") << " "
+      << n;
   }
   /// Constructor for cloning \a s
   Crossword(bool share, Crossword& s) 

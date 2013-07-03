@@ -7,8 +7,8 @@
  *     Christopher Mears, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-08 04:21:30 +0100 (Fri, 08 Mar 2013) $ by $Author: mears $
- *     $Revision: 13477 $
+ *     $Date: 2013-05-22 03:44:54 +0200 (Wed, 22 May 2013) $ by $Author: mears $
+ *     $Revision: 13652 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -826,6 +826,35 @@ namespace Test { namespace LDSB {
     }
   };
 
+  /// %Test for value sequence symmetry
+  class SimIntValSym3 {
+  public:
+    /// Number of variables
+    static const int n = 2;
+    /// Lower bound of values
+    static const int l = 0;
+    /// Upper bound of values
+    static const int u = 6;
+    /// Setup problem constraints and symmetries
+    static void setup(Home h, IntVarArray& xs) {
+      rel(h, xs[0] + xs[1] == 6);
+      Symmetries s;
+      // Values 0,1,2 are symmetric with 6,5,4.
+      s << values_reflect(0,6);
+      branch(h, xs, INT_VAR_NONE(), INT_VAL_MED(), s);
+    }
+    /// Compute list of expected solutions
+    static std::vector<IntArgs> expectedSolutions(void) {
+      static std::vector<IntArgs> expected;
+      expected.clear();
+      expected.push_back(IntArgs(2, 3,3));
+      expected.push_back(IntArgs(2, 2,4));
+      expected.push_back(IntArgs(2, 1,5));
+      expected.push_back(IntArgs(2, 0,6));
+      return expected;
+    }
+  };
+
   /// %Test for value symmetry
   class ValSym1 {
   public:
@@ -1501,7 +1530,100 @@ namespace Test { namespace LDSB {
     }
   };
 
-  
+  /// %Test for reflection symmetry
+  class ReflectSym1 {
+  public:
+    /// Number of variables
+    static const int n = 6;
+    /// Lower bound of values
+    static const int l = 0;
+    /// Upper bound of values
+    static const int u = 6;
+    /// Setup problem constraints and symmetries
+    static void setup(Home h, IntVarArray& xs) {
+      Matrix<IntVarArray> m(xs, 3, 2);
+
+      distinct(h, xs);
+      rel(h, abs(m(0,0)-m(1,0))==1);
+      rel(h, abs(m(0,1)-m(1,1))==1);
+      rel(h, abs(m(1,0)-m(2,0))==1);
+      rel(h, abs(m(1,1)-m(2,1))==1);
+
+      Symmetries s;
+      s << values_reflect(l, u);
+      s << rows_interchange(m);
+      s << columns_reflect(m);
+      branch(h, xs, INT_VAR_NONE(), INT_VAL_MIN(), s);
+    }
+    /// Compute list of expected solutions
+    static std::vector<IntArgs> expectedSolutions(void) {
+      static std::vector<IntArgs> expected;
+      expected.clear();
+      expected.push_back(IntArgs(6, 0,1,2,3,4,5));
+      expected.push_back(IntArgs(6, 0,1,2,4,5,6));
+      expected.push_back(IntArgs(6, 0,1,2,5,4,3));
+      expected.push_back(IntArgs(6, 0,1,2,6,5,4));
+      return expected;
+    }
+  };
+
+    /// %Test for reflection symmetry
+  class ReflectSym2 {
+  public:
+    /// Number of variables
+    static const int n = 2;
+    /// Lower bound of values
+    static const int l = 0;
+    /// Upper bound of values
+    static const int u = 3;
+    /// Setup problem constraints and symmetries
+    static void setup(Home h, IntVarArray& xs) {
+      Symmetries s;
+      s << values_reflect(l, u);
+      branch(h, xs, INT_VAR_NONE(), INT_VAL_MIN(), s);
+    }
+    /// Compute list of expected solutions
+    static std::vector<IntArgs> expectedSolutions(void) {
+      static std::vector<IntArgs> expected;
+      expected.clear();
+      expected.push_back(IntArgs(2, 0,0));
+      expected.push_back(IntArgs(2, 0,1));
+      expected.push_back(IntArgs(2, 0,2));
+      expected.push_back(IntArgs(2, 0,3));
+      expected.push_back(IntArgs(2, 1,0));
+      expected.push_back(IntArgs(2, 1,1));
+      expected.push_back(IntArgs(2, 1,2));
+      expected.push_back(IntArgs(2, 1,3));
+      return expected;
+    }
+  };
+
+  /// %Test with activity
+  class Activity1 {
+  public:
+    /// Number of variables
+    static const int n = 4;
+    /// Lower bound of values
+    static const int l = 0;
+    /// Upper bound of values
+    static const int u = 3;
+    /// Setup problem constraints and symmetries
+    static void setup(Home h, IntVarArray& xs) {
+      distinct(h, xs);
+      Symmetries s;
+      s << VariableSymmetry(xs);
+      s << ValueSymmetry(IntArgs::create(4,0));
+      branch(h, xs, INT_VAR_ACTIVITY_MIN(0.8), INT_VAL_MIN(), s);
+    }
+    /// Compute list of expected solutions
+    static std::vector<IntArgs> expectedSolutions(void) {
+      static std::vector<IntArgs> expected;
+      expected.clear();
+      expected.push_back(IntArgs(4, 0,1,2,3));
+      return expected;
+    }
+  };
+
 #endif
 
   LDSB<VarSym1> varsym1("VarSym1");
@@ -1518,6 +1640,7 @@ namespace Test { namespace LDSB {
   LDSB<SimIntVarSym2> simintvarsym2("SimIntVarSym2");
   LDSB<SimIntValSym1> simintvalsym1("SimIntValSym1");
   LDSB<SimIntValSym2> simintvalsym2("SimIntValSym2");
+  LDSB<SimIntValSym3> simintvalsym3("SimIntValSym3");
   LDSB<ValSym1> valsym1("ValSym1");
   LDSB<ValSym1b> valsym1b("ValSym1b");
   LDSB<ValSym1c> valsym1c("ValSym1c");
@@ -1530,6 +1653,9 @@ namespace Test { namespace LDSB {
   LDSBLatin latin("Latin");
   LDSB<Recomputation> recomp("Recomputation", 999,999);
   LDSB<TieBreak> tiebreak("TieBreak");
+  LDSB<ReflectSym1> reflectsym1("ReflectSym1");
+  LDSB<ReflectSym2> reflectsym2("ReflectSym2");
+  LDSB<Activity1> activity1("Activity1");
 
 #ifdef GECODE_HAS_SET_VARS
   LDSBSet<SetVarSym1> setvarsym1("SetVarSym1");

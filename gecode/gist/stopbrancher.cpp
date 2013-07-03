@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2011-05-11 12:44:17 +0200 (Wed, 11 May 2011) $ by $Author: tack $
- *     $Revision: 12001 $
+ *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
+ *     $Revision: 13603 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -72,6 +72,11 @@ namespace Gecode { namespace Gist {
     done = true;
     return ES_OK;
   }
+  void 
+  StopBrancher::print(const Space&, const Gecode::Choice&, 
+                      unsigned int, std::ostream&) const {
+  }
+
   Actor*
   StopBrancher::copy(Space& home, bool share) {
     return new (home) StopBrancher(home, share, *this);

@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-12 09:48:30 +0200 (Thu, 12 Aug 2010) $ by $Author: tack $
- *     $Revision: 11345 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -254,6 +254,37 @@ namespace Gecode { namespace Gist {
   StatCursor::moveUpwards(void) {
     curDepth--;
     NodeCursor<VisualNode>::moveUpwards();
+  }
+
+  forceinline
+  BranchLabelCursor::BranchLabelCursor(VisualNode* root, BestNode* curBest,
+                                       int c_d, int a_d, bool clear,
+                                       VisualNode::NodeAllocator& na)
+    : NodeCursor<VisualNode>(root,na), _na(na), _curBest(curBest),
+      _c_d(c_d), _a_d(a_d), _clear(clear) {}
+
+  forceinline void
+  BranchLabelCursor::processCurrentNode(void) {
+    VisualNode* n = node();
+    if (!_clear) {
+      if (!na.hasLabel(n)) {
+        VisualNode* p = n->getParent(_na);
+        if (p) {
+          std::string l =
+            n->getBranchLabel(_na,p,p->getChoice(),
+              _curBest,_c_d,_a_d,alternative());
+          _na.setLabel(n,QString(l.c_str()));
+          if (n->getNumberOfChildren() < 1 &&
+              alternative() == p->getNumberOfChildren()-1)
+            p->purge(_na);
+        } else {
+          _na.setLabel(n,"");
+        }
+      }
+    } else {
+      _na.clearLabel(n);
+    }
+    n->dirtyUp(na);
   }
 
   forceinline

@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2010-08-11 15:13:48 +0200 (Wed, 11 Aug 2010) $ by $Author: tack $
- *     $Revision: 11343 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -40,6 +40,9 @@
 #include <gecode/gist/stopbrancher.hh>
 #include <gecode/search.hh>
 #include <stack>
+
+#include <QString>
+#include <QVector>
 
 namespace Gecode { namespace Gist {
 
@@ -89,8 +92,16 @@ namespace Gecode { namespace Gist {
         idx = parentIdx;
         rdist++;
       }
-      Space* curSpace = curNode->copy->clone();
-      curNode->setDistance(0);
+      
+      Space* curSpace;
+      if (Support::marked(curNode->copy)) {
+        curSpace = static_cast<Space*>(Support::unmark(curNode->copy));
+        curNode->copy = NULL;
+        a_d = -1;
+      } else {
+        curSpace = curNode->copy->clone();
+        curNode->setDistance(0);
+      }
 
       SpaceNode* lastBest = NULL;
       SpaceNode* middleNode = curNode;
@@ -212,11 +223,8 @@ namespace Gecode { namespace Gist {
         !p->isRoot()) {
       // last alternative optimization
 
-      // If p->copy was a working space, we would have stolen it by now
-      assert(!Support::marked(p->copy));
-
       copy = static_cast<Space*>(Support::unmark(copy));
-      delete p->copy;
+      delete static_cast<Space*>(Support::funmark(p->copy));
       p->copy = NULL;
       setDistance(0);
       p->setDistance(p->getParent(na)->getDistance()+1);
@@ -244,7 +252,7 @@ namespace Gecode { namespace Gist {
           getChild(na,i)->hasSolvedChildren());
       SpaceNode* p = getParent(na);
       if (p != NULL) {
-        delete copy;
+        delete static_cast<Space*>(Support::funmark(copy));
         copy = NULL;
         p->closeChild(na, hasFailedChildren(), hasSolvedChildren());
       }
@@ -298,6 +306,7 @@ namespace Gecode { namespace Gist {
     if (isUndetermined()) {
       stats.undetermined--;
       acquireSpace(na, curBest, c_d, a_d);
+      QVector<QString> labels;
       switch (static_cast<Space*>(Support::funmark(copy))->status(stats)) {
       case SS_FAILED:
         {
@@ -333,7 +342,8 @@ namespace Gecode { namespace Gist {
         break;
       case SS_BRANCH:
         {
-          choice = static_cast<Space*>(Support::funmark(copy))->choice();
+          Space* s = static_cast<Space*>(Support::funmark(copy));
+          choice = s->choice();
           kids = choice->alternatives();
           setHasOpenChildren(true);
           if (dynamic_cast<const StopChoice*>(choice)) {
@@ -343,6 +353,11 @@ namespace Gecode { namespace Gist {
             stats.choices++;
           }
           stats.undetermined += kids;
+          for (int i=0; i<kids; i++) {
+            std::ostringstream oss;
+            s->print(*choice,i,oss);
+            labels.push_back(QString(oss.str().c_str()));
+          }
         }
         break;
       }

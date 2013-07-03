@@ -9,8 +9,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-02-25 21:43:24 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13406 $
+ *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
+ *     $Revision: 13603 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -138,6 +138,15 @@ public:
       return me_failed(x[c.pos].eq(home, c.val)) ? ES_FAILED : ES_OK;
     else 
       return me_failed(x[c.pos].nq(home, c.val)) ? ES_FAILED : ES_OK;
+  }
+  /// Print explanation
+  virtual void print(const Space&, const Gecode::Choice& _c, 
+                     unsigned int a,
+                     std::ostream& o) const {
+    const Choice& c = static_cast<const Choice&>(_c);
+    o << "x[" << c.pos << "] "
+      << ((a == 0) ? "=" : "!=")
+      << " " << c.val;
   }
   /// Copy brancher
   virtual Actor* copy(Space& home, bool share) {

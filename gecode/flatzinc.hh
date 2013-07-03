@@ -11,8 +11,8 @@
  *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-07 20:21:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13460 $
+ *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
+ *     $Revision: 13672 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -180,7 +180,7 @@ namespace Gecode { namespace FlatZinc {
                        std::map<int,int>& sv, std::map<int,int>& fv);
 
     void shrinkArrays(Space& home,
-                      int& optVar,
+                      int& optVar, bool optVarIsInt,
                       Gecode::IntVarArray& iv,
                       Gecode::BoolVarArray& bv
 #ifdef GECODE_HAS_SET_VARS
@@ -238,7 +238,7 @@ namespace Gecode { namespace FlatZinc {
       _threads("-p","number of threads (0 = #processing units)",
                Gecode::Search::Config::threads),
       _free("--free", "no need to follow search-specification"),
-      _decay("-decay","decay factor",1.0),
+      _decay("-decay","decay factor",0.99),
       _c_d("-c-d","recomputation commit distance",Gecode::Search::Config::c_d),
       _a_d("-a-d","recomputation adaption distance",Gecode::Search::Config::a_d),
       _node("-node","node cutoff (0 = none, solution mode)"),
@@ -315,6 +315,25 @@ namespace Gecode { namespace FlatZinc {
 
   };
 
+  class BranchInformation : public SharedHandle {
+  public:
+    /// Constructor
+    BranchInformation(void);
+    /// Add new brancher information
+    void add(const BrancherHandle& bh,
+             const std::string& rel0,
+             const std::string& rel1,
+             const std::vector<std::string>& n);
+    /// Output branch information
+    void print(const BrancherHandle& bh,
+               int a, int i, int n, std::ostream& o) const;
+#ifdef GECODE_HAS_FLOAT_VARS
+    /// Output branch information
+    void print(const BrancherHandle& bh,
+               int a, int i, const FloatNumBranch& nl, std::ostream& o) const;
+#endif
+  };
+
   /**
    * \brief A space that can be initialized with a %FlatZinc model
    *
@@ -336,8 +355,10 @@ namespace Gecode { namespace FlatZinc {
     /// Number of set variables
     int setVarCount;
 
-    /// Index of the integer variable to optimize
+    /// Index of the variable to optimize
     int _optVar;
+    /// Whether variable to optimize is integer (or float)
+    bool _optVarIsInt;
   
     /// Whether to solve as satisfaction or optimization problem
     Meth _method;
@@ -422,9 +443,9 @@ namespace Gecode { namespace FlatZinc {
     /// Post the solve item
     void solve(AST::Array* annotation);
     /// Post that integer variable \a var should be minimized
-    void minimize(int var, AST::Array* annotation);
+    void minimize(int var, bool isInt, AST::Array* annotation);
     /// Post that integer variable \a var should be maximized
-    void maximize(int var, AST::Array* annotation);
+    void maximize(int var, bool isInt, AST::Array* annotation);
 
     /// Run the search
     void run(std::ostream& out, const Printer& p, 
@@ -456,6 +477,8 @@ namespace Gecode { namespace FlatZinc {
 
     /// Return index of variable used for optimization
     int optVar(void) const;
+    /// Return whether variable used for optimization is integer (or float)
+    bool optVarIsInt(void) const;
 
     /**
      * \brief Create branchers corresponding to the solve item annotations
@@ -473,6 +496,9 @@ namespace Gecode { namespace FlatZinc {
 
     /// Return the solve item annotations
     AST::Array* solveAnnotations(void) const;
+
+    /// Information for printing branches
+    BranchInformation branchInfo;
 
     /// Implement optimization
     virtual void constrain(const Space& s);

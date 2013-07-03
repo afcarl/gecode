@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2012-12-21 01:48:30 +0100 (Fri, 21 Dec 2012) $ by $Author: tack $
- *     $Revision: 13214 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -156,6 +156,10 @@ namespace Gecode {  namespace Gist {
     void inspectCurrentNode(bool fix=true, int inspectorNo=-1);
     /// Calls inspectCurrentNode(false)
     void inspectBeforeFP(void);
+    /// Label all branches in subtree under current node
+    void labelBranches(void);
+    /// Label all branches on path to root node
+    void labelPath(void);
 
     /// Stop current search
     void stopSearch(void);

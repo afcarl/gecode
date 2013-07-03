@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-02-08 16:47:00 +0100 (Fri, 08 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13278 $
+ *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
+ *     $Revision: 13613 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -51,7 +51,8 @@ namespace Gecode { namespace Gist {
   }
 
   template<class T>
-  NodeAllocatorBase<T>::NodeAllocatorBase(bool bab) : _bab(bab) {
+  NodeAllocatorBase<T>::NodeAllocatorBase(bool bab)
+    : _bab(bab) {
     b = heap.alloc<Block*>(10);
     n = 10;
     cur_b = -1;
@@ -116,6 +117,36 @@ namespace Gecode { namespace Gist {
   forceinline bool
   NodeAllocatorBase<T>::bab(void) const {
     return _bab;
+  }
+
+  template<class T>
+  forceinline bool
+  NodeAllocatorBase<T>::showLabels(void) const {
+    return !labels.isEmpty();
+  }
+
+  template<class T>
+  bool
+  NodeAllocatorBase<T>::hasLabel(T* n) const {
+    return labels.contains(n);
+  }
+  
+  template<class T>
+  void
+  NodeAllocatorBase<T>::setLabel(T* n, const QString& l) {
+    labels[n] = l;
+  }
+
+  template<class T>
+  void
+  NodeAllocatorBase<T>::clearLabel(T* n) {
+    labels.remove(n);
+  }
+
+  template<class T>
+  QString
+  NodeAllocatorBase<T>::getLabel(T* n) const {
+    return labels.value(n);
   }
   
   forceinline unsigned int

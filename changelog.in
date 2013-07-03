@@ -6,8 +6,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2013-03-13 11:13:52 +0100 (Wed, 13 Mar 2013) $ by $Author: schulte $
-#     $Revision: 13527 $
+#     $Date: 2013-07-01 14:10:04 +0200 (Mon, 01 Jul 2013) $ by $Author: schulte $
+#     $Revision: 13744 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -65,6 +65,290 @@
 #    ... If a more section is included, then it will be displayed as an
 #    optional section in the html page.
 #
+
+[RELEASE]
+Version: 4.1.0
+Date: 2013-07-01
+[DESCRIPTION]
+This release adds a really useful feature and the required
+infrastructure to Gist (it now can show information on the
+alternatives in a search tree), has some new features, and fixes
+quite a number of bugs (some of which are quite serious, in
+particular for: LDSB, restart-based search, and FlatZinc).
+
+[ENTRY]
+Module: driver
+What:   bug
+Rank:   minor
+Thanks: Vincent Barichard
+[DESCRIPTION]
+Fixed a race condition when using parallel search.
+
+[ENTRY]
+Module: set
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Fixed SET_VAR_ACTIVITY_SIZE_MIN/MAX, which used to compute
+size/activity instead of activity/size.
+
+[ENTRY]
+Module: kernel
+What:   performance
+Rank:   minor
+[DESCRIPTION]
+Implement the AFC search heuristic using FastMutex, which greatly
+improves parallel search performance on Mac OS X when using AFC.
+
+[ENTRY]
+Module: support
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added FastMutex class that is implemented using spin locks on
+some platforms.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   minor
+Thanks:	Victor Zverovich
+[DESCRIPTION]
+Fixed INT_VALUES_MAX() branching (INT_VALUES_MIN() was used instead).
+
+[ENTRY]
+Module: float
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Fixed FLOAT_VAR_ACTIVITY_SIZE_MIN/MAX, which used to compute
+size/activity instead of activity/size.
+
+[ENTRY]
+Module: example
+What:   new
+Rank:   minor
+Thanks:	Stefano Gualandi
+[DESCRIPTION]
+Added LDSB-based symmetry breaking to graph coloring example.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks:	Peter Nightingale
+[DESCRIPTION]
+Fixed printing of float variables to be compatible with MiniZinc output.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks:	Peter Nightingale
+[DESCRIPTION]
+Fixed a segmentation fault when using FlatZinc with float variables
+that have initializers.
+
+[ENTRY]
+Module: set
+What:   bug
+Rank:   major
+Thanks:	Stefano Gualandi
+[DESCRIPTION]
+Fixed crash due to combination of LDSB and Activity.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+Thanks:	Stefano Gualandi
+[DESCRIPTION]
+Fixed crash due to combination of LDSB and Activity.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+[DESCRIPTION]
+The internal representation of integer variable domains could leak
+memory to the space.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   major
+[DESCRIPTION]
+The FlatZinc interpreter now supports float variables as objective
+functions.
+
+[ENTRY]
+Module: gist
+What:   new
+Rank:   major
+[DESCRIPTION]
+Gist now can show information on the alternatives in a search tree,
+using the new menu options "Label branches" and "Label path".
+
+[ENTRY]
+Module: float
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Random value selection for float branchings was not declared with
+the right types.
+
+[ENTRY]
+Module: set
+What:   new
+Rank:   major
+[DESCRIPTION]
+Set branchings now take an optional argument for a
+user-defined print function. See MPG for details.
+
+[ENTRY]
+Module: float
+What:   new
+Rank:   major
+[DESCRIPTION]
+Float branchings now take an optional argument for a
+user-defined print function. See MPG for details.
+
+[ENTRY]
+Module: int
+What:   new
+Rank:   major
+[DESCRIPTION]
+Integer and Boolean branchings now take an optional argument for a
+user-defined print function. See MPG for details.
+
+[ENTRY]
+Module: kernel
+What:   new
+Rank:   major
+[DESCRIPTION]
+Branchers now support a print() member function.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added {int,bool,set,float}_default_search annotations. These can be used
+on solve items to declare the default search strategy for the respective
+variable types.
+
+[ENTRY]
+Module: minimodel
+What:   bug
+Rank:   minor
+Thanks:	Roberto Castañeda Lozano
+[DESCRIPTION]
+Boolean expressions could lead to a segfault when initialized
+with default constructor.
+
+[ENTRY]
+Module: kernel
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Both AFC and Activity can be changed by a set() function.
+
+[ENTRY]
+Module: int
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added if-then-else constraint (called ite) for integer variables.
+
+[ENTRY]
+Module: driver
+What:   new
+Rank:   minor
+Thanks:	Pascal Francq
+[DESCRIPTION]
+Added classes FloatMinimizeScript and FloatMaximizeScript for
+cost-based optimization with a float cost variable.
+
+[ENTRY]
+Module: driver
+What:   change
+Rank:   minor
+[DESCRIPTION]
+Added classes IntMinimizeScript and IntMaximizeScript for
+cost-based optimization with an integer cost variable. While the
+classes MinimizeScript and MaximizeSpcript are still available,
+there use is deprecated and a later release might remove them.
+
+[ENTRY]
+Module: int
+What:   change
+Rank:   minor
+[DESCRIPTION]
+Added classes IntMinimizeSpace and IntMaximizeSpace for
+cost-based optimization with an integer cost variable. While the
+classes MinimizeSpace and MaximizeSpace are still available,
+there use is deprecated and a later release might remove them.
+
+[ENTRY]
+Module: float
+What:   new
+Rank:   minor
+Thanks:	Pascal Francq
+[DESCRIPTION]
+Added classes FloatMinimizeSpace and FloatMaximizeSpace for
+cost-based optimization with a float cost variable.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Fixed the random search strategies to all use the same random number
+generator instead of different generators all initialised with the same
+seed (and therefore all producing the same sequences).
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+Thanks: Tias Guns
+[DESCRIPTION]
+Added int2float constraint which was missing in the FlatZinc
+interpreter.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   minor
+Thanks: David Rijsman
+[DESCRIPTION]
+Fixed binpacking crash when the b and s arrays are empty.
+
+[ENTRY]
+Module: other
+What:   change
+Rank:   minor
+Thanks: Cliff Yapp
+[DESCRIPTION]
+CMake build system tweaked for out-of-source-dir building.
+
+[ENTRY]
+Module: float
+What:   bug
+Rank:   minor
+Thanks: Duong Khanh Chuong
+[DESCRIPTION]
+Fixed missing propagation in reified rel-constraints.
+
+[ENTRY]
+Module: search
+What:   bug
+Rank:   major
+Thanks: Chris Mears, Roberto Castañeda Lozano
+[DESCRIPTION]
+Fixed a bug in restart-based search, which would crash if the
+problem is failed at the root or only had a single solution
+during best-solution search.
 
 [RELEASE]
 Version: 4.0.0

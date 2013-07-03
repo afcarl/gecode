@@ -10,8 +10,8 @@
  *     Geoffrey Chu
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-04-09 15:10:49 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
+ *     $Revision: 13570 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -228,7 +228,7 @@ namespace {
  * \ingroup Example
  *
  */
-class TSP : public MinimizeScript {
+class TSP : public IntMinimizeScript {
 protected:
   /// Problem instance to be solved
   Problem     p;
@@ -276,7 +276,7 @@ public:
     return total;
   }
   /// Constructor for cloning \a s
-  TSP(bool share, TSP& s) : MinimizeScript(share,s), p(s.p) {
+  TSP(bool share, TSP& s) : IntMinimizeScript(share,s), p(s.p) {
     succ.update(*this, share, s.succ);
     total.update(*this, share, s.total);
   }
@@ -332,7 +332,7 @@ main(int argc, char* argv[]) {
     return 1;
   }
 
-  MinimizeScript::run<TSP,BAB,SizeOptions>(opt);
+  IntMinimizeScript::run<TSP,BAB,SizeOptions>(opt);
   return 0;
 }
 

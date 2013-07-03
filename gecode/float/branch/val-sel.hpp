@@ -9,8 +9,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2012-10-02 15:49:50 +0200 (Tue, 02 Oct 2012) $ by $Author: schulte $
- *     $Revision: 13123 $
+ *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
+ *     $Revision: 13672 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -40,49 +40,58 @@
 namespace Gecode {
 
   forceinline Archive&
-  operator <<(Archive& e, std::pair<float,bool> pdb) {
-    return e << pdb.first << pdb.second;
-  }
-  forceinline Archive&
-  operator <<(Archive& e, std::pair<double,bool> pdb) {
-    return e << pdb.first << pdb.second;
+  operator <<(Archive& e, FloatNumBranch nl) {
+    return e << nl.n << nl.l;
   }
 
   forceinline Archive&
-  operator >>(Archive& e, std::pair<float,bool>& pdb) {
-    return e >> pdb.first >> pdb.second;
+  operator >>(Archive& e, FloatNumBranch& nl) {
+    return e >> nl.n >> nl.l;
   }
-  forceinline Archive&
-  operator >>(Archive& e, std::pair<double,bool>& pdb) {
-    return e >> pdb.first >> pdb.second;
-  }
+
 }
 
 namespace Gecode { namespace Float { namespace Branch {
 
   forceinline
-  ValSelMed::ValSelMed(Space& home, const ValBranch& vb) 
-    : ValSel<FloatView,FloatNum>(home,vb) {}
+  ValSelLq::ValSelLq(Space& home, const ValBranch& vb) 
+    : ValSel<FloatView,FloatNumBranch>(home,vb) {}
   forceinline
-  ValSelMed::ValSelMed(Space& home, bool shared, ValSelMed& vs)
-    : ValSel<FloatView,FloatNum>(home,shared,vs) {}
-  forceinline FloatNum
-  ValSelMed::val(const Space&, FloatView x, int) {
-    return x.med();
+  ValSelLq::ValSelLq(Space& home, bool shared, ValSelLq& vs)
+    : ValSel<FloatView,FloatNumBranch>(home,shared,vs) {}
+  forceinline FloatNumBranch
+  ValSelLq::val(const Space&, FloatView x, int) {
+    FloatNumBranch nl;
+    nl.n = x.med(); nl.l = true;
+    return nl;
+  }
+
+  forceinline
+  ValSelGq::ValSelGq(Space& home, const ValBranch& vb) 
+    : ValSel<FloatView,FloatNumBranch>(home,vb) {}
+  forceinline
+  ValSelGq::ValSelGq(Space& home, bool shared, ValSelGq& vs)
+    : ValSel<FloatView,FloatNumBranch>(home,shared,vs) {}
+  forceinline FloatNumBranch
+  ValSelGq::val(const Space&, FloatView x, int) {
+    FloatNumBranch nl;
+    nl.n = x.med(); nl.l = false;
+    return nl;
   }
 
   forceinline
   ValSelRnd::ValSelRnd(Space& home, const ValBranch& vb) 
-    : ValSel<FloatView,std::pair<FloatNum,bool> >(home,vb), r(vb.rnd()) {}
+    : ValSel<FloatView,FloatNumBranch>(home,vb), r(vb.rnd()) {}
   forceinline
   ValSelRnd::ValSelRnd(Space& home, bool shared, ValSelRnd& vs)
-    : ValSel<FloatView,std::pair<FloatNum,bool> >(home,shared,vs) {
+    : ValSel<FloatView,FloatNumBranch>(home,shared,vs) {
     r.update(home,shared,vs.r);
   }
-  forceinline std::pair<FloatNum,bool>
+  forceinline FloatNumBranch
   ValSelRnd::val(const Space&, FloatView x, int) {
-    unsigned int p = r(2U);
-    return std::pair<FloatNum,bool>(x.med(),(p == 0U));
+    FloatNumBranch nl;
+    nl.n = x.med(); nl.l = (r(2U) == 0U);
+    return nl;
   }
   forceinline bool
   ValSelRnd::notice(void) const {

@@ -7,8 +7,8 @@
  *     Christopher Mears, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-07 17:39:13 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13458 $
+ *     $Date: 2013-05-22 04:21:36 +0200 (Wed, 22 May 2013) $ by $Author: mears $
+ *     $Revision: 13653 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -113,8 +113,8 @@ namespace Gecode {
     int nrows = m.height();
     int ncols = m.width();
 
-    IntVarArgs a1;
-    IntVarArgs a2;
+    typename Matrix<A>::ArgsType a1;
+    typename Matrix<A>::ArgsType a2;
 
     for (int i = 0 ; i < nrows ; i++) {
       for (int j = i+1 ; j < ncols ; j++) {
@@ -123,7 +123,7 @@ namespace Gecode {
       }
     }
 
-    IntVarArgs aboth;
+    typename Matrix<A>::ArgsType aboth;
     aboth << a1;
     aboth << a2;
     return VariableSequenceSymmetry(aboth, a1.size());
