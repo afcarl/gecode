@@ -11,8 +11,8 @@
  *     Stefano Gualandi, 2013
  *
  *  Last modified:
- *     $Date: 2013-05-23 12:02:46 +0200 (Thu, 23 May 2013) $ by $Author: schulte $
- *     $Revision: 13657 $
+ *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13820 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

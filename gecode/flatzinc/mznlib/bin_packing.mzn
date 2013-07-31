@@ -6,8 +6,8 @@
 %     Guido Tack, 2010
 %
 %  Last modified:
-%     $Date: 2010-10-08 11:41:36 +0200 (Fri, 08 Oct 2010) $ by $Author: tack $
-%     $Revision: 11494 $
+%     $Date: 2013-07-19 02:50:31 +0200 (Fri, 19 Jul 2013) $ by $Author: tack $
+%     $Revision: 13902 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -33,6 +33,8 @@
 %  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 %
 %
+
+include "bin_packing_capa.mzn";
 
 predicate bin_packing(int: c,
                       array[int] of var int: bin,

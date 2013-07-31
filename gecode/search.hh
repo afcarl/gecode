@@ -9,8 +9,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-03-08 11:11:37 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13482 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -102,6 +102,9 @@ namespace Gecode { namespace Search {
     const unsigned int steal_limit = 3;
     /// Initial delay in milliseconds for all but first worker thread
     const unsigned int initial_delay = 5;
+
+    /// Depth limit for no-good generation during search
+    const unsigned int nogoods_limit = 128;
   }
 
 }}
@@ -138,10 +141,10 @@ namespace Gecode { namespace Search {
     unsigned long int node;
     /// Maximum depth of search stack
     unsigned long int depth;
-    /// Peak memory allocated
-    size_t memory;
     /// Number of restarts
     unsigned long int restart;
+    /// Number of no-goods posted
+    unsigned long int nogood;
     /// Initialize
     Statistics(void);
     /// Reset
@@ -208,6 +211,8 @@ namespace Gecode { namespace Search {
       unsigned int c_d;
       /// Create a clone during recomputation if distance is greater than \a a_d (adaptive distance)
       unsigned int a_d;
+      /// Depth limit for extraction of no-goods
+      unsigned int nogoods_limit;
       /// Stop object for stopping search
       Stop* stop;
       /// Cutoff for restart-based search
@@ -266,26 +271,6 @@ namespace Gecode { namespace Search {
     static void* operator new(size_t s);
     /// Free memory allocated from heap
     static void  operator delete(void* p);
-  };
-  
-  /**
-   * \brief %Stop-object based on memory consumption
-   *
-   * \ingroup TaskModelSearchStop
-   */
-  class GECODE_SEARCH_EXPORT MemoryStop : public Stop {
-  protected:
-    /// Size limit
-    size_t l;
-  public:
-    /// Stop if memory limit \a l (in bytes) is exceeded
-    MemoryStop(size_t l);
-    /// Return current limit
-    size_t limit(void) const;
-    /// Set current limit to \a l (in bytes)
-    void limit(size_t l);
-    /// Return true if memory limit is exceeded
-    virtual bool stop(const Statistics& s, const Options& o);
   };
   
   /**
@@ -457,6 +442,8 @@ namespace Gecode { namespace Search {
     virtual bool stopped(void) const = 0;
     /// Reset engine to restart at space \a s
     virtual void reset(Space* s) = 0;
+    /// Return no-goods
+    virtual NoGoods& nogoods(void) = 0;
     /// Destructor
     virtual ~Engine(void) {}
   };
@@ -504,6 +491,8 @@ namespace Gecode {
     Search::Statistics statistics(void) const;
     /// Check whether engine has been stopped
     bool stopped(void) const;
+    /// Return no-goods
+    NoGoods& nogoods(void);
   };
 
   /// Invoke depth-first search engine for subclass \a T of space \a s with options \a o
@@ -538,6 +527,8 @@ namespace Gecode {
     Search::Statistics statistics(void) const;
     /// Check whether engine has been stopped
     bool stopped(void) const;
+    /// Return no-goods
+    NoGoods& nogoods(void);
   };
 
   /**

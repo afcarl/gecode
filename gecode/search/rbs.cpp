@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-07 21:40:07 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13466 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,13 +41,13 @@
 namespace Gecode { namespace Search {
     
   Engine* 
-  rbs(Space* s, size_t sz, MetaStop* stop,
+  rbs(Space* s, MetaStop* stop,
       Engine* e, const Options& o) {
 #ifdef GECODE_HAS_THREADS
     Options to = o.expand();
-    return new Meta::RBS(s,sz,o.cutoff,stop,e,to);
+    return new Meta::RBS(s,o.cutoff,stop,e,to);
 #else
-    return new Meta::RBS(s,sz,o.cutoff,stop,e,o);
+    return new Meta::RBS(s,o.cutoff,stop,e,o);
 #endif
   }
 

@@ -6,9 +6,9 @@ dnl Copyright:
 dnl   Guido Tack, 2004, 2005
 dnl
 dnl Last modified:
-dnl   $Date: 2013-07-01 06:38:48 +0200 (Mon, 01 Jul 2013) $
+dnl   $Date: 2013-07-15 02:49:56 +0200 (Mon, 15 Jul 2013) $
 dnl   by $Author: tack $
-dnl   $Revision: 13740 $
+dnl   $Revision: 13879 $
 dnl
 dnl This file is part of Gecode, the generic constraint
 dnl development environment:
@@ -496,6 +496,63 @@ AC_DEFUN([AC_GECODE_LEAK_DEBUG],
               [AC_MSG_ERROR(mtrace not available.)],
               [[#include <mcheck.h>]])        
      else
+        AC_MSG_RESULT(no)
+     fi])
+
+AC_DEFUN([AC_GECODE_PEAKHEAP],
+    [AC_ARG_ENABLE([peakheap],
+       AC_HELP_STRING([--enable-peakheap],
+         [build with peak heap size tracking @<:@default=no@:>@]))
+     if test "${enable_peakheap:-no}" = "yes"; then
+        AC_CHECK_FUNC(_msize,
+        [
+          AC_DEFINE([GECODE_PEAKHEAP],[],[Whether to track peak heap size])
+          AC_DEFINE([GECODE_PEAKHEAP_MALLOC_H],[],[Whether we need malloc.h])
+          AC_DEFINE([GECODE_MSIZE],[_msize],[How to check allocation size])
+          AC_MSG_CHECKING(whether to build with peak heap size tracking)
+          AC_MSG_RESULT(yes)
+        ],
+        [
+          AC_CHECK_HEADERS([malloc/malloc.h], 
+          [
+            AC_CHECK_FUNC(malloc_size,
+            [
+              AC_DEFINE([GECODE_PEAKHEAP],[],[])
+              AC_DEFINE([GECODE_PEAKHEAP_MALLOC_MALLOC_H],[],[Whether we need malloc/malloc.h])
+              AC_DEFINE([GECODE_MSIZE],[malloc_size],[])
+              AC_MSG_CHECKING(whether to build with peak heap size tracking)
+              AC_MSG_RESULT(yes)
+            ],
+            [
+              AC_MSG_CHECKING(whether to build with peak heap size tracking)
+              AC_MSG_RESULT(no)
+            ])
+          ],
+          [
+            AC_CHECK_HEADERS([malloc.h], 
+            [
+              AC_CHECK_FUNC(malloc_usable_size,
+              [
+                AC_DEFINE([GECODE_PEAKHEAP],[],[])
+                AC_DEFINE([GECODE_PEAKHEAP_MALLOC_H],[],[Whether we need malloc.h])
+                AC_DEFINE([GECODE_MSIZE],[malloc_usable_size],[])
+                AC_MSG_CHECKING(whether to build with peak heap size tracking)
+                AC_MSG_RESULT(yes)
+              ],
+              [
+                AC_MSG_CHECKING(whether to build with peak heap size tracking)
+                AC_MSG_RESULT(no)
+              ])
+            ],
+            [
+              AC_MSG_CHECKING(whether to build with peak heap size tracking)
+              AC_MSG_RESULT(no)
+            ])
+          ]
+          )
+        ])
+     else
+        AC_MSG_CHECKING(whether to build with peak heap size tracking)
         AC_MSG_RESULT(no)
      fi])
 

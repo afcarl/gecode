@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2013-02-26 10:47:43 +0100 (Tue, 26 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13414 $
+ *     $Date: 2013-07-12 18:20:11 +0200 (Fri, 12 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13877 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,6 +39,9 @@
 #define __GECODE_SEARCH_PARALLEL_PATH_HH__
 
 #include <gecode/search.hh>
+#include <gecode/search/support.hh>
+#include <gecode/search/worker.hh>
+#include <gecode/search/meta/nogoods.hh>
 
 namespace Gecode { namespace Search { namespace Parallel {
 
@@ -55,7 +58,8 @@ namespace Gecode { namespace Search { namespace Parallel {
    * clone is created.
    *
    */
-  class Path {
+  class Path : public NoGoods {
+    friend class Search::Meta::NoGoodsProp;
   public:
     /// %Search tree edge for recomputation
     class Edge {
@@ -84,6 +88,8 @@ namespace Gecode { namespace Search { namespace Parallel {
       
       /// Return number for alternatives
       unsigned int alt(void) const;
+      /// Return true number for alternatives (excluding lao optimization)
+      unsigned int truealt(void) const;
       /// Test whether current alternative is rightmost
       bool rightmost(void) const;
       /// Test whether current alternative was LAO
@@ -101,15 +107,21 @@ namespace Gecode { namespace Search { namespace Parallel {
   protected:
     /// Stack to store edge information
     Support::DynamicStack<Edge,Heap> ds;
+    /// Depth limit for no-good generation
+    int _ngdl;
     /// Number of edges that have work for stealing
     unsigned int n_work;
   public:
-    /// Initialize
-    Path(void);
+    /// Initialize with no-good depth limit \a l
+    Path(int l);
+    /// Return no-good depth limit
+    int ngdl(void) const;
+    /// Set no-good depth limit to \a l
+    void ngdl(int l);
     /// Push space \a c (a clone of \a s or NULL)
     const Choice* push(Worker& stat, Space* s, Space* c);
     /// Generate path for next node and return whether a next node exists
-    bool next(Worker& s);
+    bool next(void);
     /// Provide access to topmost edge
     Edge& top(void) const;
     /// Test whether path is empty
@@ -127,14 +139,14 @@ namespace Gecode { namespace Search { namespace Parallel {
                      const Space* best, int& mark);
     /// Return number of entries on stack
     int entries(void) const;
-    /// Return size used
-    size_t size(void) const;
-    /// Reset stack
-    void reset(void);
+    /// Reset stack and set no-good depth limit to \a l
+    void reset(int l);
     /// Make a quick check whether stealing might be feasible
     bool steal(void) const;
     /// Steal work at depth \a d
     Space* steal(Worker& stat, unsigned long int& d);
+    /// Post no-goods
+    void virtual post(Space& home);
   };
 
 
@@ -162,6 +174,11 @@ namespace Gecode { namespace Search { namespace Parallel {
 
   forceinline unsigned int
   Path::Edge::alt(void) const {
+    return _alt;
+  }
+  forceinline unsigned int
+  Path::Edge::truealt(void) const {
+    assert(_alt < _choice->alternatives());
     return _alt;
   }
   forceinline bool
@@ -205,13 +222,23 @@ namespace Gecode { namespace Search { namespace Parallel {
    */
 
   forceinline
-  Path::Path(void) : ds(heap), n_work(0) {}
+  Path::Path(int l) 
+    : ds(heap), _ngdl(l), n_work(0) {}
+
+  forceinline int
+  Path::ngdl(void) const {
+    return _ngdl;
+  }
+
+  forceinline void
+  Path::ngdl(int l) {
+    _ngdl = l;
+  }
 
   forceinline const Choice*
   Path::push(Worker& stat, Space* s, Space* c) {
     if (!ds.empty() && ds.top().lao()) {
       // Topmost stack entry was LAO -> reuse
-      stat.pop(ds.top().space(),ds.top().choice());
       ds.pop().dispose();
     }
     Edge sn(s,c);
@@ -223,10 +250,9 @@ namespace Gecode { namespace Search { namespace Parallel {
   }
 
   forceinline bool
-  Path::next(Worker& stat) {
+  Path::next(void) {
     while (!ds.empty())
       if (ds.top().rightmost()) {
-        stat.pop(ds.top().space(),ds.top().choice());
         ds.pop().dispose();
       } else {
         assert(ds.top().work());
@@ -268,11 +294,6 @@ namespace Gecode { namespace Search { namespace Parallel {
     return ds.entries();
   }
 
-  forceinline size_t
-  Path::size(void) const {
-    return ds.size();
-  }
-
   forceinline void
   Path::unwind(int l) {
     assert((ds[l].space() == NULL) || ds[l].space()->failed());
@@ -286,10 +307,11 @@ namespace Gecode { namespace Search { namespace Parallel {
   }
 
   forceinline void
-  Path::reset(void) {
+  Path::reset(int l) {
     n_work = 0;
     while (!ds.empty())
       ds.pop().dispose();
+    _ngdl = l;
   }
 
   forceinline bool
@@ -318,6 +340,8 @@ namespace Gecode { namespace Search { namespace Parallel {
         c->commit(*ds[n].choice(),ds[n].steal());
         if (!ds[n].work())
           n_work--;
+        // No no-goods can be extracted above n
+        ngdl(std::min(ngdl(),n));
         d = stat.steal_depth(static_cast<unsigned long int>(n+1));
         return c;
       }
@@ -335,12 +359,12 @@ namespace Gecode { namespace Search { namespace Parallel {
     // Check for LAO
     if ((ds.top().space() != NULL) && ds.top().rightmost()) {
       Space* s = ds.top().space();
-      stat.lao(s);
       s->commit(*ds.top().choice(),ds.top().alt());
       assert(ds.entries()-1 == lc());
       ds.top().space(NULL);
       // Mark as reusable
-      ds.top().next();
+      if (ds.entries() > ngdl())
+        ds.top().next();
       d = 0;
       return s;
     }
@@ -381,7 +405,6 @@ namespace Gecode { namespace Search { namespace Parallel {
           return NULL;
         }
         ds[i].space(s->clone());
-        stat.adapt(ds[i].space());
         d = static_cast<unsigned int>(n-i);
       }
       // Finally do the remaining commits
@@ -401,7 +424,6 @@ namespace Gecode { namespace Search { namespace Parallel {
     // Check for LAO
     if ((ds.top().space() != NULL) && ds.top().rightmost()) {
       Space* s = ds.top().space();
-      stat.lao(s);
       s->commit(*ds.top().choice(),ds.top().alt());
       assert(ds.entries()-1 == lc());
       if (mark > ds.entries()-1) {
@@ -410,7 +432,8 @@ namespace Gecode { namespace Search { namespace Parallel {
       }
       ds.top().space(NULL);
       // Mark as reusable
-      ds.top().next();
+      if (ds.entries() > ngdl())
+        ds.top().next();
       d = 0;
       return s;
     }
@@ -438,7 +461,6 @@ namespace Gecode { namespace Search { namespace Parallel {
       // of propagators
       Space* c = s->clone();
       ds[l].space(c);
-      stat.constrained(s,c);
     } else {
       s = s->clone();
     }
@@ -475,7 +497,6 @@ namespace Gecode { namespace Search { namespace Parallel {
           return NULL;
         }
         ds[i].space(s->clone());
-        stat.adapt(ds[i].space());
         d = static_cast<unsigned int>(n-i);
       }
       // Finally do the remaining commits

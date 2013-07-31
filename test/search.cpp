@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2013-04-08 16:39:34 +0200 (Mon, 08 Apr 2013) $ by $Author: schulte $
- *     $Revision: 13567 $
+ *     $Date: 2013-07-15 12:02:18 +0200 (Mon, 15 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13880 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -280,7 +280,8 @@ namespace Test {
         return "Sol";
       }
       /// Rule out that solution is found more than once during restarts
-      virtual void master(unsigned long int i, const Space* _s) {
+      virtual void master(unsigned long int i, const Space* _s,
+                          NoGoods&) {
         const HasSolutions* s = static_cast<const HasSolutions*>(_s);
         if (s != NULL) {
           BoolVarArgs b;

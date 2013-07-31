@@ -10,8 +10,8 @@
  *     Olof Sivertsson <olsi0767@student.uu.se>
  *
  *  Last modified:
- *     $Date: 2013-03-07 02:18:29 +0100 (Thu, 07 Mar 2013) $ by $Author: mears $
- *     $Revision: 13455 $
+ *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13820 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:

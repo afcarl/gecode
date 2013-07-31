@@ -11,8 +11,8 @@
  *     Mikael Lagerkvist, 2009
  *
  *  Last modified:
- *     $Date: 2013-04-09 02:20:14 +0200 (Tue, 09 Apr 2013) $ by $Author: tack $
- *     $Revision: 13568 $
+ *     $Date: 2013-07-05 02:04:42 +0200 (Fri, 05 Jul 2013) $ by $Author: tack $
+ *     $Revision: 13808 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1146,8 +1146,9 @@ namespace Gecode { namespace FlatZinc {
 
     void p_precede(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
       IntVarArgs x = s.arg2intvarargs(ce[0]);
-      IntArgs c = s.arg2intargs(ce[1]);
-      precede(s,x,c,s.ann2icl(ann));
+      int p_s = ce[1]->getInt();
+      int p_t = ce[2]->getInt();
+      precede(s,x,p_s,p_t,s.ann2icl(ann));
     }
 
     void p_nvalue(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
@@ -1624,6 +1625,13 @@ namespace Gecode { namespace FlatZinc {
       SetVarArgs y = s.arg2setvarargs(ce[1],yoff);
       channel(s, x, y);
     }
+
+    void p_precede_set(FlatZincSpace& s, const ConExpr& ce, AST::Node*) {
+      SetVarArgs x = s.arg2setvarargs(ce[0]);
+      int p_s = ce[1]->getInt();
+      int p_t = ce[2]->getInt();
+      precede(s,x,p_s,p_t);
+    }
     
     class SetPoster {
     public:
@@ -1675,6 +1683,7 @@ namespace Gecode { namespace FlatZinc {
         registry().add("gecode_set_weights",
                        &p_weights);
         registry().add("gecode_inverse_set", &p_inverse_set);
+        registry().add("gecode_precede_set", &p_precede_set);
       }
     };
     SetPoster __set_poster;

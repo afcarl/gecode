@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-11 14:47:11 +0100 (Mon, 11 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13490 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -56,9 +56,12 @@ namespace Gecode { namespace Search { namespace Meta {
     MetaStop* stop;
     /// Whether the slave can be shared with the master
     bool shared;
+    /// Empty no-goods
+    GECODE_SEARCH_EXPORT
+    static NoGoods eng;
   public:
     /// Constructor
-    RBS(Space*, size_t, Cutoff* co0, MetaStop* stop0,
+    RBS(Space* s, Cutoff* co0, MetaStop* stop0,
         Engine* e0, const Options& o);
     /// Return next solution (NULL, if none exists or search has been stopped)
     virtual Space* next(void);
@@ -68,12 +71,14 @@ namespace Gecode { namespace Search { namespace Meta {
     virtual bool stopped(void) const;
     /// Reset engine to restart at space \a s
     virtual void reset(Space* s);
+    /// Return no-goods
+    virtual NoGoods& nogoods(void);
     /// Destructor
     virtual ~RBS(void);
   };
 
   forceinline
-  RBS::RBS(Space* s, size_t, Cutoff* co0, MetaStop* stop0,
+  RBS::RBS(Space* s, Cutoff* co0, MetaStop* stop0,
            Engine* e0, const Options& opt)
     : e(e0), master(s), co(co0), stop(stop0), 
       shared(opt.threads == 1) {

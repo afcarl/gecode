@@ -11,8 +11,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
- *     $Revision: 13672 $
+ *     $Date: 2013-07-04 17:03:13 +0200 (Thu, 04 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13801 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -62,21 +62,10 @@ namespace Gecode { namespace Float { namespace Branch {
       else 
         return x.gq(home,nl.n);
     }
-    /*
-    FloatNum& n = nb.first;
-    bool& b = nb.second;
-    if ((a == 0) == b) {
-      if ((x.min() == n) || (x.max() == n)) 
-        return x.eq(home,x.min());
-      else 
-        return x.lq(home,n);
-    } else {
-      if ((x.min() == n) || (x.max() == n))
-        return x.eq(home,x.max());
-      else 
-        return x.gq(home,n);
-    }
-    */
+  }
+  forceinline NGL* 
+  ValCommitLqGq::ngl(Space&, unsigned int, FloatView, FloatNumBranch) const {
+    return NULL;
   }
   forceinline void
   ValCommitLqGq::print(const Space&, unsigned int a, FloatView, int i, 

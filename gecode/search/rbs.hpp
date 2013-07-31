@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-04-08 16:39:34 +0200 (Mon, 08 Apr 2013) $ by $Author: schulte $
- *     $Revision: 13567 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,7 +41,7 @@
 namespace Gecode {
 
   namespace Search {
-    GECODE_SEARCH_EXPORT Engine* rbs(Space* s, size_t sz,
+    GECODE_SEARCH_EXPORT Engine* rbs(Space* s,
                                      MetaStop* stop,
                                      Engine* e,
                                      const Options& o);
@@ -52,11 +52,8 @@ namespace Gecode {
   RBS<E,T>::RBS(T* s, const Search::Options& m_opt) {
     if (m_opt.cutoff == NULL)
       throw Search::UninitializedCutoff("RBS::RBS");
-    Search::Options e_opt;
+    Search::Options e_opt(m_opt);
     e_opt.clone = true;
-    e_opt.threads = m_opt.threads;
-    e_opt.c_d = m_opt.c_d;
-    e_opt.a_d = m_opt.a_d;
     Search::MetaStop* ms = new Search::MetaStop(m_opt.stop);
     e_opt.stop = ms;
     Space* master;
@@ -74,7 +71,7 @@ namespace Gecode {
     EngineBase* eb = &engine;
     Search::Engine* ee = eb->e;
     eb->e = NULL;
-    e = Search::rbs(master,sizeof(T),ms,ee,m_opt);
+    e = Search::rbs(master,ms,ee,m_opt);
   }
 
   template<template<class> class E, class T>

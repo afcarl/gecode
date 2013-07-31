@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2013-03-07 22:14:40 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13467 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -55,24 +55,6 @@ namespace Gecode { namespace Search {
   }
 
 
-
-  /*
-   * Stopping for memory limit
-   *
-   */
-
-  forceinline
-  MemoryStop::MemoryStop(size_t l0) : l(l0) {}
-
-  forceinline size_t
-  MemoryStop::limit(void) const {
-    return l;
-  }
-
-  forceinline void
-  MemoryStop::limit(size_t l0) {
-    l=l0;
-  }
 
 
   /*

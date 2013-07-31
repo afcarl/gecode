@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-01 14:05:40 +0200 (Mon, 01 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13743 $
+ *     $Date: 2013-07-15 02:49:56 +0200 (Mon, 15 Jul 2013) $ by $Author: tack $
+ *     $Revision: 13879 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -299,6 +299,7 @@ namespace Gecode { namespace Driver {
                                             o.interrupt());
           so.cutoff  = createCutoff(o);
           so.clone   = false;
+          so.nogoods_limit = o.nogoods() ? o.nogoods_limit() : 0U;
           if (o.interrupt())
             CombinedStop::installCtrlHandler(true);
           {
@@ -361,9 +362,13 @@ namespace Gecode { namespace Driver {
                   << "\tnodes:        " << stat.node << endl
                   << "\tfailures:     " << stat.fail << endl
                   << "\trestarts:     " << stat.restart << endl
+                  << "\tno-goods:     " << stat.nogood << endl
                   << "\tpeak depth:   " << stat.depth << endl
+#ifdef GECODE_PEAKHEAP
                   << "\tpeak memory:  "
-                  << static_cast<int>((stat.memory+1023) / 1024) << " KB"
+                  << static_cast<int>((heap.peak()+1023) / 1024) << " KB"
+                  << endl
+#endif
                   << endl;
           }
           delete so.stop;
@@ -387,6 +392,7 @@ namespace Gecode { namespace Driver {
           so.stop    = CombinedStop::create(o.node(),o.fail(), o.time(),
                                             o.interrupt());
           so.cutoff  = createCutoff(o);
+          so.nogoods_limit = o.nogoods() ? o.nogoods_limit() : 0U;
           if (o.interrupt())
             CombinedStop::installCtrlHandler(true);
           {
@@ -412,9 +418,13 @@ namespace Gecode { namespace Driver {
                   << "\tnodes:        " << stat.node << endl
                   << "\tfailures:     " << stat.fail << endl
                   << "\trestarts:     " << stat.restart << endl
+                  << "\tno-goods:     " << stat.nogood << endl
                   << "\tpeak depth:   " << stat.depth << endl
+#ifdef GECODE_PEAKHEAP
                   << "\tpeak memory:  "
-                  << static_cast<int>((stat.memory+1023) / 1024) << " KB"
+                  << static_cast<int>((heap.peak()+1023) / 1024) << " KB"
+                  << endl
+#endif
                   << endl;
           }
           delete so.stop;
@@ -439,6 +449,7 @@ namespace Gecode { namespace Driver {
               so.stop    = CombinedStop::create(o.node(),o.fail(), o.time(), 
                                                 false);
               so.cutoff  = createCutoff(o);
+              so.nogoods_limit = o.nogoods() ? o.nogoods_limit() : 0U;
               {
                 Meta<Engine,Script> e(s,so);
                 do {

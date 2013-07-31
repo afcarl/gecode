@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-05-08 13:30:48 +0200 (Wed, 08 May 2013) $ by $Author: schulte $
- *     $Revision: 13622 $
+ *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13820 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -78,8 +78,9 @@ protected:
 public:
   /// Branching to use for model
   enum {
-    BRANCH_WORDS,  ///< Branch on the words
-    BRANCH_LETTERS ///< Branch on the letters
+    BRANCH_WORDS,      ///< Branch on the words
+    BRANCH_LETTERS,    ///< Branch on the letters
+    BRANCH_LETTERS_ALL ///< Branch on the letters (try all values)
   };
   /// Actual model
   Crossword(const SizeOptions& opt)
@@ -153,6 +154,12 @@ public:
              INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MIN(),
              NULL, &printletters);
       break;
+    case BRANCH_LETTERS_ALL:
+      // Branch by assigning letters (try all letters)
+      branch(*this, letters, 
+             INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VALUES_MIN(),
+             NULL, &printletters);
+      break;
     }
   }
   /// Print brancher information when branching on letters
@@ -218,6 +225,7 @@ main(int argc, char* argv[]) {
   opt.branching(Crossword::BRANCH_WORDS);
   opt.branching(Crossword::BRANCH_WORDS, "words");
   opt.branching(Crossword::BRANCH_LETTERS, "letters");
+  opt.branching(Crossword::BRANCH_LETTERS_ALL, "letters-all");
   opt.parse(argc,argv);
   dict.init(opt.file());
   if (opt.size() >= n_grids) {

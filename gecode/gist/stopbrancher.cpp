@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-05-02 17:10:16 +0200 (Thu, 02 May 2013) $ by $Author: schulte $
- *     $Revision: 13603 $
+ *     $Date: 2013-07-04 17:03:13 +0200 (Thu, 04 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13801 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -72,6 +72,7 @@ namespace Gecode { namespace Gist {
     done = true;
     return ES_OK;
   }
+
   void 
   StopBrancher::print(const Space&, const Gecode::Choice&, 
                       unsigned int, std::ostream&) const {

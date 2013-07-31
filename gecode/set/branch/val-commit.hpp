@@ -13,8 +13,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-05-03 10:21:32 +0200 (Fri, 03 May 2013) $ by $Author: schulte $
- *     $Revision: 13608 $
+ *     $Date: 2013-07-04 17:03:13 +0200 (Thu, 04 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13801 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -53,6 +53,13 @@ namespace Gecode { namespace Set { namespace Branch {
   ValCommitInc::commit(Space& home, unsigned int a, SetView x, int, int n) {
     return (a == 0) ? x.include(home,n) : x.exclude(home,n);
   }
+  forceinline NGL*
+  ValCommitInc::ngl(Space& home, unsigned int a, SetView x, int n) const {
+    if (a == 0)
+      return new (home) IncNGL(home,x,n);
+    else
+      return NULL;
+  }
   forceinline void
   ValCommitInc::print(const Space&, unsigned int a, SetView, int i, int n,
                       std::ostream& o) const {
@@ -69,6 +76,13 @@ namespace Gecode { namespace Set { namespace Branch {
   forceinline ModEvent
   ValCommitExc::commit(Space& home, unsigned int a, SetView x, int, int n) {
     return (a == 0) ? x.exclude(home,n) : x.include(home,n);
+  }
+  forceinline NGL*
+  ValCommitExc::ngl(Space& home, unsigned int a, SetView x, int n) const {
+    if (a == 0)
+      return new (home) ExcNGL(home,x,n);
+    else
+      return NULL;
   }
   forceinline void
   ValCommitExc::print(const Space&, unsigned int a, SetView, int i, int n,

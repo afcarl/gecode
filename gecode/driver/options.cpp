@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-02-26 14:40:29 +0100 (Tue, 26 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13419 $
+ *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13820 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -378,6 +378,9 @@ namespace Gecode {
       _restart("-restart","restart sequence type",RM_NONE),
       _r_base("-restart-base","base for geometric restart sequence",1.5),
       _r_scale("-restart-scale","scale factor for restart sequence",250),
+      _nogoods("-nogoods","whether to use no-goods from restarts",false),
+      _nogoods_limit("-nogoods-limit","depth limit for no-good extraction",
+                     Search::Config::nogoods_limit),
       _interrupt("-interrupt","whether to catch Ctrl-C (true) or not (false)",
                  true),
       
@@ -411,7 +414,8 @@ namespace Gecode {
     add(_branching); add(_decay);
     add(_search); add(_solutions); add(_threads); add(_c_d); add(_a_d);
     add(_node); add(_fail); add(_time); add(_interrupt);
-    add(_restart); add(_r_base); add(_r_scale);
+    add(_restart); add(_r_base); add(_r_scale); 
+    add(_nogoods); add(_nogoods_limit);
     add(_mode); add(_iterations); add(_samples); add(_print_last);
     add(_out_file); add(_log_file);
   }

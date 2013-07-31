@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-02-20 20:15:12 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13352 $
+ *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13820 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -328,6 +328,25 @@ namespace Gecode {
   Options::restart_scale(void) const {
     return _r_scale.value();
   }
+  
+  inline void
+  Options::nogoods(bool b) {
+    _nogoods.value(b);
+  }
+  inline bool
+  Options::nogoods(void) const {
+    return _nogoods.value();
+  }
+  
+  inline void
+  Options::nogoods_limit(unsigned int l) {
+    _nogoods_limit.value(l);
+  }
+  inline unsigned int
+  Options::nogoods_limit(void) const {
+    return _nogoods_limit.value();
+  }
+  
   
   
   inline void

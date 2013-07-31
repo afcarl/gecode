@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-04-08 16:39:34 +0200 (Mon, 08 Apr 2013) $ by $Author: schulte $
- *     $Revision: 13567 $
+ *     $Date: 2013-07-12 18:20:11 +0200 (Fri, 12 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13877 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -57,22 +57,23 @@ namespace Gecode { namespace Search { namespace Sequential {
     /// Distance until next clone
     unsigned int d;
   public:
-    /// Initialize for space \a s (of size \a sz) with options \a o
-    DFS(Space* s, size_t sz, const Options& o);
+    /// Initialize for space \a s with options \a o
+    DFS(Space* s, const Options& o);
     /// %Search for next solution
     Space* next(void);
     /// Return statistics
     Statistics statistics(void) const;
     /// Reset engine to restart at space \a s
     void reset(Space* s);
+    /// Return no-goods
+    NoGoods& nogoods(void);
     /// Destructor
     ~DFS(void);
   };
 
   forceinline 
-  DFS::DFS(Space* s, size_t sz, const Options& o)
-    : Worker(sz), opt(o), d(0) {
-    current(s);
+  DFS::DFS(Space* s, const Options& o)
+    : opt(o), path(static_cast<int>(opt.nogoods_limit)), d(0) {
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
       fail++;
       cur = NULL;
@@ -81,8 +82,6 @@ namespace Gecode { namespace Search { namespace Sequential {
     } else {
       cur = snapshot(s,opt);
     }
-    current(NULL);
-    current(cur);
   }
 
   forceinline void
@@ -92,11 +91,15 @@ namespace Gecode { namespace Search { namespace Sequential {
     d = 0;
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
       cur = NULL;
-      Worker::reset();
     } else {
       cur = s;
-      Worker::reset(cur);
     }
+    Worker::reset();
+  }
+
+  forceinline NoGoods&
+  DFS::nogoods(void) {
+    return path;
   }
 
   forceinline Space*
@@ -104,7 +107,7 @@ namespace Gecode { namespace Search { namespace Sequential {
     start();
     while (true) {
       while (cur) {
-        if (stop(opt,path.size()))
+        if (stop(opt))
           return NULL;
         node++;
         switch (cur->status(*this)) {
@@ -112,7 +115,6 @@ namespace Gecode { namespace Search { namespace Sequential {
           fail++;
           delete cur;
           cur = NULL;
-          Worker::current(NULL);
           break;
         case SS_SOLVED:
           {
@@ -120,7 +122,6 @@ namespace Gecode { namespace Search { namespace Sequential {
             (void) cur->choice();
             Space* s = cur;
             cur = NULL;
-            Worker::current(NULL);
             return s;
           }
         case SS_BRANCH:
@@ -134,7 +135,6 @@ namespace Gecode { namespace Search { namespace Sequential {
               d++;
             }
             const Choice* ch = path.push(*this,cur,c);
-            Worker::push(c,ch);
             cur->commit(*ch,0);
             break;
           }
@@ -143,11 +143,10 @@ namespace Gecode { namespace Search { namespace Sequential {
         }
       }
       do {
-        if (!path.next(*this))
+        if (!path.next())
           return NULL;
         cur = path.recompute(d,opt.a_d,*this);
       } while (cur == NULL);
-      Worker::current(cur);
     }
     GECODE_NEVER;
     return NULL;
@@ -155,9 +154,7 @@ namespace Gecode { namespace Search { namespace Sequential {
 
   forceinline Statistics
   DFS::statistics(void) const {
-    Statistics s = *this;
-    s.memory += path.size();
-    return s;
+    return *this;
   }
 
   forceinline 

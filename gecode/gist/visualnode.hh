@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
- *     $Revision: 13613 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -231,9 +231,6 @@ namespace Gecode { namespace Gist {
     std::string toolTip(NodeAllocator& na, BestNode* curBest,
                         int c_d, int a_d);
 
-    /// Return size information
-    size_t size(void) const;
-    
     /// Free allocated memory
     void dispose(void);
   };

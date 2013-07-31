@@ -6,8 +6,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2013-07-01 14:10:04 +0200 (Mon, 01 Jul 2013) $ by $Author: schulte $
-#     $Revision: 13744 $
+#     $Date: 2013-07-19 13:58:42 +0200 (Fri, 19 Jul 2013) $ by $Author: schulte $
+#     $Revision: 13907 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -65,6 +65,126 @@
 #    ... If a more section is included, then it will be displayed as an
 #    optional section in the html page.
 #
+
+[RELEASE]
+Version: 4.2.0
+Date: 2013-07-19
+[DESCRIPTION]
+This release adds no-goods from restarts, removes memory
+statistics (but Gecode can be configured for more accurate
+statistics), and fixes a number of bugs.
+
+[ENTRY]
+Module: iter
+What:   bug
+Rank:   minor
+Thanks: Farshid Hassani Bijarbooneh, Joseph Scott
+[DESCRIPTION]
+Fixed segfault in NaryUnion iterator.
+
+[ENTRY]
+Module: kernel
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added configure switch --enable-peakheap that adds support for
+memory statistics to the kernel. This comes with a runtime overhead,
+but provides more accurate information than the previous search
+engine based statistics.
+
+[ENTRY]
+Module: search
+What:   removed
+Rank:   major
+[DESCRIPTION]
+Removed memory statistics from the search engines. The reason is
+that the figures were too inaccurate (memory for shared data
+structure, caches, etc were not counted) and computing the
+figures was complicated. This feature is replaced by a configure
+switch that enables peak memory tracking based on operating system
+information.
+
+[ENTRY]
+Module: kernel
+What:   change
+Rank:   minor
+Thanks: Kish Shen
+[DESCRIPTION]
+Low-level support for AFC is now public.
+
+[ENTRY]
+Module: search
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Search options have an additional field nogoods_limit that
+defines too which depth a search tree is inspected for no-goods.
+
+[ENTRY]
+Module: kernel
+What:   change
+Rank:   minor
+[DESCRIPTION]
+The master() member function used during restart-based search now
+takes an additional no-goods argument. The default master()
+function posts no-goods (only effective when enabled in
+Search::Options). See MPG for details.
+
+[ENTRY]
+Module: driver
+What:   new
+Rank:   minor
+[DESCRIPTION]
+When using restart-based search, the use of no-goods from
+restarts can be switched on/off with the -nogoods command line
+option and the depth limit for extraction of no-goods with the
+-nogoods-limit command line option.
+
+[ENTRY]
+Module: search
+What:   new
+Rank:   major
+[DESCRIPTION]
+Added support for no-goods from restarts, see Modeling and
+Programming with Gecode for details.
+
+Note that also entails that the statistics will report different
+a different peak depth than in previous releases of Gecode when
+using no-goods.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added support for value_precede_int and value_precede_set constraints.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   major
+Thanks: Chris Mears
+[DESCRIPTION]
+Fixed a memory leak in FlatZincSpace and a few more in the FlatZinc
+parser.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Chris Mears
+[DESCRIPTION]
+Fixed a bug in implicit search heuristic that could lead to a
+segmentation fault when minimizing an array element.
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+Thanks:	Victor Zverovich
+[DESCRIPTION]
+Fixes link error for CMake with MSVC.
+
 
 [RELEASE]
 Version: 4.1.0

@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-03-08 09:52:45 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13481 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -46,8 +46,11 @@ namespace Gecode { namespace Search { namespace Meta {
       Space* n = e->next();
       unsigned long int i = stop->m_stat.restart;
       if (n != NULL) {
+        NoGoods& ng = e->nogoods();
+        ng.ng(0);
         master->constrain(*n);
-        master->master(i,n);
+        master->master(i,n,ng);
+        stop->m_stat.nogood += ng.ng();
         if (master->status(stop->m_stat) == SS_FAILED) {
           delete master;
           master = NULL;
@@ -60,7 +63,10 @@ namespace Gecode { namespace Search { namespace Meta {
         }
         return n;
       } else if (e->stopped() && stop->enginestopped()) {
-        master->master(i,NULL);
+        NoGoods& ng = e->nogoods();
+        ng.ng(0);
+        master->master(i,NULL,ng);
+        stop->m_stat.nogood += ng.ng();
         long unsigned int nl = (*co)();
         stop->limit(e->statistics(),nl);
         if (master->status(stop->m_stat) == SS_FAILED)
@@ -96,6 +102,13 @@ namespace Gecode { namespace Search { namespace Meta {
   
   void
   RBS::reset(Space*) { 
+  }
+  
+  NoGoods RBS::eng;
+
+  NoGoods&
+  RBS::nogoods(void) {
+    return eng;
   }
   
   RBS::~RBS(void) {

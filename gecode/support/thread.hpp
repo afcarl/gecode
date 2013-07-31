@@ -10,8 +10,8 @@
  *     David Rijsman <david.rijsman@quintiq.com>
  *
  *  Last modified:
- *     $Date: 2013-07-01 06:38:48 +0200 (Mon, 01 Jul 2013) $ by $Author: tack $
- *     $Revision: 13740 $
+ *     $Date: 2013-07-15 02:49:56 +0200 (Mon, 15 Jul 2013) $ by $Author: tack $
+ *     $Revision: 13879 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -325,17 +325,5 @@ namespace Gecode { namespace Support {
   };
 
 }}
-
-#ifdef GECODE_THREADS_WINDOWS
-#include <gecode/support/thread/windows.hpp>
-#endif
-#ifdef GECODE_THREADS_PTHREADS
-#include <gecode/support/thread/pthreads.hpp>
-#endif
-#ifndef GECODE_HAS_THREADS
-#include <gecode/support/thread/none.hpp>
-#endif
-
-#include <gecode/support/thread/thread.hpp>
 
 // STATISTICS: support-any

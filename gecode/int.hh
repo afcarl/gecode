@@ -15,8 +15,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-05-08 13:30:48 +0200 (Wed, 08 May 2013) $ by $Author: schulte $
- *     $Revision: 13622 $
+ *     $Date: 2013-07-05 01:52:56 +0200 (Fri, 05 Jul 2013) $ by $Author: tack $
+ *     $Revision: 13807 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1299,7 +1299,7 @@ namespace Gecode {
           IntConLevel=ICL_DEF);
   /** \brief Post propagator that successive values in \a c precede each other in \a x
    *
-   * This constraint enforces that \f$x_0\neq c_k\f$ for \f$0\leq k<|c|\f$ and 
+   * This constraint enforces that \f$x_0\neq c_k\f$ for \f$0<k<|c|\f$ and 
    * \f$x_j=c_{k} \to \bigvee_{0\leq i<j} x_i=c_{k-1}\f$ for \f$0\leq j<|x|\f$ 
    * and \f$0< k<|c|\f$.
    * \ingroup TaskModelIntPrecede

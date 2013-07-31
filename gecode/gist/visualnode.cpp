@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-05-07 00:58:15 +0200 (Tue, 07 May 2013) $ by $Author: tack $
- *     $Revision: 13616 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -538,19 +538,6 @@ namespace Gecode { namespace Gist {
       }
       setShape(mergedShape);
     }
-  }
-
-  size_t
-  VisualNode::size(void) const {
-    size_t s = sizeof(*this);
-    s += sizeof(Node*)*getNumberOfChildren();
-    if (shape && shape != Shape::leaf && shape != Shape::hidden) {
-      s += sizeof(Shape)+sizeof(Extent)*(shape->depth()-1);
-    }
-    if (copy)
-      s += static_cast<Space*>(Support::funmark(copy))->allocated();
-    s += (choice != NULL ? choice->size() : 0);
-    return s;
   }
 
 }}

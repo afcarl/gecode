@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2013-05-22 16:48:57 +0200 (Wed, 22 May 2013) $ by $Author: schulte $
- *     $Revision: 13654 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,11 +54,6 @@ namespace Gecode {
    * Actor
    *
    */
-  size_t
-  Actor::allocated(void) const {
-    return 0;
-  }
-
   Actor* Actor::sentinel;
 
 #ifdef __GNUC__
@@ -80,9 +75,23 @@ namespace Gecode {
 
 
   /*
+   * No-goods
+   *
+   */
+  void
+  NoGoods::post(Space&) {
+  }
+
+
+  /*
    * Brancher
    *
    */
+  NGL*
+  Brancher::ngl(Space&, const Choice&, unsigned int) const {
+    return NULL;
+  }
+
   void 
   Brancher::print(const Space&, const Choice&, unsigned int,
                   std::ostream&) const {
@@ -413,6 +422,21 @@ namespace Gecode {
     }
   }
 
+  NGL*
+  Space::ngl(const Choice& c, unsigned int a) {
+    if (a >= c.alternatives())
+      throw SpaceIllegalAlternative("Space::ngl");
+    if (failed())
+      return NULL;
+    if (Brancher* b = brancher(c._id)) {
+      // There is a matching brancher
+      return b->ngl(*this,c,a);
+    } else {
+      // There is no matching brancher!
+      throw SpaceNoBrancher("Space::ngl");
+    }
+  }
+
   void
   Space::print(const Choice& c, unsigned int a, std::ostream& o) const {
     if (a >= c.alternatives())
@@ -609,7 +633,8 @@ namespace Gecode {
   }
 
   void
-  Space::master(unsigned long int, const Space*) {
+  Space::master(unsigned long int, const Space*, NoGoods& ng) {
+    ng.post(*this);
   }
 
   void
@@ -645,6 +670,11 @@ namespace Gecode {
       gafc.set(p.propagator().gafc,a);
   }
 
+
+  bool
+  NGL::notice(void) const {
+    return false;
+  }
 
 }
 

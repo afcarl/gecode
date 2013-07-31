@@ -11,8 +11,8 @@
  *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
- *     $Revision: 13672 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -270,8 +270,17 @@ namespace Gecode { namespace FlatZinc {
   };
   
   BranchInformation::BranchInformation(void)
-    : SharedHandle(new BranchInformationO()) {}
-  
+    : SharedHandle(NULL) {}
+
+  BranchInformation::BranchInformation(const BranchInformation& bi)
+    : SharedHandle(bi) {}
+
+  void
+  BranchInformation::init(void) {
+    assert(object() == false);
+    object(new BranchInformationO());
+  }
+
   void
   BranchInformation::add(const BrancherHandle& bh,
                          const std::string& rel0,
@@ -666,8 +675,10 @@ namespace Gecode { namespace FlatZinc {
   
   FlatZincSpace::FlatZincSpace(void)
   : intVarCount(-1), boolVarCount(-1), floatVarCount(-1), setVarCount(-1),
-    _optVar(-1), _optVarIsInt(true),
-    _solveAnnotations(NULL), needAuxVars(true) {}
+    _optVar(-1), _optVarIsInt(true), 
+    _solveAnnotations(NULL), needAuxVars(true) {
+    branchInfo.init();
+  }
 
   void
   FlatZincSpace::init(int intVars, int boolVars,
@@ -852,6 +863,23 @@ namespace Gecode { namespace FlatZinc {
     FloatValBranch def_float_valsel = FLOAT_VAL_SPLIT_MIN();
 #endif
 
+    std::vector<bool> iv_searched(iv.size());
+    for (unsigned int i=iv.size(); i--;)
+      iv_searched[i] = false;
+    std::vector<bool> bv_searched(bv.size());
+    for (unsigned int i=bv.size(); i--;)
+      bv_searched[i] = false;
+#ifdef GECODE_HAS_SET_VARS
+    std::vector<bool> sv_searched(sv.size());
+    for (unsigned int i=sv.size(); i--;)
+      sv_searched[i] = false;
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+    std::vector<bool> fv_searched(fv.size());
+    for (unsigned int i=fv.size(); i--;)
+      fv_searched[i] = false;
+#endif
+
     if (ann) {
       std::vector<AST::Node*> flatAnn;
       if (ann->isArray()) {
@@ -879,6 +907,7 @@ namespace Gecode { namespace FlatZinc {
             if (vars->a[i]->isInt())
               continue;
             va[k++] = iv[vars->a[i]->getIntVar()];
+            iv_searched[vars->a[i]->getIntVar()] = true;
             names.push_back(vars->a[i]->getVarName());
           }
           std::string r0, r1;
@@ -902,6 +931,7 @@ namespace Gecode { namespace FlatZinc {
             if (vars->a[i]->isInt())
               continue;
             va[k++] = iv[vars->a[i]->getIntVar()];
+            iv_searched[vars->a[i]->getIntVar()] = true;
           }
           assign(*this, va, ann2asnivalsel(args->a[1],rnd), NULL,
                 &varValPrint<IntVar>);
@@ -920,6 +950,7 @@ namespace Gecode { namespace FlatZinc {
             if (vars->a[i]->isBool())
               continue;
             va[k++] = bv[vars->a[i]->getBoolVar()];
+            bv_searched[vars->a[i]->getBoolVar()] = true;
             names.push_back(vars->a[i]->getVarName());
           }
           
@@ -957,6 +988,7 @@ namespace Gecode { namespace FlatZinc {
             if (vars->a[i]->isSet())
               continue;
             va[k++] = sv[vars->a[i]->getSetVar()];
+            sv_searched[vars->a[i]->getSetVar()] = true;
             names.push_back(vars->a[i]->getVarName());
           }
           std::string r0, r1;
@@ -988,7 +1020,7 @@ namespace Gecode { namespace FlatZinc {
           }
 #endif
         } else if (flatAnn[i]->isCall("float_default_search")) {
-#ifdef GECODE_HAS_SET_VARS
+#ifdef GECODE_HAS_FLOAT_VARS
           AST::Call *call = flatAnn[i]->getCall("float_default_search");
           AST::Array *args = call->getArgs(2);
           def_float_varsel = ann2fvarsel(args->a[0],rnd,decay);
@@ -1017,6 +1049,7 @@ namespace Gecode { namespace FlatZinc {
             if (vars->a[i]->isFloat())
               continue;
             va[k++] = fv[vars->a[i]->getFloatVar()];
+            fv_searched[vars->a[i]->getFloatVar()] = true;
             names.push_back(vars->a[i]->getVarName());
           }
           std::string r0, r1;
@@ -1044,17 +1077,23 @@ namespace Gecode { namespace FlatZinc {
     }
     int introduced = 0;
     int funcdep = 0;
-    for (int i=iv.size(); i--;)
-      if (iv_introduced[2*i]) {
+    int searched = 0;
+    for (int i=iv.size(); i--;) {
+      if (iv_searched[i]) {
+        searched++;
+      } else if (iv_introduced[2*i]) {
         if (iv_introduced[2*i+1]) {
           funcdep++;
         } else {
           introduced++;
         }
       }
-    IntVarArgs iv_sol(iv.size()-(introduced+funcdep));
+    }
+    IntVarArgs iv_sol(iv.size()-(introduced+funcdep+searched));
     IntVarArgs iv_tmp(introduced);
-    for (int i=iv.size(), j=0, k=0; i--;)
+    for (int i=iv.size(), j=0, k=0; i--;) {
+      if (iv_searched[i])
+        continue;
       if (iv_introduced[2*i]) {
         if (!iv_introduced[2*i+1]) {
           iv_tmp[j++] = iv[i];
@@ -1062,20 +1101,27 @@ namespace Gecode { namespace FlatZinc {
       } else {
         iv_sol[k++] = iv[i];
       }
+    }
 
     introduced = 0;
     funcdep = 0;
-    for (int i=bv.size(); i--;)
-      if (bv_introduced[2*i]) {
+    searched = 0;
+    for (int i=bv.size(); i--;) {
+      if (bv_searched[i]) {
+        searched++;
+      } else if (bv_introduced[2*i]) {
         if (bv_introduced[2*i+1]) {
           funcdep++;
         } else {
           introduced++;
         }
       }
-    BoolVarArgs bv_sol(bv.size()-(introduced+funcdep));
+    }
+    BoolVarArgs bv_sol(bv.size()-(introduced+funcdep+searched));
     BoolVarArgs bv_tmp(introduced);
-    for (int i=bv.size(), j=0, k=0; i--;)
+    for (int i=bv.size(), j=0, k=0; i--;) {
+      if (bv_searched[i])
+        continue;
       if (bv_introduced[2*i]) {
         if (!bv_introduced[2*i+1]) {
           bv_tmp[j++] = bv[i];
@@ -1083,23 +1129,32 @@ namespace Gecode { namespace FlatZinc {
       } else {
         bv_sol[k++] = bv[i];
       }
+    }
 
-    branch(*this, iv_sol, def_int_varsel, def_int_valsel);
-    branch(*this, bv_sol, def_bool_varsel, def_bool_valsel);
+    if (iv_sol.size() > 0)
+      branch(*this, iv_sol, def_int_varsel, def_int_valsel);
+    if (bv_sol.size() > 0)
+      branch(*this, bv_sol, def_bool_varsel, def_bool_valsel);
 #ifdef GECODE_HAS_FLOAT_VARS
     introduced = 0;
     funcdep = 0;
-    for (int i=fv.size(); i--;)
-      if (fv_introduced[2*i]) {
+    searched = 0;
+    for (int i=fv.size(); i--;) {
+      if (fv_searched[i]) {
+        searched++;
+      } else if (fv_introduced[2*i]) {
         if (fv_introduced[2*i+1]) {
           funcdep++;
         } else {
           introduced++;
         }
       }
-    FloatVarArgs fv_sol(fv.size()-(introduced+funcdep));
+    }
+    FloatVarArgs fv_sol(fv.size()-(introduced+funcdep+searched));
     FloatVarArgs fv_tmp(introduced);
-    for (int i=fv.size(), j=0, k=0; i--;)
+    for (int i=fv.size(), j=0, k=0; i--;) {
+      if (fv_searched[i])
+        continue;
       if (fv_introduced[2*i]) {
         if (!fv_introduced[2*i+1]) {
           fv_tmp[j++] = fv[i];
@@ -1107,23 +1162,31 @@ namespace Gecode { namespace FlatZinc {
       } else {
         fv_sol[k++] = fv[i];
       }
+    }
 
-    branch(*this, fv_sol, def_float_varsel, def_float_valsel);
+    if (fv_sol.size() > 0)
+      branch(*this, fv_sol, def_float_varsel, def_float_valsel);
 #endif
 #ifdef GECODE_HAS_SET_VARS
     introduced = 0;
     funcdep = 0;
-    for (int i=sv.size(); i--;)
-      if (sv_introduced[2*i]) {
+    searched = 0;
+    for (int i=sv.size(); i--;) {
+      if (sv_searched[i]) {
+        searched++;
+      } else if (sv_introduced[2*i]) {
         if (sv_introduced[2*i+1]) {
           funcdep++;
         } else {
           introduced++;
         }
       }
-    SetVarArgs sv_sol(sv.size()-(introduced+funcdep));
+    }
+    SetVarArgs sv_sol(sv.size()-(introduced+funcdep+searched));
     SetVarArgs sv_tmp(introduced);
-    for (int i=sv.size(), j=0, k=0; i--;)
+    for (int i=sv.size(), j=0, k=0; i--;) {
+      if (sv_searched[i])
+        continue;
       if (sv_introduced[2*i]) {
         if (!sv_introduced[2*i+1]) {
           sv_tmp[j++] = sv[i];
@@ -1131,26 +1194,33 @@ namespace Gecode { namespace FlatZinc {
       } else {
         sv_sol[k++] = sv[i];
       }
+    }
 
-    branch(*this, sv_sol, def_set_varsel, def_set_valsel);
+    if (sv_sol.size() > 0)
+      branch(*this, sv_sol, def_set_varsel, def_set_valsel);
 #endif
     iv_aux = IntVarArray(*this, iv_tmp);
     bv_aux = BoolVarArray(*this, bv_tmp);
+    int n_aux = iv_aux.size() + bv_aux.size();
 #ifdef GECODE_HAS_SET_VARS
     sv_aux = SetVarArray(*this, sv_tmp);
+    n_aux =+ sv_aux.size();
 #endif
 #ifdef GECODE_HAS_FLOAT_VARS
     fv_aux = FloatVarArray(*this, fv_tmp);
+    n_aux =+ fv_aux.size();
 #endif
-    AuxVarBrancher::post(*this, def_int_varsel, def_int_valsel,
-                         def_bool_varsel, def_bool_valsel
+    if (n_aux > 0) {
+      AuxVarBrancher::post(*this, def_int_varsel, def_int_valsel,
+                           def_bool_varsel, def_bool_valsel
 #ifdef GECODE_HAS_SET_VARS
-                         , def_set_varsel, def_set_valsel
+                           , def_set_varsel, def_set_valsel
 #endif
 #ifdef GECODE_HAS_FLOAT_VARS
-                         , def_float_varsel, def_float_valsel
+                           , def_float_varsel, def_float_valsel
 #endif
-                         );
+                           );
+    }
   }
 
   AST::Array*
@@ -1169,7 +1239,6 @@ namespace Gecode { namespace FlatZinc {
     _method = MIN;
     _optVar = var;
     _optVarIsInt = isInt;
-    _solveAnnotations = ann;
     // Branch on optimization variable to ensure that it is given a value.
     AST::Call* c;
     if (isInt) {
@@ -1192,6 +1261,7 @@ namespace Gecode { namespace FlatZinc {
       ann = new AST::Array(c);
     else
       ann->a.push_back(c);
+    _solveAnnotations = ann;
   }
 
   void
@@ -1199,7 +1269,6 @@ namespace Gecode { namespace FlatZinc {
     _method = MAX;
     _optVar = var;
     _optVarIsInt = isInt;
-    _solveAnnotations = ann;
     // Branch on optimization variable to ensure that it is given a value.
     AST::Call* c;
     if (isInt) {
@@ -1222,6 +1291,7 @@ namespace Gecode { namespace FlatZinc {
       ann = new AST::Array(c);
     else
       ann->a.push_back(c);
+    _solveAnnotations = ann;
   }
 
   FlatZincSpace::~FlatZincSpace(void) {
@@ -1368,6 +1438,7 @@ namespace Gecode { namespace FlatZinc {
     o.c_d = opt.c_d();
     o.a_d = opt.a_d();
     o.threads = opt.threads();
+    o.nogoods_limit = opt.nogoods() ? opt.nogoods_limit() : 0;
     o.cutoff  = Driver::createCutoff(opt);
     if (opt.interrupt())
       Driver::CombinedStop::installCtrlHandler(true);
@@ -1422,10 +1493,9 @@ namespace Gecode { namespace FlatZinc {
            << "%%  failures:      " << stat.fail << endl
            << "%%  restarts:      " << stat.restart << endl
            << "%%  peak depth:    " << stat.depth << endl
-           << "%%  peak memory:   "
-           << static_cast<int>((stat.memory+1023) / 1024) << " KB"
            << endl;
     }
+    delete o.stop;
   }
 
 #ifdef GECODE_HAS_QT

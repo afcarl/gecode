@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2013-03-07 22:14:40 +0100 (Thu, 07 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13467 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -38,16 +38,6 @@
 #include <gecode/search.hh>
 
 namespace Gecode { namespace Search {
-
-  /*
-   * Stopping for memory limit
-   *
-   */
-  bool
-  MemoryStop::stop(const Statistics& s, const Options&) {
-    return s.memory > l;
-  }
-
 
   /*
    * Stopping for node limit

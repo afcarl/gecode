@@ -6,8 +6,8 @@
 %     Guido Tack, 2007
 %
 %  Last modified:
-%     $Date: 2011-07-12 13:52:11 +0200 (Tue, 12 Jul 2011) $ by $Author: tack $
-%     $Revision: 12175 $
+%     $Date: 2013-07-19 14:09:24 +0200 (Fri, 19 Jul 2013) $ by $Author: schulte $
+%     $Revision: 13910 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -34,8 +34,7 @@
 %
 %
 
-predicate gecode_precede(array[int] of var int: x, array[int] of int: c);
+predicate gecode_precede(array[int] of var int: x, int: s, int: t);
 
-predicate precedence(array[int] of var int: x) =
-    forall (i in index_set(x)) (x[i] <= length(x)) /\
-    gecode_precede(x, [i|i in 1..length(x)]);
+predicate value_precede_int(int: s, int: t, array[int] of var int: x) =
+  gecode_precede(x,s,t);

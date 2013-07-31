@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-02-20 17:42:40 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13341 $
+ *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13840 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -43,13 +43,13 @@ namespace Gecode {
 
   namespace Search {
     /// Create branch and bound engine
-    GECODE_SEARCH_EXPORT Engine* bab(Space* s, size_t sz, const Options& o);
+    GECODE_SEARCH_EXPORT Engine* bab(Space* s, const Options& o);
   }
 
   template<class T>
   forceinline
   BAB<T>::BAB(T* s, const Search::Options& o)
-    : EngineBase(Search::bab(s,sizeof(T),o)) {}
+    : EngineBase(Search::bab(s,o)) {}
 
   template<class T>
   forceinline T*
@@ -68,6 +68,13 @@ namespace Gecode {
   BAB<T>::stopped(void) const {
     return e->stopped();
   }
+
+  template<class T>
+  forceinline NoGoods&
+  BAB<T>::nogoods(void) {
+    return e->nogoods();
+  }
+
 
   template<class T>
   T*
