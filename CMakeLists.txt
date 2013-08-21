@@ -350,7 +350,16 @@ foreach (lib support kernel search int set float
     string(TOUPPER ${lib} libupper)
   endif ()
   if (${libupper}SRC)
-    add_library(gecode${lib} ${${libupper}SRC} ${${libupper}HDR})
+    set(sources )
+    foreach (src ${${libupper}SRC})
+      if ((src STREQUAL "gecode/support/thread/pthreads.cpp" AND MSVC) OR
+           src STREQUAL "gecode/float/rounding.cpp")
+        # ignore empty source files to prevent linker warnings
+      else ()
+        set(sources ${sources} ${src})
+      endif ()
+    endforeach ()
+    add_library(gecode${lib} ${sources} ${${libupper}HDR})
   endif ()
 endforeach ()
 
