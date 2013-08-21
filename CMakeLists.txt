@@ -46,21 +46,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include(CheckCXXCompilerFlag)
 if (GECODE_DISABLE_WARNINGS)
-  if (CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-Wno-overloaded-virtual)
-    add_definitions(-Wno-switch)
-    add_definitions(-Wno-unused-parameter)
-    check_cxx_compiler_flag(
-      -Wno-unused-but-set-variable HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
-    if (HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
-      add_definitions(-Wno-unused-but-set-variable)
-    endif ()
-  elseif (MSVC)
+  if (MSVC)
     foreach (flag_var
              CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
              CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
       string(REPLACE "/W3" "/w" ${flag_var} "${${flag_var}}")
     endforeach()
+  else ()
+    string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   endif ()
 endif ()
 
