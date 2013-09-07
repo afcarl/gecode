@@ -302,6 +302,7 @@ file(WRITE ${GECODE_BINARY_DIR}/gecode/support/config.hpp
 #define GECODE_BUILD_SET
 #define GECODE_BUILD_FLOAT
 #define GECODE_BUILD_MINIMODEL
+#define GECODE_BUILD_DRIVER
 
 ${CONFIG_OUT}")
 
