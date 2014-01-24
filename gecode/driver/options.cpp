@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2013-10-15 00:43:28 +0200 (Tue, 15 Oct 2013) $ by $Author: tack $
+ *     $Revision: 14024 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -300,8 +300,8 @@ namespace Gecode {
 #else
     std::cerr << "disabled";
 #endif
-    std::cerr << std::endl;
 #endif
+    std::cerr << std::endl;
     std::cerr << " - Thread support: ";
 #ifdef GECODE_HAS_THREADS
     if (Support::Thread::npu() == 1)

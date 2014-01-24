@@ -13,8 +13,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-04-17 17:43:48 +0200 (Wed, 17 Apr 2013) $ by $Author: schulte $
- *     $Revision: 13581 $
+ *     $Date: 2013-08-19 14:00:39 +0200 (Mon, 19 Aug 2013) $ by $Author: schulte $
+ *     $Revision: 13982 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -399,6 +399,9 @@ namespace Gecode {
   /// Construct linear expression as sum of Boolean variables with coefficients
   GECODE_MINIMODEL_EXPORT LinIntExpr
   sum(const IntArgs& a, const BoolVarArgs& x);
+  /// Construct linear expression as sum of \ref IntArgs
+  GECODE_MINIMODEL_EXPORT LinIntExpr
+  sum(const IntArgs& args);
 
   /// Construct linear equality relation
   GECODE_MINIMODEL_EXPORT LinIntRel
@@ -2170,6 +2173,20 @@ namespace Gecode {
 
 #include <gecode/minimodel/matrix.hpp>
 #include <gecode/minimodel/ldsb.hpp>
+
+/**
+ * \addtogroup TaskModelMiniModelLin
+ * @{
+ */ 
+namespace Gecode {
+  /// Construct linear expression as sum of \ref IntArgs \ref Slice elements
+  GECODE_MINIMODEL_EXPORT LinIntExpr 
+  sum(const Slice<IntArgs>& slice);
+  /// Construct linear expression as sum of \ref IntArgs \ref Matrix elements
+  GECODE_MINIMODEL_EXPORT LinIntExpr 
+  sum(const Matrix<IntArgs>& matrix);
+}
+/** @}*/
 
 namespace Gecode {
 

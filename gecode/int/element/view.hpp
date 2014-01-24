@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2012-09-07 17:31:22 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13068 $
+ *     $Date: 2013-10-11 09:00:31 +0200 (Fri, 11 Oct 2013) $ by $Author: tack $
+ *     $Revision: 14022 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -542,15 +542,23 @@ namespace Gecode { namespace Int { namespace Element {
       return es;
     }
     assert(iv.size() > 1);
-    Region r(home);
-    ViewRanges<VA>* i_view = r.alloc<ViewRanges<VA> >(iv.size());
-    for (int i = iv.size(); i--; )
-      i_view[i].init(iv[i].view);
-    Iter::Ranges::NaryUnion i_val(r, i_view, iv.size());
-    ModEvent me = x1.inter_r(home,i_val);
-    r.free<ViewRanges<VA> >(i_view,iv.size());
-    GECODE_ME_CHECK(me);
-    return (shared(x0,x1) || me_modified(me)) ? ES_NOFIX : ES_FIX;
+    
+    if (x1.assigned()) {
+      for (int i = iv.size(); i--; )
+        if (iv[i].view.in(x1.val()))
+          return shared(x0,x1) ? ES_NOFIX : ES_FIX;
+      return ES_FAILED;
+    } else {
+      Region r(home);
+      ViewRanges<VA>* i_view = r.alloc<ViewRanges<VA> >(iv.size());
+      for (int i = iv.size(); i--; )
+        i_view[i].init(iv[i].view);
+      Iter::Ranges::NaryUnion i_val(r, i_view, iv.size());
+      ModEvent me = x1.inter_r(home,i_val);
+      r.free<ViewRanges<VA> >(i_view,iv.size());
+      GECODE_ME_CHECK(me);
+      return (shared(x0,x1) || me_modified(me)) ? ES_NOFIX : ES_FIX;
+    }
   }
 
 }}}

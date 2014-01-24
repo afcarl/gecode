@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2013-04-17 20:35:47 +0200 (Wed, 17 Apr 2013) $ by $Author: schulte $
- *     $Revision: 13584 $
+ *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13939 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,12 +41,6 @@ namespace Gecode {
 
   const Activity Activity::def;
 
-  void
-  Activity::init(int n, double d) {
-    assert(storage == NULL);
-    storage = new Storage(n,d);
-  }
-  
   Activity::Activity(const Activity& a)
     : storage(a.storage) {
     if (storage != NULL) {

@@ -13,8 +13,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-05-29 13:53:43 +0200 (Wed, 29 May 2013) $ by $Author: schulte $
- *     $Revision: 13672 $
+ *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13939 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -482,7 +482,7 @@ namespace Test { namespace Branch {
 
             Rnd rb(2);
             IntVarBranch ivbb;
-            IntActivity iab(*c, c->x, 0.9);
+            IntActivity iab(*c, c->x, 0.9, &int_merit);
             switch (varb) {
             case  0: ivbb = INT_VAR_NONE(); break;
             case  1: ivbb = INT_VAR_NONE(); break;
@@ -653,7 +653,7 @@ namespace Test { namespace Branch {
 
             Rnd rb(2);
             IntVarBranch ivbb;
-            IntActivity iab(*c, c->x, 0.9);
+            IntActivity iab(*c, c->x, 0.9, &bool_merit);
             switch (varb) {
             case  0: ivbb = INT_VAR_NONE(); break;
             case  1: ivbb = INT_VAR_NONE(); break;
@@ -809,7 +809,7 @@ namespace Test { namespace Branch {
 
             Rnd rb(2);
             SetVarBranch svbb;
-            SetActivity sab(*c, c->x, 0.9);
+            SetActivity sab(*c, c->x, 0.9, &set_merit);
             switch (varb) {
             case  0: break; 
             case  1: svbb = SET_VAR_NONE(); break;
@@ -956,7 +956,7 @@ namespace Test { namespace Branch {
 
             Rnd rb(2);
             FloatVarBranch fvbb;
-            FloatActivity fab(*c, c->x, 0.9);
+            FloatActivity fab(*c, c->x, 0.9, &float_merit);
             switch (varb) {
             case  0: break; 
             case  1: fvbb = FLOAT_VAR_NONE(); break;

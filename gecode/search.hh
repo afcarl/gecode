@@ -9,8 +9,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2013-10-30 15:42:34 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14037 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -365,6 +365,8 @@ namespace Gecode { namespace Search {
     virtual bool stop(const Statistics& s, const Options& o);
     /// Set current limit for the engine to \a l fails
     void limit(const Search::Statistics& s, unsigned long int l);
+    /// Update statistics
+    void update(const Search::Statistics& s);
     /// Return the stop object to control the engine
     Stop* enginestop(void) const;
     /// Return whether the engine has been stopped
@@ -417,6 +419,9 @@ namespace Gecode { namespace Search {
     /// Append cutoff values from \a c2 after \a n values from \a c1
     static Cutoff*
     append(Cutoff* c1, unsigned long int n, Cutoff* c2);
+    /// Create generator that repeats \a n times each cutoff value from \a c
+    static Cutoff*
+    repeat(Cutoff* c, unsigned long int n);
     /// Allocate memory from heap
     static void* operator new(size_t s);
     /// Free memory allocated from heap

@@ -6,8 +6,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2013-07-19 13:58:42 +0200 (Fri, 19 Jul 2013) $ by $Author: schulte $
-#     $Revision: 13907 $
+#     $Date: 2013-11-05 09:51:31 +0100 (Tue, 05 Nov 2013) $ by $Author: schulte $
+#     $Revision: 14055 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -65,6 +65,145 @@
 #    ... If a more section is included, then it will be displayed as an
 #    optional section in the html page.
 #
+
+[RELEASE]
+Version: 4.2.1
+Date: 2013-11-05
+[DESCRIPTION]
+This release fixes several major bugs and adds some minor
+improvements.
+
+[ENTRY]
+Module: other
+What:   change
+Rank:   minor
+[DESCRIPTION]
+Compiles with MSVC 2013.
+
+[ENTRY]
+Module: search
+What:   bug
+Rank:   major
+Thanks:	Roberto Castañeda Lozano
+[DESCRIPTION]
+Fix for restart-based search when the master does not have a branching.
+
+[ENTRY]
+Module: search
+What:   bug
+Rank:   major
+Thanks:	Roberto Castañeda Lozano
+[DESCRIPTION]
+Restart-based search did not work when the cutoff limit did not
+strictly increase.
+
+[ENTRY]
+Module: search
+What:   new
+Rank:   minor
+Thanks:	Roberto Castañeda Lozano
+[DESCRIPTION]
+Added support for a repeat cutoff generator.
+
+[ENTRY]
+Module: int
+What:   performance
+Rank:   minor
+Thanks: Anne Meyer
+[DESCRIPTION]
+Fix performance of domain consistent element for the case that the result
+variable is assigned.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+Thanks: Bauke Conijn
+[DESCRIPTION]
+Fixed incorrect propagation in sortedness with permutation variables.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+Thanks: Duane Leslie
+[DESCRIPTION]
+Fixed cumulative constraint for 0-usage tasks.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+Thanks: Duane Leslie
+[DESCRIPTION]
+Fixed special case check for cumulative that would wrongly classify
+some instances as disjunctive.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+Thanks: Kish Shen
+[DESCRIPTION]
+The nroot constraint now propagates correctly for negative
+numbers when the exponent is odd.
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Fix CMake to also build FlatZinc and Driver correctly.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Fixed bug in auxiliary variable branching.
+
+[ENTRY]
+Module: minimodel
+What:   new
+Rank:   minor
+Thanks: Philippe Kezirian
+[DESCRIPTION]
+The sum of IntArgs can now be computed similarly to the sum of
+IntVarArgs.
+
+[ENTRY]
+Module: kernel
+What:   new
+Rank:   minor
+Thanks: Kish Shen
+[DESCRIPTION]
+Activity information can now be initialized with a branch merit function.
+
+[ENTRY]
+Module: int
+What:   new
+Rank:   minor
+Thanks: Kish Shen
+[DESCRIPTION]
+Activity information can now be initialized with a branch merit function.
+
+[ENTRY]
+Module: set
+What:   new
+Rank:   minor
+Thanks: Kish Shen
+[DESCRIPTION]
+Activity information can now be initialized with a branch merit function.
+
+[ENTRY]
+Module: float
+What:   new
+Rank:   minor
+Thanks: Kish Shen
+[DESCRIPTION]
+Activity information can now be initialized with a branch merit function.
+
+
 
 [RELEASE]
 Version: 4.2.0

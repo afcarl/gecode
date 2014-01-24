@@ -7,8 +7,8 @@
  *     Christian Schulte, 2007
  *
  *  Last modified:
- *     $Date: 2012-09-19 15:14:28 +0200 (Wed, 19 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13103 $
+ *     $Date: 2013-10-24 16:42:20 +0200 (Thu, 24 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14030 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -46,7 +46,7 @@ namespace Gecode {
 
   /// Cast function pointer
   template<class F1, class F2>
-  forceinline F1 function_cast(F2 f);
+  F1 function_cast(F2 f);
 
 
   template<class T>
@@ -58,7 +58,7 @@ namespace Gecode {
   template<class F1, class F2>
   forceinline F1
   function_cast(F2 f) {
-    return reinterpret_cast<F1>(f);
+    return F1(f);
   }
 
 }

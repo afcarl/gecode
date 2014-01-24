@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-10-31 14:09:27 +0100 (Thu, 31 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14044 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -36,7 +36,9 @@
  */
 
 
-#ifdef _MSC_VER
+// Needed for Microsoft Visual C++ prior to 2013
+
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
 
 // Provide access to nextafter function
 

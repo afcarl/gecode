@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-07-12 18:20:11 +0200 (Fri, 12 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13877 $
+ *     $Date: 2013-10-24 16:42:20 +0200 (Thu, 24 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14030 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -172,9 +172,9 @@ namespace Gecode { namespace Search { namespace Parallel {
     e_reset_ack_start.wait();
     // All workers are marked as busy again
     n_busy = workers();
-    for (unsigned int i=1; i<workers(); i++)
+    for (unsigned int i=1U; i<workers(); i++)
       worker(i)->reset(NULL,0);
-    worker(0)->reset(s,opt().nogoods_limit);
+    worker(0U)->reset(s,opt().nogoods_limit);
     // Block workers again to ensure invariant
     block();
     // Release reset lock

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2013-10-30 15:42:34 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14037 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -136,6 +136,11 @@ namespace Gecode { namespace Search {
     m_stat += s;
     e_stopped = false;
     e_stop->limit(l);
+  }
+
+  forceinline void
+  MetaStop::update(const Search::Statistics& s) {
+    m_stat += s;
   }
 
   forceinline Stop*

@@ -18,8 +18,8 @@
  *     Alexander Samoilov <alexander_samoilov@yahoo.com>
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2013-10-30 16:01:30 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14038 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -778,6 +778,8 @@ namespace Gecode {
     Propagator(Home home);
     /// Constructor for cloning \a p
     Propagator(Space& home, bool share, Propagator& p);
+    /// Return forwarding pointer during copying
+    Propagator* fwd(void) const;
 
   public:
     /// \name Propagation
@@ -1513,6 +1515,39 @@ namespace Gecode {
     GECODE_KERNEL_EXPORT
     void _commit(const Choice& c, unsigned int a);
 
+    /**
+     * \brief Commit choice \a c for alternative \a a if possible
+     *
+     * The current brancher in the space performs a commit from
+     * the information provided by the choice \a c
+     * and the alternative \a a. The statistics information \a stat is
+     * updated.
+     *
+     * Note that no propagation is perfomed (to support path
+     * recomputation), in order to perform propagation the member
+     * function status must be used.
+     *
+     * Committing with choices must be carried
+     * out in the same order as the choices have been
+     * obtained by the member function Space::choice().
+     *
+     * It is perfectly okay to add constraints interleaved with
+     * choices (provided they are in the right order).
+     * However, if propagation is performed by calling the member
+     * function status and then new choices are
+     * computed, these choices are different.
+     *
+     * Only choices can be used that are up-to-date in the following
+     * sense: if a new choice is created (via the choice member
+     * function), no older choices can be used.
+     *
+     * Committing throws the following exceptions:
+     *  - SpaceIllegalAlternative, if \a a is not smaller than the number
+     *    of alternatives supported by the choice \a c.
+     */
+    GECODE_KERNEL_EXPORT
+    void _trycommit(const Choice& c, unsigned int a);
+
   public:
     /**
      * \brief Default constructor
@@ -1719,6 +1754,40 @@ namespace Gecode {
     void commit(const Choice& c, unsigned int a,
                 CommitStatistics& stat=unused_commit);
     /**
+     * \brief If possible, commit choice \a c for alternative \a a
+     *
+     * The current brancher in the space performs a commit from
+     * the information provided by the choice \a c
+     * and the alternative \a a. The statistics information \a stat is
+     * updated.
+     *
+     * Note that no propagation is perfomed (to support path
+     * recomputation), in order to perform propagation the member
+     * function status must be used.
+     *
+     * Committing with choices must be carried
+     * out in the same order as the choices have been
+     * obtained by the member function Space::choice().
+     *
+     * It is perfectly okay to add constraints interleaved with
+     * choices (provided they are in the right order).
+     * However, if propagation is performed by calling the member
+     * function status and then new choices are
+     * computed, these choices are different.
+     *
+     * Only choices can be used that are up-to-date in the following
+     * sense: if a new choice is created (via the choice member
+     * function), no older choices can be used.
+     *
+     * Committing throws the following exceptions:
+     *  - SpaceIllegalAlternative, if \a a is not smaller than the number
+     *    of alternatives supported by the choice \a c.
+     *
+     * \ingroup TaskSearch
+     */
+    void trycommit(const Choice& c, unsigned int a,
+                   CommitStatistics& stat=unused_commit);
+    /**
      * \brief Create no-good literal for choice \a c and alternative \a a
      *
      * The current brancher in the space \a home creates a no-good literal
@@ -1731,8 +1800,6 @@ namespace Gecode {
      *    of all other alternatives.
      *
      * It throws the following exceptions:
-     *  - SpaceNoBrancher, if the space has no current brancher (it is
-     *    already solved).
      *  - SpaceIllegalAlternative, if \a a is not smaller than the number
      *    of alternatives supported by the choice \a c.
      *
@@ -2719,6 +2786,11 @@ namespace Gecode {
     _commit(c,a);
   }
 
+  forceinline void
+  Space::trycommit(const Choice& c, unsigned int a, CommitStatistics&) {
+    _trycommit(c,a);
+  }
+
   forceinline double
   Space::afc_decay(void) const {
     return gafc.decay();
@@ -2776,6 +2848,11 @@ namespace Gecode {
     GECODE_NOT_NULL(al);
     const ActorLink& t = *al;
     return static_cast<const Propagator*>(&t);
+  }
+
+  forceinline Propagator*
+  Propagator::fwd(void) const {
+    return static_cast<Propagator*>(prev());
   }
 
   forceinline

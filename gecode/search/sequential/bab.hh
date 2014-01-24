@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-12 18:20:11 +0200 (Fri, 12 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13877 $
+ *     $Date: 2013-10-24 16:42:20 +0200 (Thu, 24 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14030 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -164,7 +164,7 @@ namespace Gecode { namespace Search { namespace Sequential {
     delete best;
     best = NULL;
     path.reset();
-    d = mark = 0;
+    d = mark = 0U;
     delete cur;
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
       cur = NULL;

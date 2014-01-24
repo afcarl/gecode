@@ -15,8 +15,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-05 01:52:56 +0200 (Fri, 05 Jul 2013) $ by $Author: tack $
- *     $Revision: 13807 $
+ *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13939 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -3646,30 +3646,54 @@ namespace Gecode {
     IntActivity(const IntActivity& a);
     /// Assignment operator
     IntActivity& operator =(const IntActivity& a);      
-    /// Initialize for integer variables \a x with decay factor \a d
-    GECODE_INT_EXPORT 
-    IntActivity(Home home, const IntVarArgs& x, double d=1.0);
-    /// Initialize for Boolean variables \a x with decay factor \a d
-    GECODE_INT_EXPORT 
-    IntActivity(Home home, const BoolVarArgs& x, double d=1.0);
     /**
      * \brief Initialize for integer variables \a x with decay factor \a d
      *
-     * This member function can only be used once and only if the
-     * activity storage has been constructed with the default constructor.
-     *
+     * If the branch merit function \a bm is different from NULL, the
+     * activity for each variable is initialized with the merit returned
+     * by \a bm.
      */
-    GECODE_INT_EXPORT void
-    init(Home, const IntVarArgs& x, double d=1.0);
+    GECODE_INT_EXPORT 
+    IntActivity(Home home, const IntVarArgs& x, double d=1.0,
+                IntBranchMerit bm=NULL);
     /**
      * \brief Initialize for Boolean variables \a x with decay factor \a d
      *
+     * If the branch merit function \a bm is different from NULL, the
+     * activity for each variable is initialized with the merit returned
+     * by \a bm.
+     */
+    GECODE_INT_EXPORT 
+    IntActivity(Home home, const BoolVarArgs& x, double d=1.0,
+                BoolBranchMerit bm=NULL);
+    /**
+     * \brief Initialize for integer variables \a x with decay factor \a d
+     *
+     * If the branch merit function \a bm is different from NULL, the
+     * activity for each variable is initialized with the merit returned
+     * by \a bm.
+     *
      * This member function can only be used once and only if the
      * activity storage has been constructed with the default constructor.
      *
      */
     GECODE_INT_EXPORT void
-    init(Home, const BoolVarArgs& x, double d=1.0);
+    init(Home home, const IntVarArgs& x, double d=1.0,
+         IntBranchMerit bm=NULL);
+    /**
+     * \brief Initialize for Boolean variables \a x with decay factor \a d
+     *
+     * If the branch merit function \a bm is different from NULL, the
+     * activity for each variable is initialized with the merit returned
+     * by \a bm.
+     *
+     * This member function can only be used once and only if the
+     * activity storage has been constructed with the default constructor.
+     *
+     */
+    GECODE_INT_EXPORT void
+    init(Home home, const BoolVarArgs& x, double d=1.0,
+         BoolBranchMerit bm=NULL);
   };
 
 }

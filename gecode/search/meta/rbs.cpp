@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2013-10-30 15:42:34 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14037 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -51,6 +51,7 @@ namespace Gecode { namespace Search { namespace Meta {
         master->constrain(*n);
         master->master(i,n,ng);
         stop->m_stat.nogood += ng.ng();
+        stop->update(e->statistics());
         if (master->status(stop->m_stat) == SS_FAILED) {
           delete master;
           master = NULL;

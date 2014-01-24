@@ -6,8 +6,8 @@
 %     Guido Tack, 2007
 %
 %  Last modified:
-%     $Date: 2013-04-30 02:39:15 +0200 (Tue, 30 Apr 2013) $ by $Author: tack $
-%     $Revision: 13592 $
+%     $Date: 2013-11-04 23:40:53 +0100 (Mon, 04 Nov 2013) $ by $Author: tack $
+%     $Revision: 14053 $
 %
 %  This file is part of Gecode, the generic constraint
 %  development environment:
@@ -46,6 +46,7 @@ annotation activity_min;
 annotation activity_size_min;
 annotation activity_max;
 annotation activity_size_max;
+annotation random;
 annotation int_assign(array[int] of var int: x, ann:a);
 
 annotation int_default_search(ann: varsel, ann: valsel);

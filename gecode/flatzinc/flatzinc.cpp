@@ -11,8 +11,8 @@
  *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2013-08-29 02:46:26 +0200 (Thu, 29 Aug 2013) $ by $Author: tack $
+ *     $Revision: 13990 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1204,11 +1204,11 @@ namespace Gecode { namespace FlatZinc {
     int n_aux = iv_aux.size() + bv_aux.size();
 #ifdef GECODE_HAS_SET_VARS
     sv_aux = SetVarArray(*this, sv_tmp);
-    n_aux =+ sv_aux.size();
+    n_aux += sv_aux.size();
 #endif
 #ifdef GECODE_HAS_FLOAT_VARS
     fv_aux = FloatVarArray(*this, fv_tmp);
-    n_aux =+ fv_aux.size();
+    n_aux += fv_aux.size();
 #endif
     if (n_aux > 0) {
       AuxVarBrancher::post(*this, def_int_varsel, def_int_valsel,

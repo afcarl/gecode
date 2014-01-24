@@ -11,8 +11,8 @@
  *     Guido Tack, 2013
  *
  *  Last modified:
- *     $Date: 2013-03-12 16:42:52 +0100 (Tue, 12 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13504 $
+ *     $Date: 2013-10-30 13:25:29 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14036 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -145,6 +145,27 @@ namespace Gecode { namespace Search {
     virtual unsigned long int operator ()(void);
     /// Destructor
     virtual ~CutoffAppend(void);
+  };
+
+  /// Cutoff generator that repeats a cutoff from another cutoff generator
+  class CutoffRepeat : public Cutoff {
+    friend class Cutoff;
+  private:
+    /// Actual cutoff generator
+    Cutoff* c;
+    // Current cutoff
+    unsigned int cutoff;
+    // Iteration
+    unsigned long int i;
+    // Number of repetitions
+    unsigned long int n;
+    /// Constructor
+    CutoffRepeat(Cutoff* c, unsigned long int n);
+  public:
+    /// Return next cutoff value
+    virtual unsigned long int operator ()(void);
+    /// Destructor
+    virtual ~CutoffRepeat(void);
   };
   
   forceinline

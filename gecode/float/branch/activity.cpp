@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2012-09-07 11:29:57 +0200 (Fri, 07 Sep 2012) $ by $Author: schulte $
- *     $Revision: 13061 $
+ *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13939 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,15 +39,17 @@
 
 namespace Gecode {
 
-  FloatActivity::FloatActivity(Home home, const FloatVarArgs& x, double d) {
+  FloatActivity::FloatActivity(Home home, const FloatVarArgs& x, double d,
+                               FloatBranchMerit bm) {
     ViewArray<Float::FloatView> y(home,x);
-    Activity::init(home,y,d);
+    Activity::init(home,y,d,bm);
   }
 
   void
-  FloatActivity::init(Home home, const FloatVarArgs& x, double d) {
+  FloatActivity::init(Home home, const FloatVarArgs& x, double d,
+                      FloatBranchMerit bm) {
     ViewArray<Float::FloatView> y(home,x);
-    Activity::init(home,y,d);
+    Activity::init(home,y,d,bm);
   }
 
 }

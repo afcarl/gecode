@@ -10,8 +10,8 @@
  *     David Rijsman <david.rijsman@quintiq.com>
  *
  *  Last modified:
- *     $Date: 2013-07-15 02:49:56 +0200 (Mon, 15 Jul 2013) $ by $Author: tack $
- *     $Revision: 13879 $
+ *     $Date: 2013-10-15 00:46:56 +0200 (Tue, 15 Oct 2013) $ by $Author: tack $
+ *     $Revision: 14025 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -37,6 +37,8 @@
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+
+#include <cstddef>
 
 #ifdef GECODE_THREADS_WINDOWS
 
@@ -126,7 +128,7 @@ namespace Gecode { namespace Support {
     void operator=(const Mutex&) {}
   };
 
-#ifdef GECODE_THREADS_WINDOWS
+#if defined(GECODE_THREADS_WINDOWS) || !defined(GECODE_THREADS_PTHREADS)
 
   typedef Mutex FastMutex;
 

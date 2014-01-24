@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-02-25 17:13:22 +0100 (Mon, 25 Feb 2013) $ by $Author: schulte $
- *     $Revision: 13397 $
+ *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13939 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -206,8 +206,8 @@ namespace Gecode {
 #include <gecode/kernel/propagator.hpp>
 #include <gecode/kernel/advisor.hpp>
 #include <gecode/kernel/afc.hpp>
-#include <gecode/kernel/activity.hpp>
 #include <gecode/kernel/branch-traits.hpp>
+#include <gecode/kernel/activity.hpp>
 #include <gecode/kernel/branch-var.hpp>
 #include <gecode/kernel/branch-tiebreak.hpp>
 #include <gecode/kernel/branch-val.hpp>

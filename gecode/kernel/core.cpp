@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2013-10-30 16:01:30 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14038 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -422,6 +422,19 @@ namespace Gecode {
     }
   }
 
+  void
+  Space::_trycommit(const Choice& c, unsigned int a) {
+    if (a >= c.alternatives())
+      throw SpaceIllegalAlternative("Space::commit");
+    if (failed())
+      return;
+    if (Brancher* b = brancher(c._id)) {
+      // There is a matching brancher
+      if (b->commit(*this,c,a) == ES_FAILED)
+        fail();
+    }
+  }
+
   NGL*
   Space::ngl(const Choice& c, unsigned int a) {
     if (a >= c.alternatives())
@@ -432,8 +445,7 @@ namespace Gecode {
       // There is a matching brancher
       return b->ngl(*this,c,a);
     } else {
-      // There is no matching brancher!
-      throw SpaceNoBrancher("Space::ngl");
+      return NULL;
     }
   }
 

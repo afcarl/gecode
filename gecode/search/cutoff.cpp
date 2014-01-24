@@ -11,8 +11,8 @@
  *     Guido Tack, 2013
  *
  *  Last modified:
- *     $Date: 2013-03-12 16:42:52 +0100 (Tue, 12 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13504 $
+ *     $Date: 2013-10-30 13:25:29 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14036 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -85,7 +85,7 @@ namespace Gecode { namespace Search {
         return start[i-1];
       unsigned long int l = log(i);
       if (i == (1U<<(l+1))-1)
-        return 1<<l;
+        return 1UL<<l;
       i=i-(1U<<l)+1;
     }
     GECODE_NEVER;
@@ -138,6 +138,27 @@ namespace Gecode { namespace Search {
   CutoffAppend::~CutoffAppend(void) {
     delete c1; delete c2;
   }
+
+
+  forceinline
+  CutoffRepeat::CutoffRepeat(Cutoff* c1, unsigned long int n0)
+    : c(c1), i(0), n(n0) {
+    cutoff = (*c)();
+  }
+  unsigned long int
+  CutoffRepeat::operator ()(void) {
+    unsigned long int current = cutoff;
+    i++;
+    if (i == n) {
+      cutoff = (*c)();
+      i = 0;
+    }
+    return current;
+  }
+  forceinline
+  CutoffRepeat::~CutoffRepeat(void) {
+    delete c;
+  }
   
   
   Cutoff*
@@ -167,7 +188,11 @@ namespace Gecode { namespace Search {
   Cutoff::append(Cutoff* c1, unsigned long int n, Cutoff* c2) {
     return new CutoffAppend(c1,n,c2);
   }
-  
+  Cutoff*
+  Cutoff::repeat(Cutoff* c, unsigned long int n) {
+  return new CutoffRepeat(c,n);
+  }
+
 }}
 
 // STATISTICS: search-other

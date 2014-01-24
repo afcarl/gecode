@@ -13,8 +13,8 @@
  *     Gabor Szokoli, 2004
  *
  *  Last modified:
- *     $Date: 2013-05-08 13:30:48 +0200 (Wed, 08 May 2013) $ by $Author: schulte $
- *     $Revision: 13622 $
+ *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
+ *     $Revision: 13939 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1202,18 +1202,31 @@ namespace Gecode {
     SetActivity(const SetActivity& a);
     /// Assignment operator
     SetActivity& operator =(const SetActivity& a);      
-    /// Initialize for set variables \a x with decay factor \a d
-    GECODE_SET_EXPORT 
-    SetActivity(Home home, const SetVarArgs& x, double d=1.0);
     /**
      * \brief Initialize for set variables \a x with decay factor \a d
+     *
+     * If the branch merit function \a bm is different from NULL, the
+     * activity for each variable is initialized with the merit returned
+     * by \a bm.
+     *
+     */
+    GECODE_SET_EXPORT 
+    SetActivity(Home home, const SetVarArgs& x, double d=1.0,
+                SetBranchMerit bm=NULL);
+    /**
+     * \brief Initialize for set variables \a x with decay factor \a d
+     *
+     * If the branch merit function \a bm is different from NULL, the
+     * activity for each variable is initialized with the merit returned
+     * by \a bm.
      *
      * This member function can only be used once and only if the
      * activity storage has been constructed with the default constructor.
      *
      */
     GECODE_SET_EXPORT void
-    init(Home, const SetVarArgs& x, double d=1.0);
+    init(Home, const SetVarArgs& x, double d=1.0,
+         SetBranchMerit bm=NULL);
   };
 
 }
@@ -1262,7 +1275,7 @@ namespace Gecode {
       SEL_AFC_SIZE_MIN,    ///< With smallest accumulated failure count divided by domain size
       SEL_AFC_SIZE_MAX,    ///< With largest accumulated failure count divided by domain size
       SEL_ACTIVITY_SIZE_MIN, ///< With smallest activity divided by domain size
-      SEL_ACTIVITY_SIZE_MAX  ///< With largest activity divided by domain size
+      SEL_ACTIVITY_SIZE_MAX, ///< With largest activity divided by domain size
     };
   protected:
     /// Which variable to select

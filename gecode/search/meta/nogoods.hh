@@ -7,8 +7,8 @@
  *     Christian Schulte, 2013
  *
  *  Last modified:
- *     $Date: 2013-07-09 12:24:39 +0200 (Tue, 09 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13832 $
+ *     $Date: 2013-10-30 16:01:30 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
+ *     $Revision: 14038 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -161,8 +161,8 @@ namespace Gecode { namespace Search { namespace Meta {
     while ((s < n) && (p.ds[s].truealt() > 0U))
       // Try whether this is a rightmost alternative
       if (p.ds[s].rightmost()) {
-        // No literal needed, directly commit
-        home.commit(*p.ds[s].choice(),p.ds[s].truealt());
+        // No literal needed, directly try to commit
+        home.trycommit(*p.ds[s].choice(),p.ds[s].truealt());
         s++;
       } else {
         // Prune using no-good literals
