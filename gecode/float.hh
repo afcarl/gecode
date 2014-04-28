@@ -1649,8 +1649,8 @@ namespace Gecode {
     enum Select {
       SEL_SPLIT_MIN, ///< Select values not greater than mean of smallest and largest value
       SEL_SPLIT_MAX, ///< Select values greater than mean of smallest and largest value
-      SEL_SPLIT_RND,  ///< Select values randomly which are not greater or not smaller than mean of largest and smallest value
-      SEL_VAL_COMMIT, ///< Select value according to user-defined functions
+      SEL_SPLIT_RND, ///< Select values randomly which are not greater or not smaller than mean of largest and smallest value
+      SEL_VAL_COMMIT ///< Select value according to user-defined functions
     };
   protected:
     /// Which value to select
