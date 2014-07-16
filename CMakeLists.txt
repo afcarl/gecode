@@ -44,6 +44,8 @@ project(GECODE)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
 include(CheckCXXCompilerFlag)
 if (GECODE_DISABLE_WARNINGS)
   if (MSVC)
