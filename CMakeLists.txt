@@ -41,9 +41,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project(GECODE)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 include(CheckCXXCompilerFlag)
@@ -362,6 +359,8 @@ foreach (lib support kernel search int set float
       endif ()
     endforeach ()
     add_library(gecode${lib} ${sources} ${${libupper}HDR})
+    target_include_directories(gecode${lib}
+      PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
   endif ()
 endforeach ()
 
