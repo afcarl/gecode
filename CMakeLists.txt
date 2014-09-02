@@ -37,7 +37,7 @@
 # CMake build script for Gecode.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 
 project(GECODE)
 
@@ -204,13 +204,22 @@ endif ()
 
 # Don't use Qt if GECODE_USE_QT is set to FALSE.
 if (NOT DEFINED GECODE_USE_QT OR GECODE_USE_QT)
-  find_package(Qt4)
-  if (QT4_FOUND)
-    set(GECODE_HAS_QT "/**/")
-    set(GECODE_HAS_GIST "/**/")
-    set(EXTRA_LIBS gist)
-    include(${QT_USE_FILE})
-  endif ()
+  find_package(Qt5 QUIET COMPONENTS Core Gui Widgets PrintSupport)
+  if (Qt5_FOUND)
+     set(GECODE_HAS_QT "/**/")
+     set(GECODE_HAS_GIST "/**/")
+     set(EXTRA_LIBS gist)
+     set(CMAKE_AUTOMOC TRUE)
+  else()
+    find_package(Qt4)
+    if (QT4_FOUND)
+      set(GECODE_HAS_QT "/**/")
+      set(GECODE_HAS_GIST "/**/")
+      set(EXTRA_LIBS gist)
+      set(CMAKE_AUTOMOC TRUE)
+      include(${QT_USE_FILE})
+    endif()
+  endif()
 endif ()
 
 include(CheckSymbolExists)
@@ -270,7 +279,7 @@ foreach (i RANGE ${length})
   if (line MATCHES "^#( *)undef (.*)\n")
     set(space "${CMAKE_MATCH_1}")
     set(var ${CMAKE_MATCH_2})
-    if (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*_H" AND NOT ${var}))
+    if (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*" AND NOT ${var}))
       set(line "/* #${space}undef ${var} */\n")
     else ()
       if ("${${var}}" STREQUAL "/**/" OR "${var}" STREQUAL "GECODE_VERSION_NUMBER" OR
@@ -301,7 +310,9 @@ file(WRITE ${GECODE_BINARY_DIR}/gecode/support/config.hpp
 #define GECODE_BUILD_SET
 #define GECODE_BUILD_FLOAT
 #define GECODE_BUILD_MINIMODEL
+#define GECODE_BUILD_FLATZINC
 #define GECODE_BUILD_DRIVER
+#define GECODE_BUILD_GIST
 
 ${CONFIG_OUT}")
 
@@ -350,7 +361,7 @@ foreach (lib support kernel search int set float
   endif ()
   if (${libupper}SRC)
     set(sources )
-    foreach (src ${${libupper}SRC})
+    foreach (src ${${libupper}SRC} ${${libupper}GENSRC})
       if ((src STREQUAL "gecode/support/thread/pthreads.cpp" AND MSVC) OR
            src STREQUAL "gecode/float/rounding.cpp")
         # ignore empty source files to prevent linker warnings
@@ -376,8 +387,12 @@ target_link_libraries(gecodedriver gecodeint)
 target_link_libraries(gecodeflatzinc gecodeminimodel gecodedriver)
 
 if (GECODE_HAS_QT)
-  target_link_libraries(gecodeflatzinc ${QT_LIBRARIES})
-  target_link_libraries(gecodegist ${QT_LIBRARIES})
+  if (Qt5_FOUND)
+    qt5_use_modules(gecodegist Widgets Gui PrintSupport)
+  else()
+    target_link_libraries(gecodegist ${QT_LIBRARIES})
+    target_link_libraries(gecodeflatzinc gecodegist ${QT_LIBRARIES})
+  endif()
 endif ()
 
 if (FLOATSRC)
@@ -387,6 +402,9 @@ endif ()
 
 add_executable(gecode-test ${TESTSRC} ${TESTHDR})
 target_link_libraries(gecode-test gecodeminimodel)
+
+add_executable(fzn-gecode ${FLATZINCEXESRC})
+target_link_libraries(fzn-gecode gecodeflatzinc gecodeminimodel gecodedriver)
 
 enable_testing()
 add_test(test gecode-test
