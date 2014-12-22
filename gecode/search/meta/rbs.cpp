@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-10-30 15:42:34 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14037 $
+ *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14262 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -44,37 +44,49 @@ namespace Gecode { namespace Search { namespace Meta {
   RBS::next(void) {
     while (true) {
       Space* n = e->next();
+      // The number of the restart has been incremented in the stop object
       unsigned long int i = stop->m_stat.restart;
       if (n != NULL) {
+        sslr++;
+        // The engine found a solution
         NoGoods& ng = e->nogoods();
+        // Reset number of no-goods found
         ng.ng(0);
-        master->constrain(*n);
-        master->master(i,n,ng);
+        CRI cri(i,sslr,e->statistics().fail,n,ng);
+        bool restart = master->master(cri);
         stop->m_stat.nogood += ng.ng();
-        stop->update(e->statistics());
         if (master->status(stop->m_stat) == SS_FAILED) {
+          stop->update(e->statistics());
           delete master;
           master = NULL;
           e->reset(NULL);
-        } else {
+        } else if (restart) {
+          stop->update(e->statistics());
           Space* slave = master;
           master = master->clone(shared);
-          slave->slave(i,n);
+          slave->slave(cri);
           e->reset(slave);
+          sslr = 0;
+          stop->m_stat.restart++;
         }
+        delete last;
+        last = n->clone();
         return n;
       } else if (e->stopped() && stop->enginestopped()) {
+        // The engine must perform a true restart
+        sslr = 0;
         NoGoods& ng = e->nogoods();
         ng.ng(0);
-        master->master(i,NULL,ng);
+        CRI cri(i,sslr,e->statistics().fail,last,ng);
+        (void) master->master(cri);
         stop->m_stat.nogood += ng.ng();
-        long unsigned int nl = (*co)();
+        long unsigned int nl = ++(*co);
         stop->limit(e->statistics(),nl);
         if (master->status(stop->m_stat) == SS_FAILED)
           return NULL;
         Space* slave = master;
         master = master->clone(shared);
-        slave->slave(i,n);
+        slave->slave(cri);
         e->reset(slave);
       } else {
         return NULL;
@@ -105,17 +117,16 @@ namespace Gecode { namespace Search { namespace Meta {
   RBS::reset(Space*) { 
   }
   
-  NoGoods RBS::eng;
-
   NoGoods&
   RBS::nogoods(void) {
-    return eng;
+    return NoGoods::eng;
   }
   
   RBS::~RBS(void) {
     // Deleting e also deletes stop
     delete e;
     delete master;
+    delete last;
     delete co;
   }
 

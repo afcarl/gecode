@@ -9,8 +9,8 @@
 #     Guido Tack, 2005
 #
 #  Last modified:
-#     $Date: 2013-08-22 20:49:24 +0200 (Thu, 22 Aug 2013) $ by $Author: schulte $
-#     $Revision: 13986 $
+#     $Date: 2014-11-04 13:05:57 +0100 (Tue, 04 Nov 2014) $ by $Author: schulte $
+#     $Revision: 14286 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -304,6 +304,7 @@ INTSRC0 = \
 	channel.cpp channel/link-single.cpp channel/link-multi.cpp \
 	unshare.cpp sequence.cpp \
 	bin-packing.cpp bin-packing/propagate.cpp \
+	bin-packing/conflict-graph.cpp \
 	unary.cpp cumulative.cpp cumulatives.cpp \
 	circuit.cpp no-overlap.cpp nvalues.cpp \
 	member.cpp branch/activity.cpp \
@@ -366,6 +367,7 @@ INTHDR0 = \
 	sequence.hh sequence/int.hpp sequence/view.hpp \
 	sequence/set-op.hpp sequence/violations.hpp \
 	bin-packing.hh bin-packing/propagate.hpp \
+	bin-packing/conflict-graph.hpp \
 	task.hh task/fwd-to-bwd.hpp task/array.hpp task/sort.hpp \
 	task/iter.hpp task/tree.hpp task/purge.hpp task/prop.hpp \
 	task/man-to-opt.hpp \
@@ -823,7 +825,7 @@ INTEXAMPLESRC0 =						\
 	all-interval langford-number warehouses	radiotherapy    \
 	word-square crossword open-shop car-sequencing sat      \
 	bin-packing knights tsp perfect-square schurs-lemma     \
-	dominating-queens colored-matrix
+	dominating-queens colored-matrix multi-bin-packing
 
 INTEXAMPLEHDR  = $(INTEXAMPLEHDR0:%=examples/%.hpp)
 INTEXAMPLESRC  = $(INTEXAMPLESRC0:%=examples/%.cpp)
@@ -1063,25 +1065,116 @@ SEARCHTESTSRC0 = \
 ARRAYTESTSRC0 = \
 	test/array.cpp
 
+FLATZINCTESTSRC0 = \
+  test/flatzinc.cpp \
+  test/flatzinc/bool_clause.cpp \
+  test/flatzinc/bug232.cpp \
+  test/flatzinc/bug319.cpp \
+  test/flatzinc/bugfix_r6746.cpp \
+  test/flatzinc/bugfix_r7854.cpp \
+  test/flatzinc/empty_domain_1.cpp \
+  test/flatzinc/empty_domain_2.cpp \
+  test/flatzinc/int_set_as_type1.cpp \
+  test/flatzinc/int_set_as_type2.cpp \
+  test/flatzinc/jobshop.cpp \
+  test/flatzinc/no_warn_empty_domain.cpp \
+  test/flatzinc/output_test.cpp \
+  test/flatzinc/queens4.cpp \
+  test/flatzinc/sat_arith1.cpp \
+  test/flatzinc/sat_array_bool_and.cpp \
+  test/flatzinc/sat_array_bool_or.cpp \
+  test/flatzinc/sat_cmp_reif.cpp \
+  test/flatzinc/sat_eq_reif.cpp \
+  test/flatzinc/test_approx_bnb.cpp \
+  test/flatzinc/test_array_just_right.cpp \
+  test/flatzinc/test_assigned_var_bounds_bad.cpp \
+  test/flatzinc/test_flatzinc_output_anns.cpp \
+  test/flatzinc/test_fzn_arith.cpp \
+  test/flatzinc/test_fzn_arrays.cpp \
+  test/flatzinc/test_fzn_coercions.cpp \
+  test/flatzinc/test_fzn_comparison.cpp \
+  test/flatzinc/test_fzn_logic.cpp \
+  test/flatzinc/test_fzn_sets.cpp \
+  test/flatzinc/test_int_div.cpp \
+  test/flatzinc/test_int_mod.cpp \
+  test/flatzinc/test_int_ranges_as_values.cpp \
+  test/flatzinc/test_seq_search.cpp \
+  test/flatzinc/2dpacking.cpp \
+  test/flatzinc/alpha.cpp \
+  test/flatzinc/battleships1.cpp \
+  test/flatzinc/battleships10.cpp \
+  test/flatzinc/battleships2.cpp \
+  test/flatzinc/battleships3.cpp \
+  test/flatzinc/battleships4.cpp \
+  test/flatzinc/battleships5.cpp \
+  test/flatzinc/battleships7.cpp \
+  test/flatzinc/battleships9.cpp \
+  test/flatzinc/blocksworld_instance_1.cpp \
+  test/flatzinc/blocksworld_instance_2.cpp \
+  test/flatzinc/cutstock.cpp \
+  test/flatzinc/eq20.cpp \
+  test/flatzinc/factory_planning_instance.cpp \
+  test/flatzinc/golomb.cpp \
+  test/flatzinc/jobshop2x2.cpp \
+  test/flatzinc/knights.cpp \
+  test/flatzinc/langford2.cpp \
+  test/flatzinc/latin_squares_fd.cpp \
+  test/flatzinc/multidim_knapsack_simple.cpp \
+  test/flatzinc/packing.cpp \
+  test/flatzinc/perfsq.cpp \
+  test/flatzinc/perfsq2.cpp \
+  test/flatzinc/photo.cpp \
+  test/flatzinc/product_fd.cpp \
+  test/flatzinc/product_lp.cpp \
+  test/flatzinc/quasigroup_qg5.cpp \
+  test/flatzinc/queen_cp2.cpp \
+  test/flatzinc/queen_ip.cpp \
+  test/flatzinc/radiation.cpp \
+  test/flatzinc/simple_sat.cpp \
+  test/flatzinc/singHoist2.cpp \
+  test/flatzinc/sudoku.cpp \
+  test/flatzinc/template_design.cpp \
+  test/flatzinc/tenpenki_1.cpp \
+  test/flatzinc/tenpenki_2.cpp \
+  test/flatzinc/tenpenki_3.cpp \
+  test/flatzinc/tenpenki_4.cpp \
+  test/flatzinc/tenpenki_5.cpp \
+  test/flatzinc/tenpenki_6.cpp \
+  test/flatzinc/warehouses.cpp \
+  test/flatzinc/warehouses_small.cpp \
+  test/flatzinc/wolf_goat_cabbage.cpp \
+  test/flatzinc/zebra.cpp \
+  test/flatzinc/magicsq_3.cpp \
+  test/flatzinc/magicsq_4.cpp \
+  test/flatzinc/magicsq_5.cpp \
+  test/flatzinc/oss.cpp \
+  test/flatzinc/steiner_triples.cpp \
+  test/flatzinc/timetabling.cpp \
+  test/flatzinc/trucking.cpp
+
 TESTSRC0 = test/test.cpp test/afc.cpp test/brancher-handle.cpp test/ldsb.cpp
 
 TESTSRC = \
 	$(TESTSRC0) $(INTTESTSRC0) $(SETTESTSRC0) $(FLOATTESTSRC0) \
 	$(BRANCHTESTSRC0) $(SEARCHTESTSRC0) \
-	$(ARRAYTESTSRC0)
+	$(ARRAYTESTSRC0) $(FLATZINCTESTSRC0)
 
 TESTHDR0 = \
 	test.hh test.hpp int.hh int.hpp set.hh set.hpp float.hh float.hpp \
-	branch.hh assign.hh
+	branch.hh assign.hh flatzinc.hh
 TESTHDR = $(TESTHDR0:%=test/%)
 TESTOBJ	= $(INTTESTOBJ) $(SETTESTOBJ) $(FLOATTESTOBJ) \
 	$(BRANCHTESTSRC0:%.cpp=%$(OBJSUFFIX)) \
 	$(SEARCHTESTSRC0:%.cpp=%$(OBJSUFFIX)) \
 	$(ARRAYTESTSRC0:%.cpp=%$(OBJSUFFIX)) \
+  $(FLATZINCTESTSRC0:%.cpp=%$(OBJSUFFIX)) \
 	$(TESTSRC0:%.cpp=%$(OBJSUFFIX))
 TESTSBJ	= $(TESTOBJ:%$(OBJSUFFIX)=%$(SBJSUFFIX))
 TESTEXE	= test/test$(EXESUFFIX)
-TESTBUILDDIRS = test test/int test/set test/float test/branch test/assign
+TESTBUILDDIRS = \
+	test test/int test/set test/float \
+	test/branch test/assign \
+	test/flatzinc
 
 BUILDDIRS = \
 	tools \
@@ -1899,7 +1992,7 @@ distdoc: doc
 
 clean:
 	$(RMF) *.stackdump core gmon.out \
-		vc70.pdb vc80.pdb vc90.pdb vc100.pdb vc110.pdb
+		vc70.pdb vc80.pdb vc90.pdb vc100.pdb vc110.pdb vc120.pdb
 	$(RMF) doxygen.log doxygen.hh doxygen.conf.use stat.hh \
 		 changelog.hh doxygen.hh license.hh header.html
 	$(RMF) $(ALLOBJ) $(ALLSBJ) $(ALLOBJ:%$(OBJSUFFIX)=%.pdb)

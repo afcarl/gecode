@@ -10,8 +10,8 @@
  *     Olof Sivertsson <olsi0767@student.uu.se>
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2014-09-22 01:35:47 +0200 (Mon, 22 Sep 2014) $ by $Author: mears $
+ *     $Revision: 14223 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -128,11 +128,6 @@ public:
           row[j] = expr(*this, p(j,i1) && p(j,i2));
         linear(*this, row, IRT_EQ, opt.lambda);
       }
-
-    // IntVarArray ints(*this, opt.v*opt.b, 0, 1);
-    // for (int i = 0 ; i < opt.v*opt.b ; i++)
-    //   rel(*this, ints[i] == _p[i]);
-    // Matrix<IntVarArray> intm(ints, opt.b, opt.v);
 
     if (opt.symmetry() == SYMMETRY_LDSB) {
       Symmetries s;

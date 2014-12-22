@@ -18,8 +18,8 @@
  *     Alexander Samoilov <alexander_samoilov@yahoo.com>
  *
  *  Last modified:
- *     $Date: 2013-10-30 16:01:30 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14038 $
+ *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14262 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -389,7 +389,7 @@ namespace Gecode {
 #ifdef GECODE_HAS_VAR_DISPOSE
     /// Return reference to variables (dispose)
     static VarImp<VIC>* vars_d(Space& home);
-    /// Set reference to variables (dispose)
+    /// %Set reference to variables (dispose)
     static void vars_d(Space& home, VarImp<VIC>* x);
 #endif
 
@@ -1008,7 +1008,7 @@ namespace Gecode {
     NGL* next(void) const;
     /// Mark literal as leaf or not
     void leaf(bool l);
-    /// Set pointer to next literal
+    /// %Set pointer to next literal
     void next(NGL* n);
     /// Add node \a n and mark it as leaf \a l and return \a n
     NGL* add(NGL* n, bool l);
@@ -1246,15 +1246,52 @@ namespace Gecode {
     NoGoods(void);
     /// Post no-goods
     GECODE_KERNEL_EXPORT 
-    virtual void post(Space& home);
+    virtual void post(Space& home) const;
     /// Return number of no-goods posted
     unsigned long int ng(void) const;
-    /// Set number of no-goods posted to \a n
+    /// %Set number of no-goods posted to \a n
     void ng(unsigned long int n);
     /// Destructor
     virtual ~NoGoods(void);
+    /// Empty no-goods
+    GECODE_KERNEL_EXPORT
+    static NoGoods eng;
   };
 
+  /**
+   * \brief Current restart information during search
+   *
+   */
+  class GECODE_VTABLE_EXPORT CRI {
+  protected:
+    /// Number of restarts
+    const unsigned long int r;
+    /// Number of solutions since last restart
+    const unsigned long int s;
+    /// Number of failures since last restart
+    const unsigned long int f;
+    /// Last solution found
+    const Space* l;
+    /// No-goods from restart
+    const NoGoods& ng;
+  public:
+    /// Constructor
+    CRI(unsigned long int r,
+        unsigned long int s,
+        unsigned long int f,
+        const Space* l,
+        NoGoods& ng);
+    /// Return number of restarts
+    unsigned long int restart(void) const;
+    /// Return number of solutions since last restart
+    unsigned long int solution(void) const;
+    /// Return number of failures since last restart
+    unsigned long int fail(void) const;
+    /// Return last solution found (possibly NULL)
+    const Space* last(void) const;
+    /// Return no-goods recorded from restart
+    const NoGoods& nogoods(void) const;
+  };
 
   /**
    * \brief %Space status
@@ -1418,7 +1455,7 @@ namespace Gecode {
     VarImpBase* _vars_d[AllVarConf::idx_d];
     /// Return reference to variables (dispose)
     template<class VIC> VarImpBase* vars_d(void) const;
-    /// Set reference to variables (dispose)
+    /// %Set reference to variables (dispose)
     template<class VIC> void vars_d(VarImpBase* x);
 #endif
     /// Update all cloned variables
@@ -1444,11 +1481,11 @@ namespace Gecode {
      * one.
      */
     unsigned int _wmp_afc;
-    /// Set that AFC information must be recorded
+    /// %Set that AFC information must be recorded
     void afc_enable(void);
     /// Whether AFC information must be recorded
     bool afc_enabled(void) const;
-    /// Set number of wmp propagators to \a n
+    /// %Set number of wmp propagators to \a n
     void wmp(unsigned int n);
     /// Return number of wmp propagators
     unsigned int wmp(void) const;
@@ -1593,31 +1630,30 @@ namespace Gecode {
      *
      * A restart meta search engine calls this function on its
      * master space whenever it finds a solution or exploration
-     * restarts. \a i is the number of the restart. \a s is 
-     * either the solution space or NULL. \a ng are nogoods recorded
-     * from the last restart (only if \a s is not a solution).
+     * restarts. \a cri contains information about the current restart.
      *
-     * The default function does nothing.
+     * If a solution has been found, then search will continue with a restart
+     * when the function returns true, otherwise search will continue.
+     *
+     * The default function posts no-goods obtained from \a cri.
      *
      * \ingroup TaskModelScript
      */
     GECODE_KERNEL_EXPORT 
-    virtual void master(unsigned long int i, const Space* s,
-                        NoGoods& ng);
+    virtual bool master(const CRI& cri);
     /**
      * \brief Slave configuration function for restart meta search engine
      *
      * A restart meta search engine calls this function on its
      * slave space whenever it finds a solution or exploration
-     * restarts. \a i is the number of the restart. \a s is 
-     * either the solution space or NULL.
+     * restarts.  \a cri contains information about the current restart.
      *
      * The default function does nothing.
      *
      * \ingroup TaskModelScript
      */
     GECODE_KERNEL_EXPORT 
-    virtual void slave(unsigned long int i, const Space* s);
+    virtual void slave(const CRI& cri);
     /**
      * \brief Allocate memory from heap for new space
      * \ingroup TaskModelScript
@@ -2263,7 +2299,7 @@ namespace Gecode {
 
     /// \name Low-level support for AFC
     //@{
-    /// Set AFC decay factor to \a d
+    /// %Set AFC decay factor to \a d
     GECODE_KERNEL_EXPORT
     void afc_decay(double d);
     /// Return AFC decay factor
@@ -2649,6 +2685,40 @@ namespace Gecode {
   }
   forceinline
   NoGoods::~NoGoods(void) {}
+
+
+  /*
+   * Current restart information
+   */
+  forceinline
+  CRI::CRI(unsigned long int r0,
+           unsigned long int s0,
+           unsigned long int f0,
+           const Space* l0,
+           NoGoods& ng0)
+    : r(r0), s(s0), f(f0), l(l0), ng(ng0) {}
+
+  forceinline unsigned long int
+  CRI::restart(void) const {
+    return r;
+  }
+  forceinline unsigned long int
+  CRI::solution(void) const {
+    return s;
+  }
+  forceinline unsigned long int
+  CRI::fail(void) const {
+    return f;
+  }
+  forceinline const Space*
+  CRI::last(void) const {
+    return l;
+  }
+  forceinline const NoGoods&
+  CRI::nogoods(void) const {
+    return ng;
+  }
+
 
 
   /*

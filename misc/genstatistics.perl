@@ -7,8 +7,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2013-02-20 18:27:38 +0100 (Wed, 20 Feb 2013) $ by $Author: schulte $
-#     $Revision: 13347 $
+#     $Date: 2014-11-04 13:28:32 +0100 (Tue, 04 Nov 2014) $ by $Author: schulte $
+#     $Revision: 14287 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -40,7 +40,7 @@
 
 @catorder = ("core","memory","var","prop","branch","post",
 	     "int","set","float","minimodel","stress","any",
-	     "sequential","parallel","search",
+	     "sequential","parallel","search","flatzinc",
 	     "other");
 
 $modclear{"kernel"} = "Kernel";
@@ -74,6 +74,7 @@ $catclear{"float"} = "Float variables and constraints";
 $catclear{"minimodel"} = "Minimal modeling support";
 $catclear{"stress"} = "System stress";
 $catclear{"search"} = "Search";
+$catclear{"flatzinc"} = "FlatZinc interpreter";
 $catclear{"ignore"} = "ignored";
 
 #

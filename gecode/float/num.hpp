@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2012-03-30 17:29:29 +0200 (Fri, 30 Mar 2012) $ by $Author: schulte $
- *     $Revision: 12675 $
+ *     $Date: 2014-10-03 15:34:37 +0200 (Fri, 03 Oct 2014) $ by $Author: schulte $
+ *     $Revision: 14241 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -39,27 +39,27 @@ namespace Gecode {
 
   forceinline FloatNum
   pi_half_lower(void) {
-    return boost::numeric::interval_lib::constants::pi_half_lower<FloatNum>();
+    return gecode_boost::numeric::interval_lib::constants::pi_half_lower<FloatNum>();
   }
   forceinline FloatNum
   pi_half_upper(void) {
-    return boost::numeric::interval_lib::constants::pi_half_upper<FloatNum>();
+    return gecode_boost::numeric::interval_lib::constants::pi_half_upper<FloatNum>();
   }
   forceinline FloatNum
   pi_lower(void) {
-    return boost::numeric::interval_lib::constants::pi_lower<FloatNum>();
+    return gecode_boost::numeric::interval_lib::constants::pi_lower<FloatNum>();
   }
   forceinline FloatNum
   pi_upper(void) {
-    return boost::numeric::interval_lib::constants::pi_upper<FloatNum>();
+    return gecode_boost::numeric::interval_lib::constants::pi_upper<FloatNum>();
   }
   forceinline FloatNum
   pi_twice_lower(void) {
-    return boost::numeric::interval_lib::constants::pi_twice_lower<FloatNum>();
+    return gecode_boost::numeric::interval_lib::constants::pi_twice_lower<FloatNum>();
   }
   forceinline FloatNum
   pi_twice_upper(void) {
-    return boost::numeric::interval_lib::constants::pi_twice_upper<FloatNum>();
+    return gecode_boost::numeric::interval_lib::constants::pi_twice_upper<FloatNum>();
   }
 }
 

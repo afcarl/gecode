@@ -11,8 +11,8 @@
 #     Mikael Lagerkvist, 2008
 #
 #  Last modified:
-#     $Date: 2013-03-08 17:29:13 +0100 (Fri, 08 Mar 2013) $ by $Author: schulte $
-#     $Revision: 13486 $
+#     $Date: 2014-09-03 11:19:27 +0200 (Wed, 03 Sep 2014) $ by $Author: schulte $
+#     $Revision: 14221 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -192,7 +192,7 @@ while ($l = <>) {
       $rb = $rb . ", thanks to $thanks";
     }
     if (!($author eq "")) {
-      $rb = $rb . " , contributed by $author";
+      $rb = $rb . ", contributed by $author";
     }
     if (!($more eq "")) {
 	$more =~ s/^        //;

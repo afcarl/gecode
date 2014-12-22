@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13939 $
+ *     $Date: 2014-05-27 14:57:59 +0200 (Tue, 27 May 2014) $ by $Author: schulte $
+ *     $Revision: 14124 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -100,6 +100,8 @@ namespace Gecode {
 
   void
   Activity::decay(Space&, double d) {
+    if ((d < 0.0) || (d > 1.0))
+      throw IllegalDecay("Activity");
     acquire();
     storage->d = d;
     release();

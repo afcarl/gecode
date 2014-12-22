@@ -11,8 +11,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13939 $
+ *     $Date: 2014-10-03 15:34:37 +0200 (Fri, 03 Oct 2014) $ by $Author: schulte $
+ *     $Revision: 14241 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -135,10 +135,10 @@ namespace Gecode { namespace Float {
    * \ingroup TaskModelFloatVars
    */
   class Rounding : 
-    public boost::numeric::interval_lib::rounded_arith_opp<FloatNum> {
+    public gecode_boost::numeric::interval_lib::rounded_arith_opp<FloatNum> {
   protected:
     /// Base class
-    typedef boost::numeric::interval_lib::rounded_arith_opp<FloatNum> Base;
+    typedef gecode_boost::numeric::interval_lib::rounded_arith_opp<FloatNum> Base;
   public:
     /// \name Constructor and destructor
     //@{
@@ -400,13 +400,13 @@ namespace Gecode {
     friend FloatVal Float::hull(const FloatNum& x, const FloatNum& y);
   protected:
     /// Used rounding policies
-    typedef boost::numeric::interval_lib::save_state<Float::Rounding> R;
+    typedef gecode_boost::numeric::interval_lib::save_state<Float::Rounding> R;
     /// Used checking policy
-    typedef boost::numeric::interval_lib::checking_strict<FloatNum> P;
+    typedef gecode_boost::numeric::interval_lib::checking_strict<FloatNum> P;
     /// Implementation type for float value
-    typedef boost::numeric::interval
+    typedef gecode_boost::numeric::interval
       <FloatNum,
-       boost::numeric::interval_lib::policies<R, P> >
+       gecode_boost::numeric::interval_lib::policies<R, P> >
     FloatValImpType;
     /// Implementation of float value
     FloatValImpType x;
@@ -1649,8 +1649,8 @@ namespace Gecode {
     enum Select {
       SEL_SPLIT_MIN, ///< Select values not greater than mean of smallest and largest value
       SEL_SPLIT_MAX, ///< Select values greater than mean of smallest and largest value
-      SEL_SPLIT_RND, ///< Select values randomly which are not greater or not smaller than mean of largest and smallest value
-      SEL_VAL_COMMIT ///< Select value according to user-defined functions
+      SEL_SPLIT_RND,  ///< Select values randomly which are not greater or not smaller than mean of largest and smallest value
+      SEL_VAL_COMMIT  ///< Select value according to user-defined functions
     };
   protected:
     /// Which value to select

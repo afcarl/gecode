@@ -7,8 +7,8 @@
  *     Christian Schulte, 2003
  *
  *  Last modified:
- *     $Date: 2013-07-12 18:20:11 +0200 (Fri, 12 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13877 $
+ *     $Date: 2014-10-21 17:09:50 +0200 (Tue, 21 Oct 2014) $ by $Author: schulte $
+ *     $Revision: 14258 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -146,7 +146,7 @@ namespace Gecode { namespace Search { namespace Parallel {
     /// Steal work at depth \a d
     Space* steal(Worker& stat, unsigned long int& d);
     /// Post no-goods
-    void virtual post(Space& home);
+    void virtual post(Space& home) const;
   };
 
 

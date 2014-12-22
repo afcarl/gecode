@@ -11,8 +11,8 @@
  *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2013-08-29 02:46:26 +0200 (Thu, 29 Aug 2013) $ by $Author: tack $
- *     $Revision: 13990 $
+ *     $Date: 2014-11-05 00:52:54 +0100 (Wed, 05 Nov 2014) $ by $Author: tack $
+ *     $Revision: 14293 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -277,7 +277,7 @@ namespace Gecode { namespace FlatZinc {
 
   void
   BranchInformation::init(void) {
-    assert(object() == 0);
+    assert(object() == NULL);
     object(new BranchInformationO());
   }
 
@@ -820,14 +820,30 @@ namespace Gecode { namespace FlatZinc {
   }
 #endif
 
+  namespace {
+    struct ConExprOrder {
+      bool operator() (ConExpr* ce0, ConExpr* ce1) {
+        return ce0->args->a.size() < ce1->args->a.size();
+      }
+    };
+  }
+
   void
-  FlatZincSpace::postConstraint(const ConExpr& ce, AST::Node* ann) {
-    try {
-      registry().post(*this, ce, ann);
-    } catch (Gecode::Exception& e) {
-      throw FlatZinc::Error("Gecode", e.what());
-    } catch (AST::TypeError& e) {
-      throw FlatZinc::Error("Type error", e.what());
+  FlatZincSpace::postConstraints(std::vector<ConExpr*>& ces) {
+    ConExprOrder ceo;
+    std::sort(ces.begin(), ces.end(), ceo);
+    
+    for (unsigned int i=0; i<ces.size(); i++) {
+      const ConExpr& ce = *ces[i];
+      try {
+        registry().post(*this, ce);
+      } catch (Gecode::Exception& e) {
+        throw FlatZinc::Error("Gecode", e.what());
+      } catch (AST::TypeError& e) {
+        throw FlatZinc::Error("Type error", e.what());
+      }
+      delete ces[i];
+      ces[i] = NULL;
     }
   }
 
@@ -1131,8 +1147,9 @@ namespace Gecode { namespace FlatZinc {
       }
     }
 
-    if (iv_sol.size() > 0)
+    if (iv_sol.size() > 0) {
       branch(*this, iv_sol, def_int_varsel, def_int_valsel);
+    }
     if (bv_sol.size() > 0)
       branch(*this, bv_sol, def_bool_varsel, def_bool_valsel);
 #ifdef GECODE_HAS_FLOAT_VARS
@@ -1211,15 +1228,27 @@ namespace Gecode { namespace FlatZinc {
     n_aux += fv_aux.size();
 #endif
     if (n_aux > 0) {
-      AuxVarBrancher::post(*this, def_int_varsel, def_int_valsel,
-                           def_bool_varsel, def_bool_valsel
+      if (_method == SAT) {
+        AuxVarBrancher::post(*this, def_int_varsel, def_int_valsel,
+                             def_bool_varsel, def_bool_valsel
 #ifdef GECODE_HAS_SET_VARS
-                           , def_set_varsel, def_set_valsel
+                             , def_set_varsel, def_set_valsel
 #endif
 #ifdef GECODE_HAS_FLOAT_VARS
-                           , def_float_varsel, def_float_valsel
+                             , def_float_varsel, def_float_valsel
 #endif
-                           );
+                             );
+      } else {
+        branch(*this,iv_aux,def_int_varsel,def_int_valsel);
+        branch(*this,bv_aux,def_bool_varsel,def_bool_valsel);
+  #ifdef GECODE_HAS_SET_VARS
+        branch(*this,sv_aux,def_set_varsel,def_set_valsel);
+  #endif
+  #ifdef GECODE_HAS_FLOAT_VARS
+        branch(*this,fv_aux,def_float_varsel,def_float_valsel);
+  #endif
+        
+      }
     }
   }
 
@@ -1443,8 +1472,11 @@ namespace Gecode { namespace FlatZinc {
     if (opt.interrupt())
       Driver::CombinedStop::installCtrlHandler(true);
     Meta<Engine,FlatZincSpace> se(this,o);
-    int noOfSolutions = _method == SAT ? opt.solutions() : 0;
-    bool printAll = _method == SAT || opt.allSolutions();
+    int noOfSolutions = opt.solutions();
+    if (noOfSolutions == -1) {
+      noOfSolutions = (_method == SAT) ? 1 : 0;
+    }
+    bool printAll = _method == SAT || opt.allSolutions() || noOfSolutions != 0;
     int findSol = noOfSolutions;
     FlatZincSpace* sol = NULL;
     while (FlatZincSpace* next_sol = se.next()) {
@@ -2091,6 +2123,22 @@ namespace Gecode { namespace FlatZinc {
         }
       }
     }
+#else
+    (void) out;
+    (void) ai;
+    (void) iv1;
+    (void) iv2;
+    (void) bv1;
+    (void) bv2;
+#ifdef GECODE_HAS_SET_VARS
+    (void) sv1;
+    (void) sv2;
+#endif
+#ifdef GECODE_HAS_FLOAT_VARS
+    (void) fv1;
+    (void) fv2;
+#endif
+    
 #endif
   }
 

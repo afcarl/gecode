@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2013-10-30 16:01:30 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14038 $
+ *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14262 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -79,9 +79,10 @@ namespace Gecode {
    *
    */
   void
-  NoGoods::post(Space&) {
+  NoGoods::post(Space&) const {
   }
 
+  NoGoods NoGoods::eng;
 
   /*
    * Brancher
@@ -644,13 +645,17 @@ namespace Gecode {
   Space::constrain(const Space&) {
   }
 
-  void
-  Space::master(unsigned long int, const Space*, NoGoods& ng) {
-    ng.post(*this);
+  bool
+  Space::master(const CRI& cri) {
+    if (cri.last() != NULL)
+      constrain(*cri.last());
+    cri.nogoods().post(*this);
+    // Perform a restart even if a solution has been found
+    return true;
   }
 
   void
-  Space::slave(unsigned long int, const Space*) {
+  Space::slave(const CRI&) {
   }
 
   void

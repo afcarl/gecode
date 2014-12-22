@@ -6,9 +6,9 @@ dnl Copyright:
 dnl   Guido Tack, 2004, 2005
 dnl
 dnl Last modified:
-dnl   $Date: 2013-10-15 00:46:56 +0200 (Tue, 15 Oct 2013) $
+dnl   $Date: 2014-08-03 10:09:21 +0200 (Sun, 03 Aug 2014) $
 dnl   by $Author: tack $
-dnl   $Revision: 14025 $
+dnl   $Revision: 14186 $
 dnl
 dnl This file is part of Gecode, the generic constraint
 dnl development environment:
@@ -1447,8 +1447,8 @@ AC_DEFUN([AC_GECODE_FLEXBISON],
       AC_MSG_RESULT(no)
       AC_SUBST(HAVE_FLEXBISON, "no")
    else
-      if flex --version | grep ' 2\.5\.3[[3-9]]$' >/dev/null 2>&1 ||
-         flex --version | grep ' 2\.5\.4[[0-9]]$' >/dev/null 2>&1 ||
+      if flex --version | grep ' 2\.5\.3[[3-9]].*$' >/dev/null 2>&1 ||
+         flex --version | grep ' 2\.5\.4[[0-9]].*$' >/dev/null 2>&1 ||
          flex --version | grep ' 2\.[[6-9]]\.[[0-9]]*$' >/dev/null 2>&1
       then
         AC_MSG_RESULT(yes)
@@ -1459,7 +1459,7 @@ AC_DEFUN([AC_GECODE_FLEXBISON],
           AC_SUBST(HAVE_FLEXBISON, "no")
         else
           if bison --version | \
-            grep ' 2\.[[3-9]]\($\|\.[[0-9]]$\)' >/dev/null 2>&1
+            grep -e ' 2\.[[3-9]][[0-9]]*' >/dev/null 2>&1
           then
             AC_MSG_RESULT(yes)
             AC_SUBST(HAVE_FLEXBISON, "yes")

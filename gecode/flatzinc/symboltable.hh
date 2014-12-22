@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2010-07-28 16:43:32 +0200 (Wed, 28 Jul 2010) $ by $Author: tack $
- *     $Revision: 11293 $
+ *     $Date: 2014-11-05 00:52:18 +0100 (Wed, 05 Nov 2014) $ by $Author: tack $
+ *     $Revision: 14292 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -40,7 +40,9 @@
 
 #include <vector>
 
-#ifdef GECODE_HAS_GNU_HASH_MAP
+#ifdef GECODE_HAS_UNORDERED_MAP
+#include <unordered_map>
+#elif defined(GECODE_HAS_GNU_HASH_MAP)
 #include <ext/hash_map>
 #else
 #include <map>
@@ -52,7 +54,9 @@ namespace Gecode { namespace FlatZinc {
   template<class Val>
   class SymbolTable {
   private:
-#ifdef GECODE_HAS_GNU_HASH_MAP
+#ifdef GECODE_HAS_UNORDERED_MAP
+    typedef std::unordered_map<std::string,Val> mymap;
+#elif defined(GECODE_HAS_GNU_HASH_MAP)
     class hashString {
     public:
       size_t operator ()(const std::string& x) const {

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2013
  *
  *  Last modified:
- *     $Date: 2013-07-08 19:23:25 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13827 $
+ *     $Date: 2013-11-08 09:45:57 +0100 (Fri, 08 Nov 2013) $ by $Author: schulte $
+ *     $Revision: 14069 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -149,7 +149,7 @@ namespace Gecode { namespace Int { namespace Branch {
   template<class View>
   ExecStatus
   GqNGL<View>::prune(Space& home) {
-    return me_failed(x.lq(home,n)) ? ES_FAILED : ES_OK;
+    return me_failed(x.le(home,n)) ? ES_FAILED : ES_OK;
   }
 
 }}}

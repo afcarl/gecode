@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2009-09-10 11:25:57 +0200 (Thu, 10 Sep 2009) $ by $Author: tack $
- *     $Revision: 9698 $
+ *     $Date: 2014-08-07 05:31:59 +0200 (Thu, 07 Aug 2014) $ by $Author: tack $
+ *     $Revision: 14189 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -49,6 +49,7 @@ namespace Gecode { namespace FlatZinc {
   public:
     bool operator()(void) const { return _some; }
     const Val& some(void) const { return _v; }
+    Val& some(void) { return _v; }
     static Option<Val> none(void) {
       Option<Val> o;
       o._some = false;

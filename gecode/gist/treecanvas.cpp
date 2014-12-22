@@ -7,8 +7,8 @@
  *     Guido Tack, 2006
  *
  *  Last modified:
- *     $Date: 2013-05-06 09:02:17 +0200 (Mon, 06 May 2013) $ by $Author: tack $
- *     $Revision: 13613 $
+ *     $Date: 2014-08-13 02:27:39 +0200 (Wed, 13 Aug 2014) $ by $Author: tack $
+ *     $Revision: 14196 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -98,9 +98,6 @@ namespace Gecode { namespace Gist {
               Qt::BlockingQueuedConnection);
       connect(this, SIGNAL(solution(const Space*)),
               this, SLOT(inspectSolution(const Space*)));
-      connect(&searcher, SIGNAL(solution(const Space*)),
-              this, SLOT(inspectSolution(const Space*)),
-              Qt::BlockingQueuedConnection);
 
       connect(&searcher, SIGNAL(moveToNode(VisualNode*,bool)),
               this, SLOT(setCurrentNode(VisualNode*,bool)),
@@ -414,6 +411,8 @@ namespace Gecode { namespace Gist {
               nodeCount++;
             kids = n->getNumberOfChildNodes(*t->na, t->curBest, t->stats,
                                             t->c_d, t->a_d);
+            if (t->moveDuringSearch)
+              emit moveToNode(n,false);
             if (kids == 0) {
               if (n->getStatus() == SOLVED) {
                 assert(n->hasCopy());
@@ -433,8 +432,6 @@ namespace Gecode { namespace Gist {
                          static_cast<long unsigned int>(depth+stck.size()));
             }
           }
-          if (t->moveDuringSearch)
-            emit moveToNode(n,false);
         }
       }
       node->dirtyUp(*t->na);

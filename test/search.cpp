@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2013-07-15 12:02:18 +0200 (Mon, 15 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13880 $
+ *     $Date: 2014-10-21 17:09:50 +0200 (Tue, 21 Oct 2014) $ by $Author: schulte $
+ *     $Revision: 14258 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -83,6 +83,12 @@ namespace Test {
       virtual int solutions(void) const = 0;
       /// Verify that this is best solution
       virtual bool best(void) const = 0;
+      /// Master configuration function that does not restart
+      virtual bool master(const CRI& cri) {
+        if (cri.last() != NULL)
+          constrain(*cri.last());
+        return false;
+      }
     };
 
     /// Space that immediately fails

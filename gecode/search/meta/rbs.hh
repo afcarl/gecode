@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14262 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -45,20 +45,21 @@ namespace Gecode { namespace Search { namespace Meta {
 
   /// Engine for restart-based search
   class RBS : public Engine {
-  private:
+  protected:
     /// The actual engine
     Engine* e;
     /// The master space to restart from
     Space* master;
+    /// The last solution space (possibly NULL)
+    Space* last;
     /// The cutoff object
     Cutoff* co;
     /// The stop control object
     MetaStop* stop;
     /// Whether the slave can be shared with the master
     bool shared;
-    /// Empty no-goods
-    GECODE_SEARCH_EXPORT
-    static NoGoods eng;
+    /// How many solutions since the last restart
+    unsigned long int sslr;
   public:
     /// Constructor
     RBS(Space* s, Cutoff* co0, MetaStop* stop0,
@@ -80,8 +81,8 @@ namespace Gecode { namespace Search { namespace Meta {
   forceinline
   RBS::RBS(Space* s, Cutoff* co0, MetaStop* stop0,
            Engine* e0, const Options& opt)
-    : e(e0), master(s), co(co0), stop(stop0), 
-      shared(opt.threads == 1) {
+    : e(e0), master(s), last(NULL), co(co0), stop(stop0), 
+      shared(opt.threads == 1), sslr(0) {
     stop->limit(Statistics(),(*co)());
   }
 

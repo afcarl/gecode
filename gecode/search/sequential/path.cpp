@@ -7,8 +7,8 @@
  *     Christian Schulte, 2013
  *
  *  Last modified:
- *     $Date: 2013-07-09 12:24:39 +0200 (Tue, 09 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13832 $
+ *     $Date: 2014-10-21 17:09:50 +0200 (Tue, 21 Oct 2014) $ by $Author: schulte $
+ *     $Revision: 14258 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -40,7 +40,7 @@
 namespace Gecode { namespace Search { namespace Sequential {
 
   void
-  Path::post(Space& home) {
+  Path::post(Space& home) const {
     GECODE_ES_FAIL(Meta::NoGoodsProp::post(home,*this));
   }
 

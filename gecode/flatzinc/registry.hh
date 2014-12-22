@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2012-05-10 11:48:53 +0200 (Thu, 10 May 2012) $ by $Author: tack $
- *     $Revision: 12805 $
+ *     $Date: 2014-08-07 05:31:59 +0200 (Thu, 07 Aug 2014) $ by $Author: tack $
+ *     $Revision: 14189 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,7 +54,7 @@ namespace Gecode { namespace FlatZinc {
     /// Add posting function \a p with identifier \a id
     void add(const std::string& id, poster p);
     /// Post constraint specified by \a ce
-    void post(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann);
+    void post(FlatZincSpace& s, const ConExpr& ce);
 
   private:
     /// The actual registry

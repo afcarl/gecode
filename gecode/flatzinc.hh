@@ -11,8 +11,8 @@
  *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:37:54 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13821 $
+ *     $Date: 2014-10-27 06:39:28 +0100 (Mon, 27 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14280 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -206,7 +206,7 @@ namespace Gecode { namespace FlatZinc {
   protected:
       /// \name Search options
       //@{
-      Gecode::Driver::UnsignedIntOption _solutions; ///< How many solutions
+      Gecode::Driver::IntOption         _solutions; ///< How many solutions
       Gecode::Driver::BoolOption        _allSolutions; ///< Return all solutions
       Gecode::Driver::DoubleOption      _threads;   ///< How many threads to use
       Gecode::Driver::BoolOption        _free; ///< Use free search
@@ -235,11 +235,11 @@ namespace Gecode { namespace FlatZinc {
     /// Constructor
     FlatZincOptions(const char* s)
     : Gecode::BaseOptions(s),
-      _solutions("-n","number of solutions (0 = all)",1),
+      _solutions("-n","number of solutions (0 = all, -1 = one/best)",-1),
       _allSolutions("-a", "return all solutions (equal to -solutions 0)"),
       _threads("-p","number of threads (0 = #processing units)",
                Gecode::Search::Config::threads),
-      _free("--free", "no need to follow search-specification"),
+      _free("-f", "free search, no need to follow search-specification"),
       _decay("-decay","decay factor",0.99),
       _c_d("-c-d","recomputation commit distance",Gecode::Search::Config::c_d),
       _a_d("-a-d","recomputation adaption distance",Gecode::Search::Config::a_d),
@@ -282,7 +282,7 @@ namespace Gecode { namespace FlatZinc {
 
     void parse(int& argc, char* argv[]) {
       Gecode::BaseOptions::parse(argc,argv);
-      if (_allSolutions.value()) {
+      if (_allSolutions.value() && _solutions.value()==0) {
         _solutions.value(0);
       }
       if (_stat.value())
@@ -296,7 +296,7 @@ namespace Gecode { namespace FlatZinc {
       Gecode::BaseOptions::help();
     }
   
-    unsigned int solutions(void) const { return _solutions.value(); }
+    int solutions(void) const { return _solutions.value(); }
     bool allSolutions(void) const { return _allSolutions.value(); }
     double threads(void) const { return _threads.value(); }
     bool free(void) const { return _free.value(); }
@@ -321,6 +321,7 @@ namespace Gecode { namespace FlatZinc {
     unsigned int nogoods_limit(void) const { return _nogoods_limit.value(); }
     bool interrupt(void) const { return _interrupt.value(); }
 
+    void allSolutions(bool b) { _allSolutions.value(b); }
   };
 
   class BranchInformation : public SharedHandle {
@@ -450,7 +451,7 @@ namespace Gecode { namespace FlatZinc {
     void newFloatVar(FloatVarSpec* vs);
   
     /// Post a constraint specified by \a ce
-    void postConstraint(const ConExpr& ce, AST::Node* annotation);
+    void postConstraints(std::vector<ConExpr*>& ces);
   
     /// Post the solve item
     void solve(AST::Array* annotation);
@@ -558,7 +559,7 @@ namespace Gecode { namespace FlatZinc {
   };
 
   /// %Exception class for %FlatZinc errors
-  class Error {
+  class GECODE_VTABLE_EXPORT Error {
   private:
     const std::string msg;
   public:

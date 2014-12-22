@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2012-03-30 05:58:02 +0200 (Fri, 30 Mar 2012) $ by $Author: tack $
- *     $Revision: 12665 $
+ *     $Date: 2014-08-07 05:31:59 +0200 (Thu, 07 Aug 2014) $ by $Author: tack $
+ *     $Revision: 14189 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -212,6 +212,7 @@ namespace Gecode { namespace FlatZinc {
     std::vector<int> arrays;
     std::vector<AST::SetLit> setvals;
     std::vector<double> floatvals;
+    std::vector<ConExpr*> constraints;
 
     std::vector<ConExpr*> domainConstraints;
 

@@ -9,8 +9,8 @@
  *     Mikael Lagerkvist, 2006
  *
  *  Last modified:
- *     $Date: 2013-03-14 21:16:41 +0100 (Thu, 14 Mar 2013) $ by $Author: schulte $
- *     $Revision: 13539 $
+ *     $Date: 2013-11-15 14:53:16 +0100 (Fri, 15 Nov 2013) $ by $Author: schulte $
+ *     $Revision: 14077 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -54,9 +54,10 @@ namespace Test { namespace Int {
      class Distinct : public Test {
      public:
        /// Create and register test
-       Distinct(const Gecode::IntSet& d0, Gecode::IntConLevel icl)
+       Distinct(const Gecode::IntSet& d0, Gecode::IntConLevel icl,
+                int n=6)
          : Test(std::string(useCount ? "Count::Distinct::" : "Distinct::")+
-                str(icl)+"::Sparse",6,d0,false,icl) {}
+                str(icl)+"::Sparse::"+str(n),n,d0,false,icl) {}
        /// Create and register test
        Distinct(int min, int max, Gecode::IntConLevel icl)
          : Test(std::string(useCount ? "Count::Distinct::" : "Distinct::")+
@@ -205,6 +206,13 @@ namespace Test { namespace Int {
 
      const int v[7] = {-1001,-1000,-10,0,10,1000,1001};
      Gecode::IntSet d(v,7);
+     const int vl[6] = {Gecode::Int::Limits::min+0,
+                        Gecode::Int::Limits::min+1,
+                        Gecode::Int::Limits::min+2,
+                        Gecode::Int::Limits::max-2,
+                        Gecode::Int::Limits::max-1,
+                        Gecode::Int::Limits::max-0};
+     Gecode::IntSet dl(vl,6);
 
      Distinct<false> dom_d(-3,3,Gecode::ICL_DOM);
      Distinct<false> bnd_d(-3,3,Gecode::ICL_BND);
@@ -212,6 +220,10 @@ namespace Test { namespace Int {
      Distinct<false> dom_s(d,Gecode::ICL_DOM);
      Distinct<false> bnd_s(d,Gecode::ICL_BND);
      Distinct<false> val_s(d,Gecode::ICL_VAL);
+
+     Distinct<false> dom_l(dl,Gecode::ICL_DOM,5);
+     Distinct<false> bnd_l(dl,Gecode::ICL_BND,5);
+     Distinct<false> val_l(dl,Gecode::ICL_VAL,5);
 
      Distinct<true> count_dom_d(-3,3,Gecode::ICL_DOM);
      Distinct<true> count_bnd_d(-3,3,Gecode::ICL_BND);

@@ -6,8 +6,8 @@
 #     Victor Zverovich, 2013
 #
 #  Last modified:
-#     $Date: 2013-11-04 16:51:07 -0800 (Mon, 04 Nov 2013) $ by $Author: tack $
-#     $Revision: 14054 $
+#     $Date: 2014-10-28 11:03:22 +0100 (Tue, 28 Oct 2014) $ by $Author: tack $
+#     $Revision: 14281 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -389,6 +389,7 @@ target_link_libraries(gecodeflatzinc gecodeminimodel gecodedriver)
 if (GECODE_HAS_QT)
   if (Qt5_FOUND)
     qt5_use_modules(gecodegist Widgets Gui PrintSupport)
+    qt5_use_modules(gecodeflatzinc Core)
   else()
     target_link_libraries(gecodegist ${QT_LIBRARIES})
     target_link_libraries(gecodeflatzinc gecodegist ${QT_LIBRARIES})
@@ -404,7 +405,14 @@ add_executable(gecode-test ${TESTSRC} ${TESTHDR})
 target_link_libraries(gecode-test gecodeminimodel)
 
 add_executable(fzn-gecode ${FLATZINCEXESRC})
-target_link_libraries(fzn-gecode gecodeflatzinc gecodeminimodel gecodedriver)
+target_link_libraries(fzn-gecode gecodeflatzinc gecodegist gecodeminimodel gecodedriver)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+option(BUILD_EXAMPLES "Build examples." OFF) 
+if (${BUILD_EXAMPLES})
+  add_subdirectory(examples)
+endif()
 
 enable_testing()
 add_test(test gecode-test

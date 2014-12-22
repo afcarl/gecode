@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2011-08-23 08:45:41 +0200 (Tue, 23 Aug 2011) $ by $Author: tack $
- *     $Revision: 12336 $
+ *     $Date: 2014-08-07 05:31:59 +0200 (Thu, 07 Aug 2014) $ by $Author: tack $
+ *     $Revision: 14189 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -50,8 +50,10 @@ namespace Gecode { namespace FlatZinc {
     std::string id;
     /// Constraint arguments
     AST::Array* args;
+    /// Constraint annotations
+    AST::Array* ann;
     /// Constructor
-    ConExpr(const std::string& id0, AST::Array* args0);
+    ConExpr(const std::string& id0, AST::Array* args0, AST::Array* ann0);
     /// Return argument \a i
     AST::Node* operator[](int i) const;
     /// Return number of arguments
@@ -61,8 +63,8 @@ namespace Gecode { namespace FlatZinc {
   };
 
   forceinline
-  ConExpr::ConExpr(const std::string& id0, AST::Array* args0)
-    : id(id0), args(args0) {}
+  ConExpr::ConExpr(const std::string& id0, AST::Array* args0, AST::Array* ann0)
+    : id(id0), args(args0), ann(ann0) {}
 
   forceinline AST::Node*
   ConExpr::operator[](int i) const { return args->a[i]; }
@@ -73,6 +75,7 @@ namespace Gecode { namespace FlatZinc {
   forceinline
   ConExpr::~ConExpr(void) {
     delete args;
+    delete ann;
   }
 
 }}

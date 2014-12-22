@@ -7,8 +7,8 @@
  *     Guido Tack, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14262 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -53,21 +53,25 @@ namespace Gecode {
     if (m_opt.cutoff == NULL)
       throw Search::UninitializedCutoff("RBS::RBS");
     Search::Options e_opt(m_opt);
-    e_opt.clone = true;
+    e_opt.clone = false;
     Search::MetaStop* ms = new Search::MetaStop(m_opt.stop);
     e_opt.stop = ms;
     Space* master;
-    if (m_opt.clone) {
-      if (s->status(ms->m_stat) == SS_FAILED) {
-        ms->m_stat.fail++;
-        master = NULL;
-      } else {
-        master = s->clone();
-      }
+    Space* slave;
+    if (s->status(ms->m_stat) == SS_FAILED) {
+      ms->m_stat.fail++;
+      master = NULL;
+      slave  = NULL;
     } else {
-      master = s;
+      if (m_opt.clone)
+        master = s->clone();
+      else
+        master = s;
+      slave = master->clone();
+      CRI cri(0,0,0,NULL,NoGoods::eng);
+      slave->slave(cri);
     }
-    E<T> engine(dynamic_cast<T*>(master),e_opt);
+    E<T> engine(dynamic_cast<T*>(slave),e_opt);
     EngineBase* eb = &engine;
     Search::Engine* ee = eb->e;
     eb->e = NULL;

@@ -6,8 +6,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2013-11-05 09:51:31 +0100 (Tue, 05 Nov 2013) $ by $Author: schulte $
-#     $Revision: 14055 $
+#     $Date: 2014-11-05 16:31:56 +0100 (Wed, 05 Nov 2014) $ by $Author: schulte $
+#     $Revision: 14298 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -65,6 +65,316 @@
 #    ... If a more section is included, then it will be displayed as an
 #    optional section in the html page.
 #
+
+[RELEASE]
+Version: 4.3.2
+Date: 2014-11-06
+[DESCRIPTION]
+Fixed major bug in and added extensive tests for the FlatZinc
+interpreter. If you are using Gecode with FlatZinc you should
+definitely upgrade!
+
+[ENTRY]
+Module: test
+What:   new
+Rank:   major
+[DESCRIPTION]
+Added long-overdues tests for the FlatZinc interpreter.
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+Thanks:	Alex Elliott
+[DESCRIPTION]
+Fix cmake build file to work better when building with Qt.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   major
+Thanks: Jean-Noël Monette
+[DESCRIPTION]
+Fixed major bug that would cause the FlatZinc interpreter to crash
+on most models.
+
+[RELEASE]
+Version: 4.3.1
+Date: 2014-10-22
+[DESCRIPTION]
+This release fixes some minor issues and a major bug for the
+FlatZinc interpreter. It considerably extends restart-based
+search so that it supports LNS (Large Neighborhood Search).
+
+[ENTRY]
+Module: search
+What:   change
+Rank:   major
+[DESCRIPTION]
+The restart-based search engine has been made more powerful: the
+master() and slave() configuration functions have been extended
+and get more information about each restart and the engine always
+maintains the last solution found. In particulae, the engine is
+now powerful enough to support LNS (Large Neighborhood
+Search). For details, please see MPG.
+
+[ENTRY]
+Module: search
+What:   change
+Rank:   minor
+[DESCRIPTION]
+The interface of cutoff generators has been extended in that it
+now offers current value access (operator()()) as well as
+increment (operator++()).
+
+[ENTRY]
+Module: search
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added a cutoff generator that merges the values of two cutoff generators.
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+Thanks:	Pierre Talbot
+[DESCRIPTION]
+Gecode can now be used together with boost without conflicts.
+
+[ENTRY]
+Module: other
+What:   new
+Rank:   minor
+Thanks:	Petter Strandmark
+[DESCRIPTION]
+Added support for building examples with CMake.
+
+[ENTRY]
+Module: minimodel
+What:   bug
+Rank:   minor
+Thanks:	Léonard Benedetti
+[DESCRIPTION]
+Removed potentially undefined behavior for regular expressions. 
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   major
+Thanks:	Mats Carlsson
+[DESCRIPTION]
+Fixed FlatZinc aliasing detection on array variables that
+introduced incorrect aliases between variables.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks:	Frank Imeson
+[DESCRIPTION]
+Fixed parser for integer literals to generate error message when
+integers are out of bounds.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks:	Peter Nightingale
+[DESCRIPTION]
+Fixed the FlatZinc interpreter to accept empty arrays as arguments in
+annotations.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks:	Carleton Coffrin
+[DESCRIPTION]
+Fixed the behaviour for the -n and -a command line options for
+optimisation models.
+
+
+[RELEASE]
+Version: 4.3.0
+Date: 2014-08-28
+[DESCRIPTION]
+This release fixes a large number of both minor and major bugs,
+has some improvements for FlatZinc, and adds multi-dimensional
+bin-packing.
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+Thanks:	Victor Zverovich, Tony Kelman
+[DESCRIPTION]
+Various fixes for CMake:
+ - Set the output directory for runtime target files (executables and DLLs) to bin/ subdirectory of the project's binary directory to avoid collisions when Gecode is used as a subproject.Improve suppression of warnings.
+ - Add GECODE_USE_QT variable which specifies whether to use Qt. Qt is used if GECODE_USE_QT is TRUE or unset.
+ - Prevent linker warnings on MSVC.
+ - Use per-target instead of global include directories. This simplifies use of Gecode as a subproject because add_target_libraries(<target> <gecode-lib>) now sets the necessary include directories for <target> in addition to link dependencies.
+ - Fix to fully link internal dependencies needed for creating DLLs: https://github.com/ampl/gecode/pull/2
+ .
+
+[ENTRY]
+Module: flatzinc
+What:   change
+Rank:   minor
+[DESCRIPTION]
+The --free command line option has been renamed to -f to comply with other
+FlatZinc solvers.
+
+[ENTRY]
+Module: flatzinc
+What:   performance
+Rank:   minor
+[DESCRIPTION]
+The diffn constraint now posts additional implied cumulative constraints
+to strengthen propagation.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Added unshare constraints to all constraints that need them. Without unsharing,
+variables occurring multiply in the same FlatZinc arrays could lead to the
+FlatZinc interpreter aborting with an error.
+
+[ENTRY]
+Module: flatzinc
+What:   performance
+Rank:   minor
+[DESCRIPTION]
+Treat equality constraints in FlatZinc as aliases instead of posting 
+propagators, and post simple domain constraints before more complex
+propagators to help post the most efficient versions.
+
+[ENTRY]
+Module: example
+What:   new
+Rank:   minor
+Thanks: Stefano Gualandi, Brian Kell, Willem-Jan Van Hoeve
+[DESCRIPTION]
+Added example for multi-dimensional bin-packing
+constraint. Thanks to Brian and Willem-Jan for allowing us to use
+their data set.
+
+[ENTRY]
+Module: int
+What:   new
+Rank:   major
+Author: Stefano Gualandi
+[DESCRIPTION]
+Added multi-dimensional bin-packing constraint.
+
+[ENTRY]
+Module: kernel
+What:   change
+Rank:   minor
+Thanks: Kish Shen
+[DESCRIPTION]
+Allow 0.0 as decay value.
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+Thanks: Roland Stigge
+[DESCRIPTION]
+Added patch for PowerPC (downstream patch from Debian).
+
+[ENTRY]
+Module: other
+What:   bug
+Rank:   minor
+Thanks: David Rijsman
+[DESCRIPTION]
+Added missing boost header files.
+
+[ENTRY]
+Module: test
+What:   bug
+Rank:   minor
+Thanks: Victor Zverovich
+[DESCRIPTION]
+Removed uninitialized access.
+
+[ENTRY]
+Module: set
+What:   bug
+Rank:   minor
+Thanks: Victor Zverovich
+[DESCRIPTION]
+Removed compiler warning.
+
+[ENTRY]
+Module: float
+What:   bug
+Rank:   minor
+Thanks: Victor Zverovich
+[DESCRIPTION]
+Removed compiler warning.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Victor Zverovich
+[DESCRIPTION]
+Fixed FlatZinc interpreter to compile with clang in C++11 mode.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   minor
+Thanks: Bauke Conijn
+[DESCRIPTION]
+Re-enabled parts of not-first-not-last propagation for unary with
+optional tasks.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+[DESCRIPTION]
+Catch exceptions and print proper error message.
+
+[ENTRY]
+Module: minimodel
+What:   bug
+Rank:   major
+[DESCRIPTION]
+Fixed posting of set relations involving constants.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   major
+Thanks:	Roberto Castañeda Lozano, Gabriel Hjort Blindell
+[DESCRIPTION]
+In extremely rare cases, the bounds-consistent distinct (and
+hence all other distinct propagators as they use the
+bounds-consistent one internally) propagator could suffer from
+numerical overflow.
+
+[ENTRY]
+Module: kernel
+What:   bug
+Rank:   minor
+Thanks:	Roberto Castañeda Lozano
+[DESCRIPTION]
+The function brancher did not return a handle.
+
+[ENTRY]
+Module: int
+What:   bug
+Rank:   minor
+Thanks:	Duane Leslie
+[DESCRIPTION]
+No-good literals for greater-or-equal did not prune as much as they should.
+
 
 [RELEASE]
 Version: 4.2.1
@@ -1144,7 +1454,7 @@ Rank:	major
 [DESCRIPTION]
 Added activity-based branching strategies for integer and Boolean
 variables: INT_VAR_ACTIVITY_MIN, INT_VAR_ACTIVITY_MAX,
-INT_VAR_ACTIVITY_SIZE__MIN, INT_VAR_ACTIVITY_SIZE_MAX. For
+INT_VAR_ACTIVITY_SIZE_MIN, INT_VAR_ACTIVITY_SIZE_MAX. For
 details, see "Modeling and Programming with Gecode".
 
 [ENTRY]

@@ -7,8 +7,8 @@
  *     Guido Tack, 2007
  *
  *  Last modified:
- *     $Date: 2013-05-09 01:32:37 +0200 (Thu, 09 May 2013) $ by $Author: tack $
- *     $Revision: 13625 $
+ *     $Date: 2014-10-01 03:55:43 +0200 (Wed, 01 Oct 2014) $ by $Author: tack $
+ *     $Revision: 14235 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -180,6 +180,7 @@ namespace Gecode { namespace FlatZinc { namespace AST {
     SetLit(void) {}
     SetLit(int min0, int max0) : interval(true), min(min0), max(max0) {}
     SetLit(const std::vector<int>& s0) : interval(false), s(s0) {}
+    explicit SetLit(SetLit* s0) : interval(s0->interval), min(s0->min), max(s0->max), s(s0->s) {}
     bool empty(void) const {
       return ( (interval && min>max) || (!interval && s.size() == 0));
     }

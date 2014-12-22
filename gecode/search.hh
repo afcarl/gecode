@@ -9,8 +9,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-10-30 15:42:34 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14037 $
+ *     $Date: 2014-10-21 17:09:50 +0200 (Tue, 21 Oct 2014) $ by $Author: schulte $
+ *     $Revision: 14258 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -390,9 +390,11 @@ namespace Gecode { namespace Search {
   public:
     /// Default constructor
     Cutoff(void);
-    /// Return next cutoff value
-    virtual unsigned long int operator ()(void) = 0;
-      /// Destructor
+    /// Return the current cutoff value
+    virtual unsigned long int operator ()(void) const = 0;
+    /// Increment and return the next cutoff value
+    virtual unsigned long int operator ++(void) = 0;
+    /// Destructor
     virtual ~Cutoff(void);
     /// Create generator for constant sequence with constant \a s
     static Cutoff*
@@ -419,6 +421,9 @@ namespace Gecode { namespace Search {
     /// Append cutoff values from \a c2 after \a n values from \a c1
     static Cutoff*
     append(Cutoff* c1, unsigned long int n, Cutoff* c2);
+    /// Merge cutoff values from \a c1 with values from \a c2
+    static Cutoff*
+    merge(Cutoff* c1, Cutoff* c2);
     /// Create generator that repeats \a n times each cutoff value from \a c
     static Cutoff*
     repeat(Cutoff* c, unsigned long int n);

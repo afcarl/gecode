@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-23 14:31:03 +0200 (Tue, 23 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13939 $
+ *     $Date: 2013-11-14 14:35:45 +0100 (Thu, 14 Nov 2013) $ by $Author: schulte $
+ *     $Revision: 14073 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -197,7 +197,7 @@ namespace Gecode {
    */
   //@{
   /// Call the function \a f (with the current space as argument) for branching
-  GECODE_KERNEL_EXPORT void
+  GECODE_KERNEL_EXPORT BrancherHandle
   branch(Home home, void (*f)(Space& home));
   //@}
 
