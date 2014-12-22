@@ -402,10 +402,13 @@ if (FLOATSRC)
 endif ()
 
 add_executable(gecode-test ${TESTSRC} ${TESTHDR})
-target_link_libraries(gecode-test gecodeminimodel)
+target_link_libraries(gecode-test gecodeminimodel gecodeflatzinc)
 
 add_executable(fzn-gecode ${FLATZINCEXESRC})
-target_link_libraries(fzn-gecode gecodeflatzinc gecodegist gecodeminimodel gecodedriver)
+target_link_libraries(fzn-gecode gecodeflatzinc gecodeminimodel gecodedriver)
+if (GECODE_HAS_GIST)
+  target_link_libraries(fzn-gecode gecodegist)
+endif ()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
