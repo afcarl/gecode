@@ -41,6 +41,11 @@ cmake_minimum_required(VERSION 2.8.8)
 
 project(GECODE)
 
+if (POLICY CMP0054)
+  # Only interpret `if` arguments as variables or keywords when unquoted.
+  cmake_policy(SET CMP0054 NEW)
+endif ()
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 include(CheckCXXCompilerFlag)
