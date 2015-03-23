@@ -7,8 +7,8 @@
  *     Vincent Barichard, 2013
  *
  *  Last modified:
- *     $Date: 2014-09-26 16:25:13 +0200 (Fri, 26 Sep 2014) $ by $Author: vbarichard $
- *     $Revision: 14229 $
+ *     $Date: 2014-11-07 10:36:58 +0100 (Fri, 07 Nov 2014) $ by $Author: vbarichard $
+ *     $Revision: 14312 $
  *
  *  This file is part of Quacode:
  *     http://quacode.barichard.com
@@ -519,7 +519,7 @@ public:
   template <int Player>
   bool check4for3(int a, int b, int c, int d) const {
     if ((a == Player) && (b == Player) && (c == Player)) return (d == Nil);
-    else if ((a == Player) && (b == Player) && (c == Player)) return (c == Nil);
+    else if ((a == Player) && (b == Player) && (d == Player)) return (c == Nil);
     else if ((a == Player) && (c == Player) && (d == Player)) return (b == Nil);
     else if ((b == Player) && (c == Player) && (d == Player)) return (a == Nil);
     else return false;
@@ -559,6 +559,10 @@ c4Heuristic<N>::value(const Space& _home, IntVar x, int) {
   const ConnectFourAllState& home = static_cast<const ConnectFourAllState&>(_home);
   return home.c4Heuristic(x,N);
 }
+
+const int ConnectFourAllState::Red;
+const int ConnectFourAllState::Black;
+const int ConnectFourAllState::Nil;
 
 int main(int argc, char* argv[])
 {

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-08 17:25:13 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13825 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -234,7 +234,7 @@ namespace Gecode {
   }
 
   template<class View, int n, class Val, unsigned int a>
-  forceinline BrancherHandle
+  inline BrancherHandle
   ViewValBrancher<View,n,Val,a>::
   post(Home home, ViewArray<View>& x,
        ViewSel<View>* vs[n], ValSelCommitBase<View,Val>* vsc,

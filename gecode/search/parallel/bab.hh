@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -64,7 +64,7 @@ namespace Gecode { namespace Search { namespace Parallel {
       /// Try to find some work
       void find(void);
       /// Reset engine to restart at space \a s
-      void reset(Space* s, int ngdl);
+      void reset(Space* s, unsigned int ngdl);
       /// Destructor
       virtual ~Worker(void);
     };
@@ -112,12 +112,13 @@ namespace Gecode { namespace Search { namespace Parallel {
   }
 
   forceinline void
-  BAB::Worker::reset(Space* s, int ngdl) {
+  BAB::Worker::reset(Space* s, unsigned int ngdl) {
     delete cur;
     delete best;
     best = NULL;
     path.reset((s == NULL) ? 0 : ngdl);
-    d = mark = 0;
+    d = 0;
+    mark = 0;
     idle = false;
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
       delete s;

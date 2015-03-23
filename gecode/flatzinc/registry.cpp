@@ -11,8 +11,8 @@
  *     Mikael Lagerkvist, 2009
  *
  *  Last modified:
- *     $Date: 2014-08-07 09:30:40 +0200 (Thu, 07 Aug 2014) $ by $Author: tack $
- *     $Revision: 14192 $
+ *     $Date: 2015-03-17 11:20:12 +0100 (Tue, 17 Mar 2015) $ by $Author: tack $
+ *     $Revision: 14444 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1026,6 +1026,16 @@ namespace Gecode { namespace FlatZinc {
       max(s, iv, s.arg2IntVar(ce[0]), s.ann2icl(ann));
     }
 
+    void p_minimum_arg(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
+      IntVarArgs iv = s.arg2intvarargs(ce[0]);
+      argmin(s, iv, s.arg2IntVar(ce[1]), true, s.ann2icl(ann));
+    }
+
+    void p_maximum_arg(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
+      IntVarArgs iv = s.arg2intvarargs(ce[0]);
+      argmax(s, iv, s.arg2IntVar(ce[1]), true, s.ann2icl(ann));
+    }
+
     void p_regular(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
       IntVarArgs iv = s.arg2intvarargs(ce[0]);
       int q = ce[1]->getInt();
@@ -1164,6 +1174,17 @@ namespace Gecode { namespace FlatZinc {
       extensional(s,x,ts,EPK_DEF,s.ann2icl(ann));
     }
 
+    void p_cumulative_opt(FlatZincSpace& s, const ConExpr& ce,
+                      AST::Node* ann) {
+      IntVarArgs start = s.arg2intvarargs(ce[0]);
+      IntArgs duration = s.arg2intargs(ce[1]);
+      IntArgs height = s.arg2intargs(ce[2]);
+      BoolVarArgs opt = s.arg2boolvarargs(ce[3]);
+      int bound = ce[4]->getInt();
+      unshare(s,start);
+      cumulative(s,bound,start,duration,height,opt,s.ann2icl(ann));
+    }
+
     void p_cumulatives(FlatZincSpace& s, const ConExpr& ce,
                       AST::Node* ann) {
       IntVarArgs start = s.arg2intvarargs(ce[0]);
@@ -1172,12 +1193,24 @@ namespace Gecode { namespace FlatZinc {
       int n = start.size();
       IntVar bound = s.arg2IntVar(ce[3]);
 
-      int minHeight = INT_MAX; int minHeight2 = INT_MAX;
-      for (int i=n; i--;)
-        if (height[i].min() < minHeight)
+      if (n==0)
+        return;
+
+      if (n == 1) {
+        rel(s, height[0] <= bound);
+        return;
+      }
+      
+      int minHeight = std::min(height[0].min(),height[1].min());
+      int minHeight2 = std::max(height[0].min(),height[1].min());
+      for (int i=2; i<n; i++) {
+        if (height[i].min() < minHeight) {
+          minHeight2 = minHeight;
           minHeight = height[i].min();
-        else if (height[i].min() < minHeight2)
+        } else if (height[i].min() < minHeight2) {
           minHeight2 = height[i].min();
+        }
+      }
       bool disjunctive =
        (minHeight > bound.max()/2) ||
        (minHeight2 > bound.max()/2 && minHeight+minHeight2>bound.max());
@@ -1519,8 +1552,11 @@ namespace Gecode { namespace FlatZinc {
           &p_global_cardinality_low_up);
         registry().add("global_cardinality_low_up_closed", 
           &p_global_cardinality_low_up_closed);
-        registry().add("minimum_int", &p_minimum);
-        registry().add("maximum_int", &p_maximum);
+        registry().add("array_int_minimum", &p_minimum);
+        registry().add("array_int_maximum", &p_maximum);
+        registry().add("gecode_minimum_arg_int", &p_minimum_arg);
+        registry().add("gecode_maximum_arg_int", &p_maximum_arg);
+        registry().add("array_int_maximum", &p_maximum);
         registry().add("regular", &p_regular);
         registry().add("sort", &p_sort);
         registry().add("inverse_offsets", &p_inverse_offsets);
@@ -1556,6 +1592,7 @@ namespace Gecode { namespace FlatZinc {
         
         registry().add("gecode_schedule_unary", &p_schedule_unary);
         registry().add("gecode_schedule_unary_optional", &p_schedule_unary_optional);
+        registry().add("gecode_schedule_cumulative_optional", &p_cumulative_opt);
 
         registry().add("gecode_circuit", &p_circuit);
         registry().add("gecode_circuit_cost_array", &p_circuit_cost_array);
@@ -1954,9 +1991,16 @@ namespace Gecode { namespace FlatZinc {
     void p_float_lin_le(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
       p_float_lin_cmp(s,FRT_LQ,ce,ann);
     }
+    void p_float_lin_lt(FlatZincSpace& s, const ConExpr& ce, AST::Node* ann) {
+      p_float_lin_cmp(s,FRT_LE,ce,ann);
+    }
     void p_float_lin_le_reif(FlatZincSpace& s, const ConExpr& ce,
                              AST::Node* ann) {
       p_float_lin_cmp_reif(s,FRT_LQ,ce,ann);
+    }
+    void p_float_lin_lt_reif(FlatZincSpace& s, const ConExpr& ce,
+                             AST::Node* ann) {
+      p_float_lin_cmp_reif(s,FRT_LE,ce,ann);
     }
 
     void p_float_times(FlatZincSpace& s, const ConExpr& ce, AST::Node*) {
@@ -2109,7 +2153,9 @@ namespace Gecode { namespace FlatZinc {
         registry().add("float_lin_eq",&p_float_lin_eq);
         registry().add("float_lin_eq_reif",&p_float_lin_eq_reif);
         registry().add("float_lin_le",&p_float_lin_le);
+        registry().add("float_lin_lt",&p_float_lin_lt);
         registry().add("float_lin_le_reif",&p_float_lin_le_reif);
+        registry().add("float_lin_lt_reif",&p_float_lin_lt_reif);
         
 #ifdef GECODE_HAS_MPFR
         registry().add("float_acos",&p_float_acos);

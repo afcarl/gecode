@@ -9,8 +9,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2011-09-06 10:05:16 +0200 (Tue, 06 Sep 2011) $ by $Author: tack $
- *     $Revision: 12391 $
+ *     $Date: 2015-01-18 16:50:03 +0100 (Sun, 18 Jan 2015) $ by $Author: schulte $
+ *     $Revision: 14365 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -41,14 +41,14 @@
 
 namespace Gecode {
 
-  namespace Int { namespace Element {
+  namespace Int {
     template<>
     /// VarArg type for constant %Set views
     class ViewToVarArg<Gecode::Set::ConstSetView> {
     public:
       typedef IntSetArgs argtype;
     };
-  }}
+  }
 
   using namespace Gecode::Set;
 

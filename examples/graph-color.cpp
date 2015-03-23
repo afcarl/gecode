@@ -11,8 +11,8 @@
  *     Stefano Gualandi, 2013
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -340,7 +340,8 @@ public:
   };
   /// The actual model
   GraphColor(const SizeOptions& opt)
-    : g(opt.size() == 1 ? g2 : g1),
+    : IntMinimizeScript(opt),
+      g(opt.size() == 1 ? g2 : g1),
       v(*this,g.n_v,0,g.n_v-1),
       m(*this,0,g.n_v-1) {
     rel(*this, v, IRT_LQ, m);

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:10 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14446 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -219,6 +219,24 @@ namespace Gecode {
   inline double
   Options::decay(void) const {
     return _decay.value();
+  }
+  
+  inline void
+  Options::seed(unsigned int s) {
+    _seed.value(s);
+  }
+  inline unsigned int
+  Options::seed(void) const {
+    return _seed.value();
+  }
+  
+  inline void
+  Options::step(double s) {
+    _step.value(s);
+  }
+  inline double
+  Options::step(void) const {
+    return _step.value();
   }
   
   

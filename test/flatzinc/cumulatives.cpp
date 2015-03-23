@@ -4,11 +4,11 @@
  *     Guido Tack <tack@gecode.org>
  *
  *  Copyright:
- *     Guido Tack, 2012
+ *     Guido Tack, 2014
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2015-01-16 14:10:48 +0100 (Fri, 16 Jan 2015) $ by $Author: schulte $
+ *     $Revision: 14362 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -35,22 +35,26 @@
  *
  */
 
-#include <gecode/search.hh>
-#include <gecode/search/meta/rbs.hh>
+#include "test/flatzinc.hh"
 
-namespace Gecode { namespace Search {
-    
-  Engine* 
-  rbs(Space* s, MetaStop* stop,
-      Engine* e, const Options& o) {
-#ifdef GECODE_HAS_THREADS
-    Options to = o.expand();
-    return new Meta::RBS(s,o.cutoff,stop,e,to);
-#else
-    return new Meta::RBS(s,o.cutoff,stop,e,o);
-#endif
+namespace Test { namespace FlatZinc {
+
+  namespace {
+    /// Helper class to create and register tests
+    class Create {
+    public:
+
+      /// Perform creation and registration
+      Create(void) {
+        (void) new FlatZincTest("cumulatives",
+"constraint cumulatives([0, 0], [1, 1], [0,1], 1); solve satisfy;",
+"----------\n");
+      }
+    };
+
+    Create c;
   }
 
 }}
 
-// STATISTICS: search-other
+// STATISTICS: test-flatzinc

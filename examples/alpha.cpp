@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -64,7 +64,8 @@ public:
     BRANCH_SIZE     ///< Choose variable with smallest size
   };
   /// Actual model
-  Alpha(const Options& opt) : le(*this,n,1,n) {
+  Alpha(const Options& opt) 
+    : Script(opt), le(*this,n,1,n) {
     IntVar
       a(le[ 0]), b(le[ 1]), c(le[ 2]), e(le[ 4]), f(le[ 5]),
       g(le[ 6]), h(le[ 7]), i(le[ 8]), j(le[ 9]), k(le[10]),

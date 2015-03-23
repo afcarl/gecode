@@ -7,8 +7,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -92,8 +92,10 @@ public:
   SetVarArray groups;
 
   /// Actual model
-  Golf(const GolfOptions& opt) : g(opt.g()), s(opt.s()), w(opt.w()),
-    groups(*this,g*w,IntSet::empty,0,g*s-1,s,s) {
+  Golf(const GolfOptions& opt) 
+    : Script(opt), 
+      g(opt.g()), s(opt.s()), w(opt.w()),
+      groups(*this,g*w,IntSet::empty,0,g*s-1,s,s) {
     Matrix<SetVarArray> schedule(groups,g,w);
 
     // Groups in one week must be disjoint

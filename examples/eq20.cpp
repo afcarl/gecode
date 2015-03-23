@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -59,7 +59,7 @@ private:
 public:
   /// The actual problem
   Eq20(const Options& opt)
-    : x(*this,x_n,0,10) {
+    : Script(opt), x(*this,x_n,0,10) {
     // Coefficients and constants for the equations
     int eqs[e_n][x_n+1] = {
       {876370, -16105, 62397, -6704, 43340, 95100, -68610, 58301},

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -62,8 +62,8 @@ public:
     MODEL_CARRY   ///< Use carries
   };
   /// Actual model
-  Donald(const Options& opt) :
-    le(*this,nl,0,9) {
+  Donald(const Options& opt)
+    : Script(opt), le(*this,nl,0,9) {
     IntVar
       d(le[0]), o(le[1]), n(le[2]), a(le[3]), l(le[4]),
       g(le[5]), e(le[6]), r(le[7]), b(le[8]), t(le[9]);

@@ -7,8 +7,8 @@
  *     Mikael Lagerkvist, 2006
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -85,6 +85,7 @@ public:
 
   /// Constructor
   QueenArmies(const SizeOptions& opt) :
+    IntMaximizeScript(opt),
     n(opt.size()),
     U(*this, IntSet::empty, IntSet(0, n*n)),
     W(*this, IntSet::empty, IntSet(0, n*n)),

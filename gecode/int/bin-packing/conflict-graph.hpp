@@ -9,8 +9,8 @@
  *     Christian Schulte, 2014
  *
  *  Last modified:
- *     $Date: 2014-08-28 14:29:11 +0200 (Thu, 28 Aug 2014) $ by $Author: schulte $
- *     $Revision: 14203 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -210,7 +210,7 @@ namespace Gecode { namespace Int { namespace BinPacking {
         return ES_FAILED;
     }
     // Compute corresponding variables
-    ViewArray<IntView> bv(home,cur.c);
+    ViewArray<IntView> bv(home,static_cast<int>(cur.c));
     int i=0;
     for (Nodes c(cur.n); c() < nodes(); ++c)
       bv[i++] = b[c()];
@@ -337,7 +337,7 @@ namespace Gecode { namespace Int { namespace BinPacking {
     for (Nodes i(max.n); i() < nodes(); ++i)
       n[j++]=i();
     assert(j == static_cast<int>(max.c));
-    IntSet s(n,max.c);
+    IntSet s(n,static_cast<int>(max.c));
     return s;
   }
 

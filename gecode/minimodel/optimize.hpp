@@ -7,8 +7,8 @@
  *     Christian Schulte, 2008
  *
  *  Last modified:
- *     $Date: 2013-04-09 15:16:43 +0200 (Tue, 09 Apr 2013) $ by $Author: schulte $
- *     $Revision: 13571 $
+ *     $Date: 2015-03-18 14:04:51 +0100 (Wed, 18 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14452 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -35,52 +35,48 @@
  *
  */
 
-namespace Gecode { namespace MiniModel {
+namespace Gecode {
 
-  template<IntRelType irt>
   forceinline
-  IntOptimizeSpace<irt>::IntOptimizeSpace(void) {}
+  IntMinimizeSpace::IntMinimizeSpace(void) {}
 
-  template<IntRelType irt>
   forceinline
-  IntOptimizeSpace<irt>::IntOptimizeSpace(bool share, IntOptimizeSpace& s)
+  IntMinimizeSpace::IntMinimizeSpace(bool share, IntMinimizeSpace& s)
     : Space(share,s) {}
 
-  template<IntRelType irt>
-  void
-  IntOptimizeSpace<irt>::constrain(const Space& _best) {
-    const IntOptimizeSpace<irt>* best =
-      dynamic_cast<const IntOptimizeSpace<irt>*>(&_best);
-    if (best == NULL)
-      throw DynamicCastFailed("IntOptimizeSpace::constrain");
-    rel(*this, cost(), irt, best->cost().val());
-  }
+
+  forceinline
+  IntMaximizeSpace::IntMaximizeSpace(void) {}
+
+  forceinline
+  IntMaximizeSpace::IntMaximizeSpace(bool share, IntMaximizeSpace& s)
+    : Space(share,s) {}
+
 
 #ifdef GECODE_HAS_FLOAT_VARS 
 
-  template<FloatRelType frt>
   forceinline
-  FloatOptimizeSpace<frt>::FloatOptimizeSpace(void) {}
+  FloatMinimizeSpace::FloatMinimizeSpace(FloatNum s)
+    : step(s) {}
 
-  template<FloatRelType frt>
   forceinline
-  FloatOptimizeSpace<frt>::FloatOptimizeSpace(bool share, 
-                                              FloatOptimizeSpace& s)
-    : Space(share,s) {}
+  FloatMinimizeSpace::FloatMinimizeSpace(bool share, 
+                                         FloatMinimizeSpace& s)
+    : Space(share,s), step(s.step) {}
 
-  template<FloatRelType frt>
-  void
-  FloatOptimizeSpace<frt>::constrain(const Space& _best) {
-    const FloatOptimizeSpace<frt>* best =
-      dynamic_cast<const FloatOptimizeSpace<frt>*>(&_best);
-    if (best == NULL)
-      throw DynamicCastFailed("FloatOptimizeSpace::constrain");
-    rel(*this, cost(), frt, best->cost().val());
-  }
+
+  forceinline
+  FloatMaximizeSpace::FloatMaximizeSpace(FloatNum s)
+    : step(s) {}
+
+  forceinline
+  FloatMaximizeSpace::FloatMaximizeSpace(bool share, 
+                                         FloatMaximizeSpace& s)
+    : Space(share,s), step(s.step) {}
 
 #endif
 
-}}
+}
 
 // STATISTICS: minimodel-search
 

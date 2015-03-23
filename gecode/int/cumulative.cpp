@@ -9,8 +9,8 @@
  *     Guido Tack, 2010
  *
  *  Last modified:
- *     $Date: 2013-09-17 13:54:20 +0200 (Tue, 17 Sep 2013) $ by $Author: tack $
- *     $Revision: 14006 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -87,7 +87,7 @@ namespace Gecode {
           fixp = false; break;
         }
       int nonOptionals = 0;
-      for (unsigned int i=u.size(); i--;)
+      for (int i=u.size(); i--;)
         if (u[i]>0) nonOptionals++;
       if (fixp) {
         TaskArray<ManFixPTask> tasks(home,nonOptionals);
@@ -162,7 +162,7 @@ namespace Gecode {
           fixp = false; break;
         }
       int nonOptionals = 0;
-      for (unsigned int i=u.size(); i--;)
+      for (int i=u.size(); i--;)
         if (u[i]>0) nonOptionals++;
       if (fixp) {
         TaskArray<OptFixPTask> tasks(home,nonOptionals);
@@ -236,7 +236,7 @@ namespace Gecode {
       unary(home,s,p,icl);
     } else {
       int nonOptionals = 0;
-      for (unsigned int i=u.size(); i--;)
+      for (int i=u.size(); i--;)
         if (u[i]>0) nonOptionals++;
       TaskArray<ManFixPTask> t(home,nonOptionals);
       int cur = 0;
@@ -294,7 +294,7 @@ namespace Gecode {
       cumulative(home,c,s,p,u,icl);
     } else {
       int nonOptionals = 0;
-      for (unsigned int i=u.size(); i--;)
+      for (int i=u.size(); i--;)
         if (u[i]>0) nonOptionals++;
       TaskArray<OptFixPTask> t(home,nonOptionals);
       int cur = 0;
@@ -358,7 +358,7 @@ namespace Gecode {
       cumulative(home,c,s,pp,u,icl);
     } else {
       int nonOptionals = 0;
-      for (unsigned int i=u.size(); i--;)
+      for (int i=u.size(); i--;)
         if (u[i]>0) nonOptionals++;
       TaskArray<ManFlexTask> t(home,nonOptionals);
       int cur = 0;
@@ -421,7 +421,7 @@ namespace Gecode {
       cumulative(home,c,s,p,e,u,icl);
     } else {
       int nonOptionals = 0;
-      for (unsigned int i=u.size(); i--;)
+      for (int i=u.size(); i--;)
         if (u[i]>0) nonOptionals++;
       TaskArray<OptFlexTask> t(home,nonOptionals);
       int cur = 0;

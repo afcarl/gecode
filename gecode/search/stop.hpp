@@ -7,8 +7,8 @@
  *     Christian Schulte, 2006
  *
  *  Last modified:
- *     $Date: 2013-10-30 15:42:34 +0100 (Wed, 30 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14037 $
+ *     $Date: 2015-03-11 15:59:09 +0100 (Wed, 11 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14435 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -119,49 +119,6 @@ namespace Gecode { namespace Search {
   forceinline void
   TimeStop::reset(void) {
     t.start();
-  }
-
-
-  /*
-   * Stopping for meta search engines
-   *
-   */
-
-  forceinline
-  MetaStop::MetaStop(Stop* s) 
-    : e_stop(new FailStop(0)), m_stop(s), e_stopped(false) {}
-
-  forceinline void
-  MetaStop::limit(const Search::Statistics& s, unsigned long int l) {
-    m_stat += s;
-    e_stopped = false;
-    e_stop->limit(l);
-  }
-
-  forceinline void
-  MetaStop::update(const Search::Statistics& s) {
-    m_stat += s;
-  }
-
-  forceinline Stop*
-  MetaStop::enginestop(void) const { 
-    return e_stop; 
-  }
-
-  forceinline bool
-  MetaStop::enginestopped(void) const { 
-    return e_stopped; 
-  }
-
-  forceinline Statistics 
-  MetaStop::metastatistics(void) const { 
-    return m_stat; 
-  }
-
-  forceinline
-  MetaStop::~MetaStop(void) {
-    delete e_stop;
-    delete m_stop;
   }
 
 }}

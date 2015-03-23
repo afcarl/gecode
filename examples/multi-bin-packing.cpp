@@ -9,8 +9,8 @@
  *     Christian Schulte, 2014
  *
  *  Last modified:
- *     $Date: 2014-07-30 14:16:57 +0200 (Wed, 30 Jul 2014) $ by $Author: schulte $
- *     $Revision: 14181 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -132,7 +132,7 @@ public:
   };
   /// Actual model
   MultiBinPacking(const InstanceOptions& opt) 
-    : spec(opt.instance()),
+    : Script(opt), spec(opt.instance()),
       bin(*this, spec.items(), 0, spec.bins()-1), 
       load(*this, spec.bins()*spec.dimension(), 0, Int::Limits::max) 
   { 

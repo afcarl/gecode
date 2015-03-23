@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -88,7 +88,8 @@ protected:
 public:
   /// The actual problem
   DominatingQueens(const SizeOptions& opt)
-    : n(opt.size()), b(*this,n*n,0,n*n-1), q(*this,1,n) {
+    : IntMinimizeScript(opt),
+      n(opt.size()), b(*this,n*n,0,n*n-1), q(*this,1,n) {
 
     // Constrain field to the fields that can attack a field
     for (int i=0; i<n*n; i++)

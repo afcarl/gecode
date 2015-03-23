@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2014-08-13 02:28:40 +0200 (Wed, 13 Aug 2014) $ by $Author: tack $
- *     $Revision: 14197 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -70,7 +70,8 @@ protected:
 public:
   /// Actual model
   GolombRuler(const SizeOptions& opt)
-    : m(*this,opt.size(),0,
+    : IntMinimizeScript(opt),
+      m(*this,opt.size(),0,
         (opt.size() < 31) ? (1 << (opt.size()-1))-1 : Int::Limits::max) {
 
     // Assume first mark to be zero

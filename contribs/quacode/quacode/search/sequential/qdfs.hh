@@ -7,8 +7,8 @@
  *     Vincent Barichard, 2013
  *
  *  Last modified:
- *     $Date: 2014-09-30 10:03:16 +0200 (Tue, 30 Sep 2014) $ by $Author: vbarichard $
- *     $Revision: 14233 $
+ *     $Date: 2015-02-17 05:17:22 +0100 (Tue, 17 Feb 2015) $ by $Author: tack $
+ *     $Revision: 14396 $
  *
  *  This file is part of Quacode:
  *     http://quacode.barichard.com
@@ -104,6 +104,7 @@ namespace Gecode { namespace Search { namespace Sequential {
     path.reset();
     d = 0;
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
+      delete s;
       cur = NULL;
     } else {
       cur = s;

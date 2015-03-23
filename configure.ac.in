@@ -6,9 +6,9 @@ dnl Copyright:
 dnl   Guido Tack, 2004, 2005
 dnl
 dnl Last modified:
-dnl   $Date: 2014-11-05 01:20:43 +0100 (Wed, 05 Nov 2014) $
-dnl   by $Author: tack $
-dnl   $Revision: 14295 $
+dnl   $Date: 2015-03-19 10:26:53 +0100 (Thu, 19 Mar 2015) $
+dnl   by $Author: schulte $
+dnl   $Revision: 14459 $
 dnl
 dnl This file is part of Gecode, the generic constraint
 dnl development environment:
@@ -35,13 +35,13 @@ dnl WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 dnl
 dnl
 
-AC_REVISION([$Id: configure.ac.in 14295 2014-11-05 00:20:43Z tack $])
+AC_REVISION([$Id: configure.ac.in 14459 2015-03-19 09:26:53Z schulte $])
 AC_PREREQ(2.53)
-AC_INIT(GECODE, 4.3.2, users@gecode.org)
+AC_INIT(GECODE, 4.4.0, users@gecode.org)
 AC_CONFIG_HEADERS([gecode/support/config.hpp])
 AC_CONFIG_SRCDIR(gecode/kernel.hh)
 
-ac_gecode_soversion=39
+ac_gecode_soversion=41
 AC_SUBST(GECODE_SOVERSION, ${ac_gecode_soversion})
 ac_gecode_flatzincversion=1.6
 AC_SUBST(GECODE_FLATZINC_VERSION, ${ac_gecode_flatzincversion})
@@ -110,16 +110,6 @@ esac
 AC_GECODE_RESOURCE
 
 AC_LANG(C++)
-
-dnl check whether we can use GNU hash_map
-AC_CHECK_HEADER([ext/hash_map],
-  [AC_DEFINE([GECODE_HAS_GNU_HASH_MAP],[],
-             [Whether GNU hash_map is available])])
-
-dnl check whether we can use unordered_map
-AC_CHECK_HEADER([unordered_map],
-  [AC_DEFINE([GECODE_HAS_UNORDERED_MAP],[],
-             [Whether unordered_map is available])])
 
 dnl check whether we want to build universal binaries on Mac OS X
 AC_GECODE_UNIVERSAL
@@ -223,6 +213,16 @@ microsoft)
   AC_MSG_ERROR(Gecode currently only supports the GNU and Microsoft compilers.)
   ;;
 esac
+
+dnl check whether we can use GNU hash_map
+AC_CHECK_HEADER([ext/hash_map],
+  [AC_DEFINE([GECODE_HAS_GNU_HASH_MAP],[],
+             [Whether GNU hash_map is available])])
+
+dnl check whether we can use unordered_map
+AC_CHECK_HEADER([unordered_map],
+  [AC_DEFINE([GECODE_HAS_UNORDERED_MAP],[],
+             [Whether unordered_map is available])])
 
 dnl find out what parts the user wants to build
 

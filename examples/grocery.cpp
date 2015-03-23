@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -67,7 +67,8 @@ protected:
   static const int p = 711 * 100 * 100 * 100;
 public:
   /// The actual model
-  Grocery(const Options& opt) : abcd(*this,4,0,s) {
+  Grocery(const Options& opt) 
+    : Script(opt), abcd(*this,4,0,s) {
     IntVar a(abcd[0]), b(abcd[1]), c(abcd[2]), d(abcd[3]);
 
     // The sum of all variables is s

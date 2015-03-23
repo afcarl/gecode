@@ -11,8 +11,8 @@
  *     Christian Schulte, 2007
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -218,6 +218,7 @@ protected:
 public:
   /// Setup model
   SportsLeague(const SizeOptions& opt) :
+    Script(opt), 
     teams(opt.size()),
     home(*this, periods() * teams, 1, weeks()),
     away(*this, periods() * teams, 2, weeks()+1),

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2011
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -90,7 +90,8 @@ protected:
   IntVarArray box;
 public:
   /// Actual model
-  Schur(const SchurOptions& opt) : box(*this,opt.n,1,opt.c) {
+  Schur(const SchurOptions& opt) 
+    : Script(opt), box(*this,opt.n,1,opt.c) {
     int n = opt.n;
 
     IntVarArgs triple(3);

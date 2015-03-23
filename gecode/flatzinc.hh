@@ -11,8 +11,8 @@
  *     Gabriel Hjort Blindell, 2012
  *
  *  Last modified:
- *     $Date: 2014-10-27 06:39:28 +0100 (Mon, 27 Oct 2014) $ by $Author: tack $
- *     $Revision: 14280 $
+ *     $Date: 2015-03-19 11:47:57 +0100 (Thu, 19 Mar 2015) $ by $Author: tack $
+ *     $Revision: 14463 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -223,6 +223,7 @@ namespace Gecode { namespace FlatZinc {
       Gecode::Driver::BoolOption        _nogoods;   ///< Whether to use no-goods
       Gecode::Driver::UnsignedIntOption _nogoods_limit; ///< Depth limit for extracting no-goods
       Gecode::Driver::BoolOption        _interrupt; ///< Whether to catch SIGINT
+      Gecode::Driver::DoubleOption      _step;        ///< Step option
       //@}
     
       /// \name Execution options
@@ -236,7 +237,7 @@ namespace Gecode { namespace FlatZinc {
     FlatZincOptions(const char* s)
     : Gecode::BaseOptions(s),
       _solutions("-n","number of solutions (0 = all, -1 = one/best)",-1),
-      _allSolutions("-a", "return all solutions (equal to -solutions 0)"),
+      _allSolutions("-a", "return all solutions (equal to -n 0)"),
       _threads("-p","number of threads (0 = #processing units)",
                Gecode::Search::Config::threads),
       _free("-f", "free search, no need to follow search-specification"),
@@ -255,6 +256,7 @@ namespace Gecode { namespace FlatZinc {
                      Search::Config::nogoods_limit),
       _interrupt("-interrupt","whether to catch Ctrl-C (true) or not (false)",
                  true),
+      _step("-step","step distance for float optimization",0.0),
       _mode("-mode","how to execute script",Gecode::SM_SOLUTION),
       _stat("-s","emit statistics"),
       _output("-o","file to send output to") {
@@ -274,6 +276,7 @@ namespace Gecode { namespace FlatZinc {
       add(_decay);
       add(_node); add(_fail); add(_time); add(_interrupt);
       add(_seed);
+      add(_step);
       add(_restart); add(_r_base); add(_r_scale); 
       add(_nogoods); add(_nogoods_limit);
       add(_mode); add(_stat);
@@ -282,7 +285,7 @@ namespace Gecode { namespace FlatZinc {
 
     void parse(int& argc, char* argv[]) {
       Gecode::BaseOptions::parse(argc,argv);
-      if (_allSolutions.value() && _solutions.value()==0) {
+      if (_allSolutions.value() && _solutions.value()==-1) {
         _solutions.value(0);
       }
       if (_stat.value())
@@ -306,6 +309,7 @@ namespace Gecode { namespace FlatZinc {
     unsigned int fail(void) const { return _fail.value(); }
     unsigned int time(void) const { return _time.value(); }
     int seed(void) const { return _seed.value(); }
+    double step(void) const { return _step.value(); }
     const char* output(void) const { return _output.value(); }
     Gecode::ScriptMode mode(void) const {
       return static_cast<Gecode::ScriptMode>(_mode.value());
@@ -347,6 +351,23 @@ namespace Gecode { namespace FlatZinc {
 #endif
   };
 
+ /**
+  * \brief A thread-safe random number generator
+  *
+  */
+ class GECODE_FLATZINC_EXPORT FznRnd {
+ protected:
+   /// The actual random number generator
+   Gecode::Support::RandomGenerator random;
+   /// A mutex for the random number generator
+   Gecode::Support::Mutex mutex;
+ public:
+   /// Constructor
+   FznRnd(unsigned int s=1);
+   /// Returns a random integer from the interval [0..n)
+   unsigned int operator ()(unsigned int n);
+ };
+
   /**
    * \brief A space that can be initialized with a %FlatZinc model
    *
@@ -375,7 +396,13 @@ namespace Gecode { namespace FlatZinc {
   
     /// Whether to solve as satisfaction or optimization problem
     Meth _method;
+
+    /// Percentage of variables to keep in LNS (or 0 for no LNS)
+    unsigned int _lns;
     
+    /// Random number generator 
+    FznRnd* _random;
+
     /// Annotations on the solve item
     AST::Array* _solveAnnotations;
 
@@ -400,6 +427,10 @@ namespace Gecode { namespace FlatZinc {
     Gecode::IntVarArray iv;
     /// The introduced integer variables
     Gecode::IntVarArray iv_aux;
+    
+    /// The integer variables used in LNS
+    Gecode::IntVarArray iv_lns;
+
     /// Indicates whether an integer variable is introduced by mzn2fzn
     std::vector<bool> iv_introduced;
     /// Indicates whether an integer variable aliases a Boolean variable
@@ -425,11 +456,13 @@ namespace Gecode { namespace FlatZinc {
     Gecode::FloatVarArray fv_aux;
     /// Indicates whether a float variable is introduced by mzn2fzn
     std::vector<bool> fv_introduced;
+    /// Step by which a next solution has to have lower cost
+    Gecode::FloatNum step;
 #endif
     /// Whether the introduced variables still need to be copied
     bool needAuxVars;
     /// Construct empty space
-    FlatZincSpace(void);
+    FlatZincSpace(FznRnd* random = NULL);
   
     /// Destructor
     ~FlatZincSpace(void);
@@ -517,6 +550,8 @@ namespace Gecode { namespace FlatZinc {
     virtual void constrain(const Space& s);
     /// Copy function
     virtual Gecode::Space* copy(bool share);
+
+    virtual bool slave(const CRI& cri);
     
     /// \name AST to variable and value conversion
     //@{
@@ -576,7 +611,7 @@ namespace Gecode { namespace FlatZinc {
   GECODE_FLATZINC_EXPORT
   FlatZincSpace* parse(const std::string& fileName,
                        Printer& p, std::ostream& err = std::cerr,
-                       FlatZincSpace* fzs=NULL);
+                       FlatZincSpace* fzs=NULL, FznRnd* rnd=NULL);
 
   /**
    * \brief Parse FlatZinc from \a is into \a fzs and return it.
@@ -586,7 +621,7 @@ namespace Gecode { namespace FlatZinc {
   GECODE_FLATZINC_EXPORT
   FlatZincSpace* parse(std::istream& is,
                        Printer& p, std::ostream& err = std::cerr,
-                       FlatZincSpace* fzs=NULL);
+                       FlatZincSpace* fzs=NULL, FznRnd* rnd=NULL);
 
 }}
 

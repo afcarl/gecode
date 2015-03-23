@@ -7,8 +7,8 @@
  *     Christian Schulte, 2005
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -108,8 +108,9 @@ protected:
   IntVar c_total;
 public:
   /// Actual model
-  Warehouses(const Options&)
-    : supplier(*this, n_stores, 0, n_warehouses-1),
+  Warehouses(const Options& opt)
+    : IntMinimizeScript(opt),
+      supplier(*this, n_stores, 0, n_warehouses-1),
       open(*this, n_warehouses, 0, 1),
       c_store(*this, n_stores) {
 

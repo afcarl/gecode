@@ -6,8 +6,8 @@
 #    Vincent Barichard, 2013
 #
 # Last modified:
-#    $Date: 2014-09-26 16:25:13 +0200 (Fri, 26 Sep 2014) $ by $Author: vbarichard $
-#    $Revision: 14229 $
+#    $Date: 2014-11-07 10:36:58 +0100 (Fri, 07 Nov 2014) $ by $Author: vbarichard $
+#    $Revision: 14312 $
 #
 # This file is part of Quacode:
 #    http://quacode.barichard.com
@@ -174,7 +174,7 @@ ELSE (NOT GECODE_FOUND)
 
   ADD_LIBRARY(quacode ${QUACODE_SRCS} ${QUACODE_HEADERS} ${QUACODE_HPP})
   SET_TARGET_PROPERTIES(quacode PROPERTIES COMPILE_DEFINITIONS "BUILD_QUACODE_LIB")
-  INSTALL(TARGETS quacode LIBRARY DESTINATION lib)
+  INSTALL(TARGETS quacode LIBRARY DESTINATION lib ARCHIVE DESTINATION lib/static)
   SET(QUACODE_LIBRARIES quacode)
 
   IF(BUILD_EXAMPLES)

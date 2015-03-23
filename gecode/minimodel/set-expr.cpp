@@ -9,8 +9,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-12-16 23:11:23 +0100 (Mon, 16 Dec 2013) $ by $Author: tack $
- *     $Revision: 14086 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -363,6 +363,9 @@ namespace Gecode {
           case SRT_CMPL:
             invsrt = srt;
             break;
+          default: 
+            invsrt = srt;
+            GECODE_NEVER;
           }
           dom(home, s, invsrt, ss, b);
         }

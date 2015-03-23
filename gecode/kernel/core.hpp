@@ -18,8 +18,8 @@
  *     Alexander Samoilov <alexander_samoilov@yahoo.com>
  *
  *  Last modified:
- *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
- *     $Revision: 14262 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -1648,12 +1648,19 @@ namespace Gecode {
      * slave space whenever it finds a solution or exploration
      * restarts.  \a cri contains information about the current restart.
      *
-     * The default function does nothing.
+     * If the function returns true, the search on the slave space is
+     * considered complete, i.e., if it fails or exhaustively explores the
+     * entire search space, the meta search engine finishes. If the function
+     * returns false, the search on the slave space is considered incomplete,
+     * and the meta engine will restart the search regardless of whether
+     * the search on the slave space finishes or times out.
+     *
+     * The default function does nothing and returns true.
      *
      * \ingroup TaskModelScript
      */
     GECODE_KERNEL_EXPORT 
-    virtual void slave(const CRI& cri);
+    virtual bool slave(const CRI& cri);
     /**
      * \brief Allocate memory from heap for new space
      * \ingroup TaskModelScript
@@ -3851,6 +3858,7 @@ namespace Gecode {
       case ES_NOFIX_FORCE:
         schedule(home,p,me,true);
         break;
+      case __ES_SUBSUMED:
       default:
         GECODE_NEVER;
       }

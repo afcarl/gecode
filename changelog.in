@@ -6,8 +6,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2014-11-05 16:31:56 +0100 (Wed, 05 Nov 2014) $ by $Author: schulte $
-#     $Revision: 14298 $
+#     $Date: 2015-03-19 13:39:40 +0100 (Thu, 19 Mar 2015) $ by $Author: schulte $
+#     $Revision: 14464 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -65,6 +65,243 @@
 #    ... If a more section is included, then it will be displayed as an
 #    optional section in the html page.
 #
+
+[RELEASE]
+Version: 4.4.0
+Date: 2015-03-20
+[DESCRIPTION]
+This release fixes some bugs and improves some search-related aspects.
+
+Note that you will have to change all scripts that inherit from
+the pre-defined script classes (Script, IntMinimizeScript,
+IntMaximizeScript, FloatMinimizeScript, FloatMaximizeScript). The
+change is easy: in your constructor you have to add a call to the
+constructor of the pre-defined script class with the command line
+options as argument. Just check any of the Gecode example for how
+it is done.
+
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+Thanks: Mark Manser 
+[DESCRIPTION]
+An option -step now can pass an improvement step for
+optimization of float problems.
+
+[ENTRY]
+Module: driver
+What:   change
+Rank:   major
+[DESCRIPTION]
+All scripts now must call the constructor of their base class
+with an option argument. 
+
+Note that you will have to change your models by a call to the
+constructor of the script class with an option argument!
+
+[ENTRY]
+Module: driver
+What:   new
+Rank:   minor
+Thanks: Mark Manser 
+[DESCRIPTION]
+An option -step now can pass an improvement step to scripts of
+type FloatMinimizeScript and FloatMaximizeScript.
+
+[ENTRY]
+Module: minimodel
+What:   new
+Rank:   minor
+Thanks: Mark Manser 
+[DESCRIPTION]
+The classes FloatMinimizeSpace and FloatMaximizeSpace can be
+created with an improvement step for optimization.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Ahmed Kamal
+[DESCRIPTION]
+Added support for missing builtins array_float_element
+(by decomposition), float_lin_lt and float_lin_lt_reif.
+
+[ENTRY]
+Module: search
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added functions to Stop class that can create common stop objects.
+
+[ENTRY]
+Module: search
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Exposed class definitions for common cutoff generators.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Håkan Kjellerstrand
+[DESCRIPTION]
+LNS could fail when the search was restarted before finding the first solution.
+
+[ENTRY]
+Module: search
+What:   bug
+Rank:   major
+Thanks: Håkan Kjellerstrand
+[DESCRIPTION]
+Fix memory leak in the DFS and BAB search engines that could make restart-based
+search run out of memory very quickly.
+
+[ENTRY]
+Module: driver
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added option -seed for passing a seed to random number generators.
+
+[ENTRY]
+Module: example
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added quasigroup completion benchmarks.
+
+[ENTRY]
+Module: search
+What:   performance
+Rank:   minor
+[DESCRIPTION]
+Delay efforts for restarting until it is really needed after a
+solution has been found.
+
+
+[RELEASE]
+Version: 4.3.3
+Date: 2015-01-20
+[DESCRIPTION]
+This release adds support for LNS to FlatZinc, adds support for
+MiniZinc 2, fixes a number of bugs and some new constraints.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added support for arg_min and arg_max constraints.
+
+[ENTRY]
+Module: int
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Added argmin and argmax constraints.
+
+[ENTRY]
+Module: search
+What:   bug
+Rank:   major
+Thanks: Zichen Zhu
+[DESCRIPTION]
+Now no-goods are extracted properly in case a solution is found.
+
+[ENTRY]
+Module: flatzinc
+What:   change
+Rank:   minor
+[DESCRIPTION]
+Add support for the MiniZinc 2 min/max builtins. The Gecode MiniZinc library
+is now compatible with both MiniZinc 1.6 and 2.0.
+
+[ENTRY]
+Module: search
+What:   change
+Rank:   minor
+[DESCRIPTION]
+Change the slave function for meta search engines to return whether the search
+in the slave is going to be complete. This is necessary for example in LNS,
+where completing the search in the slave does not mean that the overall search
+is finished.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   major
+[DESCRIPTION]
+Make a simple form of LNS accessible from FlatZinc. To use it, include
+gecode.mzn and add the relax_and_reconstruct search annotation defined in
+that file.
+
+[ENTRY]
+Module: set
+What:   bug
+Rank:   minor
+Thanks: Farshid Hassani Bijarbooneh
+[DESCRIPTION]
+The channeling propagator between a SetVar and an array of BoolVars
+propagated incorrectly when posted on a fixed SetVar.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Support dom_w_deg search annotation.
+
+[ENTRY]
+Module: flatzinc
+What:   change
+Rank:   minor
+[DESCRIPTION]
+Search on objective function variable after all other variables (but
+still before introduced variables).
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Mats Carlsson
+[DESCRIPTION]
+Fix special case detection for cumulatives constraint, could sometimes
+incorrectly turn a cumulatives into a disjunctive constraint.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Björn Böttcher
+[DESCRIPTION]
+Fix behaviour of -a command line option for satisfaction problems.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Chris Mears
+[DESCRIPTION]
+Fix default search annotation for float objectives.
+
+[ENTRY]
+Module: flatzinc
+What:   bug
+Rank:   minor
+Thanks: Willem Van Onsem
+[DESCRIPTION]
+Install parser.tab.hh header.
+
+[ENTRY]
+Module: flatzinc
+What:   new
+Rank:   minor
+[DESCRIPTION]
+Add support for gecode_schedule_cumulative_optional constraint.
+
 
 [RELEASE]
 Version: 4.3.2

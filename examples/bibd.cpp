@@ -10,8 +10,8 @@
  *     Olof Sivertsson <olsi0767@student.uu.se>
  *
  *  Last modified:
- *     $Date: 2014-09-22 01:35:47 +0200 (Mon, 22 Sep 2014) $ by $Author: mears $
- *     $Revision: 14223 $
+ *     $Date: 2015-03-19 11:41:29 +0100 (Thu, 19 Mar 2015) $ by $Author: tack $
+ *     $Revision: 14461 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -109,7 +109,7 @@ public:
 
   /// Actual model
   BIBD(const BIBDOptions& o)
-    : opt(o), _p(*this,opt.v*opt.b,0,1) {
+    : Script(o), opt(o), _p(*this,opt.v*opt.b,0,1) {
     Matrix<BoolVarArray> p(_p,opt.b,opt.v);
 
     // r ones per row

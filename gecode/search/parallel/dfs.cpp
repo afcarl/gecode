@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-10-24 16:42:20 +0200 (Thu, 24 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14030 $
+ *     $Date: 2015-01-08 15:07:24 +0100 (Thu, 08 Jan 2015) $ by $Author: schulte $
+ *     $Revision: 14341 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -60,6 +60,17 @@ namespace Gecode { namespace Search { namespace Parallel {
    */
   void
   DFS::Worker::run(void) {
+    /*
+     * The engine maintains the following invariant:
+     *  - If the current space (cur) is not NULL, the path always points
+     *    to exactly that space.
+     *  - If the current space (cur) is NULL, the path always points
+     *    to the next space (if there is any).
+     *
+     * This invariant is needed so that no-goods can be extracted properly
+     * when the engine is stopped or has found a solution.
+     *
+     */
     // Peform initial delay, if not first worker
     if (this != engine().worker(0))
       Support::Thread::sleep(Config::initial_delay);
@@ -107,6 +118,7 @@ namespace Gecode { namespace Search { namespace Parallel {
                 fail++;
                 delete cur;
                 cur = NULL;
+                path.next();
                 m.release();
                 break;
               case SS_SOLVED:
@@ -116,6 +128,7 @@ namespace Gecode { namespace Search { namespace Parallel {
                   Space* s = cur->clone(false);
                   delete cur;
                   cur = NULL;
+                  path.next();
                   m.release();
                   engine().solution(s);
                 }
@@ -139,8 +152,10 @@ namespace Gecode { namespace Search { namespace Parallel {
                 GECODE_NEVER;
               }
             }
-          } else if (path.next()) {
+          } else if (!path.empty()) {
             cur = path.recompute(d,engine().opt().a_d,*this);
+            if (cur == NULL)
+              path.next();
             m.release();
           } else {
             idle = true;

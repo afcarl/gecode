@@ -9,8 +9,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-02-12 20:48:02 +0100 (Tue, 12 Feb 2013) $ by $Author: vbarichard $
- *     $Revision: 13281 $
+ *     $Date: 2015-01-20 20:48:23 +0100 (Tue, 20 Jan 2015) $ by $Author: schulte $
+ *     $Revision: 14369 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -61,7 +61,9 @@ namespace Test { namespace Float {
        FloatVarXY(Gecode::FloatRelType frt0, int n, Gecode::FloatNum st)
          : Test("Rel::Float::Var::XY::"+str(frt0)+"::"+str(n),
                 n+1,-3,3,st,CPLT_ASSIGNMENT,n==1),
-           frt(frt0) {}
+           frt(frt0) {
+         testsubsumed = false;
+       }
        /// %Test whether \a x is solution
        virtual MaybeType solution(const Assignment& x) const {
          if (x.size() == 2) {
@@ -103,7 +105,9 @@ namespace Test { namespace Float {
        FloatVarXX(Gecode::FloatRelType frt0, Gecode::FloatNum st)
          : Test("Rel::Float::Var::XX::"+str(frt0),
                 1,-3,3,st,CPLT_ASSIGNMENT,true),
-           frt(frt0) { }
+           frt(frt0) { 
+         testsubsumed = false;
+       }
        /// %Test whether \a x is solution
        virtual MaybeType solution(const Assignment& x) const {
          return cmp(x[0],frt,x[0]);
@@ -132,7 +136,9 @@ namespace Test { namespace Float {
                   Gecode::FloatNum st)
          : Test("Rel::Float::Float::"+str(frt0)+"::"+str(n)+"::"+str(c0),
                 n,-3,3,st,CPLT_ASSIGNMENT,n==1),
-           frt(frt0), c(c0) {}
+           frt(frt0), c(c0) {
+         testsubsumed = false;
+       }
        /// %Test whether \a x is solution
        virtual MaybeType solution(const Assignment& x) const {
          if (x.size() == 1) {

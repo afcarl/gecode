@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2014-10-22 00:54:49 +0200 (Wed, 22 Oct 2014) $ by $Author: tack $
- *     $Revision: 14262 $
+ *     $Date: 2015-01-05 07:32:41 +0100 (Mon, 05 Jan 2015) $ by $Author: tack $
+ *     $Revision: 14336 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -654,8 +654,9 @@ namespace Gecode {
     return true;
   }
 
-  void
+  bool
   Space::slave(const CRI&) {
+    return true;
   }
 
   void

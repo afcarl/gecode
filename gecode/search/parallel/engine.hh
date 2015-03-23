@@ -7,8 +7,8 @@
  *     Christian Schulte, 2009
  *
  *  Last modified:
- *     $Date: 2013-07-11 12:30:18 +0200 (Thu, 11 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13840 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -240,7 +240,7 @@ namespace Gecode { namespace Search { namespace Parallel {
   forceinline
   Engine::Worker::Worker(Space* s, Engine& e)
     : _engine(e), 
-      path(s == NULL ? 0 : static_cast<int>(e.opt().nogoods_limit)), d(0), 
+      path(s == NULL ? 0 : e.opt().nogoods_limit), d(0), 
       idle(false) {
     if (s != NULL) {
       if (s->status(*this) == SS_FAILED) {

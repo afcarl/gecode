@@ -7,8 +7,8 @@
  *     Christian Schulte, 2004
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -74,7 +74,8 @@ public:
 
   /// Actual model
   OrthoLatinSquare(const SizeOptions& opt)
-    : n(opt.size()),
+    : Script(opt),
+      n(opt.size()),
       x1(*this,n*n,1,n), x2(*this,n*n,1,n) {
     const int nn = n*n;
     IntVarArgs z(*this,nn,0,n*n-1);

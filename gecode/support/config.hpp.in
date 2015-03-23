@@ -6,8 +6,8 @@
  *     Guido Tack, 2008
  *
  *  Last modified:
- *     $Date: 2014-11-05 00:52:18 +0100 (Wed, 05 Nov 2014) $ by $Author: tack $
- *     $Revision: 14292 $
+ *     $Date: 2014-11-26 23:29:51 +0100 (Wed, 26 Nov 2014) $ by $Author: tack $
+ *     $Revision: 14327 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -60,9 +60,6 @@
 
 /* Whether GNU hash_map is available */
 #undef GECODE_HAS_GNU_HASH_MAP
-
-/* Whether unordered_map is available */
-#undef GECODE_HAS_UNORDERED_MAP
 
 /* Whether to build INT variables */
 #undef GECODE_HAS_INT_VARS

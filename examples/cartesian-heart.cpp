@@ -7,8 +7,8 @@
  *     Vincent Barichard, 2012
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:30:12 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14448 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -72,8 +72,8 @@ protected:
   FloatNum step;
 public:
   /// Actual model
-  CartesianHeart(const Options&) 
-    : f(*this,2,-20,20), step(0.01) {
+  CartesianHeart(const Options& opt) 
+    : Script(opt), f(*this,2,-20,20), step(opt.step()) {
     int q = 2;
     FloatNum p = 0.5;
     // Post equation
@@ -111,8 +111,9 @@ public:
  */
 int main(int argc, char* argv[]) {
   Options opt("CartesianHeart");
-  opt.parse(argc,argv);
   opt.solutions(0);
+  opt.step(0.01);
+  opt.parse(argc,argv);
   Script::run<CartesianHeart,BAB,Options>(opt);
   return 0;
 }

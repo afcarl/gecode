@@ -7,8 +7,8 @@
  *     Christian Schulte, 2002
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -92,7 +92,8 @@ protected:
 public:
   /// Actual model
   IndSet(const SizeOptions& opt)
-    : g(opt.size() == 0 ?  g_20_10 : g_40_20),
+    : IntMaximizeScript(opt),
+      g(opt.size() == 0 ?  g_20_10 : g_40_20),
       v(*this,g.n_v,0,1), k(*this,0,g.n_v) {
     const int* e = g.e;
     for (int i = g.n_e; i--; ) {

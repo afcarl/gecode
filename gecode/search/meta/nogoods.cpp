@@ -7,8 +7,8 @@
  *     Christian Schulte, 2013
  *
  *  Last modified:
- *     $Date: 2013-07-09 12:24:39 +0200 (Tue, 09 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13832 $
+ *     $Date: 2015-03-19 14:02:56 +0100 (Thu, 19 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14468 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -206,4 +206,4 @@ namespace Gecode { namespace Search { namespace Meta {
 
 }}}
 
-// STATISTICS: search-other
+// STATISTICS: search-meta

@@ -7,8 +7,8 @@
  *     Christian Schulte, 2013
  *
  *  Last modified:
- *     $Date: 2014-10-21 17:09:50 +0200 (Tue, 21 Oct 2014) $ by $Author: schulte $
- *     $Revision: 14258 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -43,7 +43,7 @@
 namespace Gecode { namespace Search { namespace Meta {
 
   /// Class for a sentinel no-good literal
-  class NoNGL : public NGL {
+  class GECODE_VTABLE_EXPORT NoNGL : public NGL {
   public:
     /// Constructor for creation
     NoNGL(void);
@@ -64,7 +64,7 @@ namespace Gecode { namespace Search { namespace Meta {
   };
 
   /// No-good propagator
-  class NoGoodsProp : public Propagator {
+  class GECODE_SEARCH_EXPORT NoGoodsProp : public Propagator {
   protected:
     /// Root of no-good literal tree
     NGL* root;
@@ -144,7 +144,7 @@ namespace Gecode { namespace Search { namespace Meta {
   forceinline ExecStatus 
   NoGoodsProp::post(Space& home, const Path& p) {
     int s = 0;
-    int n = std::min(p.ds.entries(),p.ngdl());
+    int n = std::min(p.ds.entries(),static_cast<int>(p.ngdl()));
 
     unsigned long int n_nogood = 0;
 
@@ -230,4 +230,4 @@ namespace Gecode { namespace Search { namespace Meta {
 
 #endif
 
-// STATISTICS: search-other
+// STATISTICS: search-meta

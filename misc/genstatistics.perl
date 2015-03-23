@@ -7,8 +7,8 @@
 #     Christian Schulte, 2005
 #
 #  Last modified:
-#     $Date: 2014-11-04 13:28:32 +0100 (Tue, 04 Nov 2014) $ by $Author: schulte $
-#     $Revision: 14287 $
+#     $Date: 2015-03-19 14:02:56 +0100 (Thu, 19 Mar 2015) $ by $Author: schulte $
+#     $Revision: 14468 $
 #
 #  This file is part of Gecode, the generic constraint
 #  development environment:
@@ -40,7 +40,7 @@
 
 @catorder = ("core","memory","var","prop","branch","post",
 	     "int","set","float","minimodel","stress","any",
-	     "sequential","parallel","search","flatzinc",
+	     "sequential","parallel","meta","search","flatzinc",
 	     "other");
 
 $modclear{"kernel"} = "Kernel";
@@ -65,6 +65,7 @@ $catclear{"prop"} = "Propagators";
 $catclear{"branch"} = "Branchers";
 $catclear{"sequential"} = "Sequential search engines";
 $catclear{"parallel"} = "Parallel search engines";
+$catclear{"meta"} = "Meta-search engines";
 $catclear{"post"} = "Posting propagators for constraints";
 $catclear{"any"} = "All";
 $catclear{"other"} = "Miscellaneous";

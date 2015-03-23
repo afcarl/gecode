@@ -7,8 +7,8 @@
  *     Christian Schulte, 2001
  *
  *  Last modified:
- *     $Date: 2013-07-08 14:22:40 +0200 (Mon, 08 Jul 2013) $ by $Author: schulte $
- *     $Revision: 13820 $
+ *     $Date: 2015-03-17 16:09:39 +0100 (Tue, 17 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14447 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -94,6 +94,7 @@ public:
   };
   /// Actual model
   Photo(const SizeOptions& opt) :
+    IntMinimizeScript(opt),
     spec(opt.size() == 0 ? p_small : p_large),
     pos(*this,spec.n_names, 0, spec.n_names-1),
     violations(*this,0,spec.n_prefs)
@@ -157,7 +158,7 @@ main(int argc, char* argv[]) {
   opt.branching(Photo::BRANCH_NONE,   "none");
   opt.branching(Photo::BRANCH_DEGREE, "degree");
   opt.parse(argc,argv);
-  IntMaximizeScript::run<Photo,BAB,SizeOptions>(opt);
+  IntMinimizeScript::run<Photo,BAB,SizeOptions>(opt);
   return 0;
 }
 

@@ -11,8 +11,8 @@
  *     Guido Tack, 2004
  *
  *  Last modified:
- *     $Date: 2013-10-24 16:42:20 +0200 (Thu, 24 Oct 2013) $ by $Author: schulte $
- *     $Revision: 14030 $
+ *     $Date: 2015-03-20 15:37:34 +0100 (Fri, 20 Mar 2015) $ by $Author: schulte $
+ *     $Revision: 14471 $
  *
  *  This file is part of Gecode, the generic constraint
  *  development environment:
@@ -81,8 +81,7 @@ namespace Gecode { namespace Search { namespace Sequential {
 
   forceinline 
   BAB::BAB(Space* s, const Options& o)
-    : opt(o), path(static_cast<int>(opt.nogoods_limit)), 
-      d(0), mark(0), best(NULL) {
+    : opt(o), path(opt.nogoods_limit), d(0), mark(0), best(NULL) {
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
       fail++;
       cur = NULL;
@@ -96,59 +95,68 @@ namespace Gecode { namespace Search { namespace Sequential {
   forceinline Space*
   BAB::next(void) {
     /*
-     * The invariant maintained by the engine is:
+     * The engine maintains the following invariant:
+     *  - If the current space (cur) is not NULL, the path always points
+     *    to exactly that space.
+     *  - If the current space (cur) is NULL, the path always points
+     *    to the next space (if there is any).
+     *
+     * This invariant is needed so that no-goods can be extracted properly
+     * when the engine is stopped or has found a solution.
+     *
+     * An additional invariant maintained by the engine is:
      *   For all nodes stored at a depth less than mark, there
      *   is no guarantee of betterness. For those above the mark,
      *   betterness is guaranteed.
      *
-     * The engine maintains the path on the stack for the current
-     * node to be explored.
-     *
      */
     start();
     while (true) {
-      while (cur) {
-        if (stop(opt))
-          return NULL;
-        node++;
-        switch (cur->status(*this)) {
-        case SS_FAILED:
-          fail++;
-          delete cur;
-          cur = NULL;
-          break;
-        case SS_SOLVED:
-          // Deletes all pending branchers
-          (void) cur->choice();
-          delete best;
-          best = cur;
-          cur = NULL;
-          mark = path.entries();
-          return best->clone();
-        case SS_BRANCH:
-          {
-            Space* c;
-            if ((d == 0) || (d >= opt.c_d)) {
-              c = cur->clone();
-              d = 1;
-            } else {
-              c = NULL;
-              d++;
-            }
-            const Choice* ch = path.push(*this,cur,c);
-            cur->commit(*ch,0);
-            break;
-          }
-        default:
-          GECODE_NEVER;
-        }
-      }
+      if (stop(opt))
+        return NULL;
       // Recompute and add constraint if necessary
-      do {
-        if (!path.next())
+      while (cur == NULL) {
+        if (path.empty())
           return NULL;
-        cur = path.recompute(d,opt.a_d,*this,best,mark);
-      } while (cur == NULL);
+        cur = path.recompute(d,opt.a_d,*this,*best,mark);
+        if (cur != NULL)
+          break;
+        path.next();
+      }
+      node++;
+      switch (cur->status(*this)) {
+      case SS_FAILED:
+        fail++;
+        delete cur;
+        cur = NULL;
+        path.next();
+        break;
+      case SS_SOLVED:
+        // Deletes all pending branchers
+        (void) cur->choice();
+        delete best;
+        best = cur;
+        cur = NULL;
+        path.next();
+        mark = path.entries();
+        return best->clone();
+      case SS_BRANCH:
+        {
+          Space* c;
+          if ((d == 0) || (d >= opt.c_d)) {
+            c = cur->clone();
+            d = 1;
+          } else {
+            c = NULL;
+            d++;
+          }
+          const Choice* ch = path.push(*this,cur,c);
+          cur->commit(*ch,0);
+          break;
+        }
+      default:
+        GECODE_NEVER;
+      }
     }
     GECODE_NEVER;
     return NULL;
@@ -164,9 +172,11 @@ namespace Gecode { namespace Search { namespace Sequential {
     delete best;
     best = NULL;
     path.reset();
-    d = mark = 0U;
+    d = 0;
+    mark = 0;
     delete cur;
     if ((s == NULL) || (s->status(*this) == SS_FAILED)) {
+      delete s;
       cur = NULL;
     } else {
       cur = s;
